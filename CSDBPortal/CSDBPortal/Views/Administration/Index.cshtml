@@ -1,0 +1,138 @@
+﻿@using CSDBPortal.ViewModels
+@model AdministrationViewModel
+@{
+    ViewData["Title"] = "Administration";
+}
+
+  <div class="row">
+            <div class="col-lg-7">
+              <div class="card bg-transparent">
+                <div class="card-body" style="margin: 20px">
+                  <h5 class="card-title">Hello, @Context.User.Identity.Name </h5>
+                  <p class="card-text pt-2">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sit ipsum a
+                    placerat eget imperdiet aliquet integer et. </p>
+
+                </div>
+              </div>
+            </div>
+            <!-- /.col-6 -->
+            <div class="col">
+              <div class="counter-box card">
+                <div class="card-body">
+                  <img src="./dist/img/Icons/Administration/Project.png" alt="Project icon">
+                  <h2 class="counter">@Model.ProjectCompleted</h2>
+                  <h5 class="card-title">Projects
+                    Completed</h5>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="counter-box card">
+                <div class="card-body">
+                  <img src="./dist/img/Icons/Administration/User.png" alt="User icon">
+                  <h2 class="counter">@Model.Users</h2>
+                  <h5 class="card-title">Users
+                  </h5>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="counter-box card">
+                <div class="card-body">
+                  <img src="./dist/img/Icons/Administration/Active-User.png" alt="Active-User icon">
+                  <h2 class="counter">@Model.ActiveUsers</h2>
+                  <h5 class="card-title">Active
+                    Users</h5>
+                </div>
+              </div>
+            </div>
+            <!-- /.col-6 -->
+            <!-- tab-content -->
+            <div class="col-12">
+              <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item item-one" role="presentation">
+                  <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
+                    <img src="./dist/img/Icons/Administration/Windows.png" alt="windows icon">
+                    <span class="ml-2">Windows User </span>
+                  </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link" id="pills-tab-2" data-toggle="pill" href="#pills-2">
+                    <img src="./dist/img/Icons/Administration/Register.png" alt="register icon">
+                    <span class="ml-2"> Register</span></a>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-3">
+                    <img src="./dist/img/Icons/Administration/Add-roles.png" alt="Add-roles icon">
+
+                    <span class="ml-2"> Add Roles</span></a>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-4">
+                    <img src="./dist/img/Icons/Administration/Encrypt.png" alt="encrypt icon">
+                    <span class="ml-2"> Encrypt</span></a>
+                </li>
+              </ul>
+              <!-- tab-content -->
+              <div class="tab-content" id="pills-tabContent">
+                <!-- tab-1 start -->
+                <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                  <div class="card">
+                    <div class="card-header">
+                      <ul class="list-unstyled d-flex">
+                        <li class="tab-breadcrumb mr-2">
+                          <a href="">
+                            <span>Server</span>
+                            <i class="fas fa-angle-double-right"></i></a>
+                        </li>
+                        <li class="tab-breadcrumb mr-2">
+                          <a href="">
+                            <span>Shared Folder</span>
+                            <i class="fas fa-angle-double-right"></i></a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-unstyled">
+                        <li class="items">
+                          <a href="">
+                            <img src="./dist/img/Icons/Administration/Shared Folder.png" alt="Share icon">
+                            <span class="ml-2"> Shared Folder</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <!-- /. tab-1 end -->
+
+                <!-- tab-2 start -->
+                <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
+                  <!-- Your content here -->
+                </div>
+                <!-- /. tab-2 end -->
+
+                <!-- tab-3 start -->
+                <div class="tab-pane fade" id="pills-roles" role="tabpanel" aria-labelledby="pills-tab-3">
+                  <!-- Your content here -->
+                </div>
+                <!-- /. tab-3 end -->
+
+                <!-- tab-4 start -->
+                <div class="tab-pane fade" id="pills-4" role="tabpanel" aria-labelledby="pills-tab-4">
+                  <!-- Your content here -->
+                </div>
+                <!-- /. tab-4 end -->
+              </div>
+            </div>
+            <!-- /. tab-content -->
+          </div>
+
+           @section Scripts {
+		        <script type="text/javascript">
+                $("#adminlink").addClass("active");
+                $("#configlink").removeClass("active");
+                $("#mainlink").removeClass("active");
+                $("#icnlink").removeClass("active");
+                </script>
+            }

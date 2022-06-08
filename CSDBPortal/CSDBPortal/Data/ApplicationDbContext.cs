@@ -1,0 +1,174 @@
+﻿using CSDBPortal.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace CSDBPortal.Data
+{
+    public class ApplicationDbContext : IdentityDbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        public ApplicationDbContext()
+        {
+        }
+
+        public virtual DbSet<ApplicationSetting> ApplicationSettings { get; set; } = null!;
+        public virtual DbSet<BrexRule> BrexRules { get; set; } = null!;
+        public virtual DbSet<CompanyInformation> CompanyInformations { get; set; } = null!;
+        public virtual DbSet<DataModule> DataModules { get; set; } = null!;
+        public virtual DbSet<DataModuleStatus> DataModuleStatuses { get; set; } = null!;
+        public virtual DbSet<DataModuleType> DataModuleTypes { get; set; } = null!;
+        public virtual DbSet<Designation> Designations { get; set; } = null!;
+        public virtual DbSet<IcnNumber> IcnNumbers { get; set; } = null!;
+
+        public virtual DbSet<ICNFormatField> ICNFormatFields { get; set; } = null!;
+        public virtual DbSet<ICNFormatMasterField> ICNFormatMasterFields { get; set; } = null!;
+        public virtual DbSet<Icnformat> Icnformats { get; set; } = null!;
+        public virtual DbSet<InformationCode> InformationCodes { get; set; } = null!;
+        public virtual DbSet<InformationCodeSet> InformationCodeSets { get; set; } = null!;
+        public virtual DbSet<IssueNo> IssueNos { get; set; } = null!;
+        public virtual DbSet<IssueTypeFile> IssueTypeFiles { get; set; } = null!;
+        public virtual DbSet<LicenseManagement> LicenseManagements { get; set; } = null!;
+        public virtual DbSet<LocationCode> LocationCodes { get; set; } = null!;
+        public virtual DbSet<LocationCodeSet> LocationCodeSets { get; set; } = null!;
+        public virtual DbSet<Project> Projects { get; set; } = null!;
+        public virtual DbSet<ProjectStandardNumberingSystem> ProjectStandardNumberingSystems { get; set; } = null!;
+        public virtual DbSet<ResponsiblePartnerCode> ResponsiblePartnerCodes { get; set; } = null!;
+        public virtual DbSet<StandardNumberingSystem> StandardNumberingSystems { get; set; } = null!;
+        public virtual DbSet<UserDetail> UserDetails { get; set; } = null!;
+        public virtual DbSet<XmlValidation> XmlValidations { get; set; } = null!;
+
+        public IConfigurationRoot GetConfiguration()
+        {
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            return builder.Build();
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                var configuation = GetConfiguration();
+                var connectionString = configuation.GetSection("ConnectionStrings").GetSection("DefaultConnection").Value;
+
+                optionsBuilder.UseSqlServer(connectionString);
+            //        "Data Source=ATPLAPTOP24\\SQLEXPRESS;Initial Catalog=CSDB;User ID=localhost;Password=Window@123"); ;
+            }
+        }
+
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.Entity<BrexRule>(entity =>
+        //    {
+        //        entity.Property(e => e.Dmtype).HasColumnName("DMTYPE");
+        //    });
+
+        //    modelBuilder.Entity<CompanyInformation>(entity =>
+        //    {
+        //        entity.HasKey(e => e.CompanyId);
+
+        //        entity.ToTable("CompanyInformation");
+        //    });
+
+        //    modelBuilder.Entity<DataModule>(entity =>
+        //    {
+        //        entity.ToTable("DataModule");
+
+        //        entity.Property(e => e.Alc).HasColumnName("ALC");
+
+        //        entity.Property(e => e.Dmc).HasColumnName("DMC");
+
+        //        entity.Property(e => e.Ent).HasColumnName("ENT");
+
+        //        entity.Property(e => e.Lcn).HasColumnName("LCN");
+
+        //        entity.Property(e => e.Lcntype).HasColumnName("LCNType");
+
+        //        entity.Property(e => e.TaskId).HasColumnName("TaskID");
+        //    });
+
+        //    modelBuilder.Entity<DataModuleStatus>(entity =>
+        //    {
+        //        entity.ToTable("DataModuleStatus");
+        //    });
+
+        //    modelBuilder.Entity<FolderDetail>(entity =>
+        //    {
+        //        entity.Property(e => e.Id).ValueGeneratedNever();
+        //    });
+
+        //    modelBuilder.Entity<FolderUserLink>(entity =>
+        //    {
+        //        entity.Property(e => e.Id).ValueGeneratedNever();
+        //    });
+
+        //    modelBuilder.Entity<IcnNumber>(entity =>
+        //    {
+        //        entity.Property(e => e.IcnNumber1).HasColumnName("IcnNumber");
+        //    });
+
+        //    modelBuilder.Entity<Icnformat>(entity =>
+        //    {
+        //        entity.ToTable("ICNFormats");
+        //    });
+
+        //    modelBuilder.Entity<ICNFormatMasterField>(entity => {
+        //        entity.ToTable("ICNFormatMasterFields");
+        //    });
+
+        //    modelBuilder.Entity<ICNFormatField>(entity => {
+        //        entity.ToTable("ICNFormatFields");
+        //    });
+
+        //    modelBuilder.Entity<IssueNo>(entity =>
+        //    {
+        //        entity.ToTable("IssueNo").HasMany<IssueTypeFile>(i => i.IssueTypeFiles);
+        //    });
+
+        //    modelBuilder.Entity<LicenseManagement>(entity =>
+        //    {
+        //        entity.HasKey(e => e.LicenseId);
+
+        //        entity.ToTable("LicenseManagement");
+        //    });
+
+        //    modelBuilder.Entity<Project>(entity =>
+        //    {
+        //        entity.ToTable("Project");
+
+        //        entity.Property(e => e.IcnformatId).HasColumnName("ICNFormatId");
+
+        //        entity.Property(e => e.Rpcid).HasColumnName("RPCId");
+
+        //        entity.Property(e => e.Sdc).HasColumnName("SDC");
+
+        //        entity.Property(e => e.SnssetId).HasColumnName("SNSSetId");
+        //    });
+
+        //    modelBuilder.Entity<ProjectStandardNumberingSystem>(entity =>
+        //    {
+        //        entity.Property(e => e.Snsid).HasColumnName("SNSId");
+        //    });
+
+        //    modelBuilder.Entity<ResponsiblePartnerCode>(entity =>
+        //    {
+        //        entity.Property(e => e.Rpccage).HasColumnName("RPCCage");
+        //    });
+
+        //    modelBuilder.Entity<XmlValidation>(entity =>
+        //    {
+        //        entity.ToTable("XmlValidation");
+        //    });
+
+        //    modelBuilder.Entity<IssueTypeFile>(entity =>
+        //    {
+        //        entity.ToTable("IssueTypeFiles").HasOne<IssueNo>(e => e.IssueNo);
+        //    });
+
+        //    base.OnModelCreating(modelBuilder);
+        //}
+    }
+}
