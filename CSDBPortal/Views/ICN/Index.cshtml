@@ -1,0 +1,280 @@
+﻿@{
+    ViewData["Title"] = "ICN";
+}
+<style>
+    .generate_button {
+        width: 336px;
+        background: #8CA1FB;
+        color: #ffffff;
+        font-size: 18px;
+        line-height: 27px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        margin: auto;
+    }
+</style>
+
+<div class="row">
+    <!-- tab-content -->
+    <div class="col-12">
+        <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item item-one" role="presentation">
+                <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
+                    <img src="./dist/img/Icons/ICN/Generate ICN.png" alt="Generate icon">
+                    <span class="ml-2">Generate ICN</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="pills-tab-2" data-toggle="pill" href="#pills-2">
+                    <img src="./dist/img/Icons/ICN/View-ICN.png" alt="View icon">
+                    <span class="ml-2"> View ICN </span>
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content" id="pills-tabContent">
+            <!-- tab-1 start -->
+            <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                <div class="card shadow-sm" style="padding:20px;">
+                    <label for="select" class="input-title">Select Project </label>
+                    <select class="form-select form-control" aria-label="Default select example" required id="project_2"></select>
+
+                    <input type="radio" style="align-self:" id="SequenceNumber" name="numberOption" value="0">
+                    <label for="SequenceNumber" style="width:500px;">Sequence Number</label>
+                    <input type="radio" name="numberOption" value="1">
+                    <label for="Varcode">Var Code</label>
+                    <input type="radio" name="numberOption" value="2">
+                    <label for="IssueNumber">Issue Number</label>
+                    <label class="input-title" id="lblSequenceNumber">Sequence Number </label>
+                    <select class="form-select form-control" aria-label="Default select example" required id="SequenceNumberList"></select>
+                    <label class="input-title" id="lblVarCode">Var Code</label>
+                    <select class="form-select form-control" aria-label="Select Sequence Number" required id="VarCodeList"></select>
+                    <label for="number" class="input-title" id="lblICNNumberFormat">ICN count to be Generated</label>
+                    <input type="number" class="form-control" id="txtICNNumberFormat" required>
+                    
+                    <button type="submit" class="btn generate_button btn-block mt-5 mb-2" id="btnGenerate">Generate</button>
+                </div>
+            </div>
+            <!-- /. tab-1 end -->
+            <!-- tab-2 start -->
+            <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
+                <div class="card shadow-sm d-flex justify-content-center" style="padding:20px;">
+                    <label for="select" class="input-title">Select Project </label>
+                    <select class="form-select form-control" aria-label="Default select example" id="project_1">
+                    </select>
+                    <hr />
+                    <div id="divViewICNNumber" style="display:none">
+                        <div class="table-responsive table-striped">
+                            <table class="table table-bordered" width="100%" id="viewICNNumberTable">
+                                <thead class="thead">
+                                    <tr>
+
+                                        <th>Poject</th>
+                                        <th>ICN Number</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="icnViewBody">
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <!-- /. tab-2 end -->
+        </div>
+
+    </div>
+    <!-- /. tab-content -->
+</div>
+@section Scripts {
+<script type="text/javascript">
+    $("#adminlink").removeClass("active");
+    $("#configlink").removeClass("active");
+    $("#mainlink").removeClass("active");
+    $("#icnlink").addClass("active");
+    var ICNNumberTable = $('#viewICNNumberTable').DataTable();
+
+    $(document).ready(function () {
+
+        $("#VarCodeList").hide();
+        $("#SequenceNumberList").hide();
+        $("#lblSequenceNumber").hide();
+        $("#lblVarCode").hide();
+
+        $.ajax({
+            type: "GET",
+            url: "ICN/GetProjects",
+            dataType: "json",
+            success: function (result) {
+                var slelectObj = $('#project_1, #project_2');
+                slelectObj.append('<option selected>Please select your project</option>');
+                $.each(result, function (k, v) {
+                    slelectObj.append('<option value="' + v.projecctId + '">' + v.name + '</option>');
+                });
+            }
+        });
+
+        $("#project_1").change(function () {
+
+            $('#divViewICNNumber').show();
+            var selectedVal = $(this).find("option:selected").val();
+            $.ajax({
+                type: "GET",
+                data: {projectId: selectedVal },
+                url: "ICN/ICNNumberByProjectId",
+                dataType: "json",
+                success: function (result) {
+                    debugger;
+                    $("#icnViewBody").html('');
+                        $('#viewICNNumberTable').DataTable().clear();
+                        var tr;
+                        for (var i = 0; i < result.length; i++) {
+                            tr = $("<tr style='background:#fff'><td>" + result[i].projectName + "</td><td>" + result[i].icnNumber1 + "</td></tr>");
+                        ICNNumberTable.row.add(tr[0]).draw();
+                    }
+                }
+            });
+            updateSequenceNumber(projectId);
+        });
+
+        $("#SequenceNumberList").change(function () {
+            var selectedVal = $(this).find("option:selected").val();
+            updateVarcodeList(selectedVal);
+        });
+    });
+
+    function updateSequenceNumber(projectId)
+    {
+        $.ajax({
+            type: "GET",
+            url: "ICN/GetSequenceNumber",
+            data: { projectId : projectId},
+            dataType: "json",
+            success: function (result) {
+
+                $("#SequenceNumberList option").remove();
+
+                var slelectObj = $('#SequenceNumberList');
+
+                slelectObj.append('<option selected>Please Select Sequence Number</option>');
+                $.each(result, function (k, v) {
+                    slelectObj.append('<option value="' + v + '">' + v + '</option>');
+                });
+            }
+        });
+    }
+
+    function updateVarcodeList(sequenceNumber)
+    {
+        var projectId = $('#project_2').val();
+
+        $.ajax({
+            type: "GET",
+            url: "ICN/GetVarCodes",
+            data: { projectId : projectId, sequenceNumber : sequenceNumber },
+            dataType: "json",
+            success: function (result) {
+
+                $("#VarCodeList option").remove();
+
+                var slelectObj = $('#VarCodeList');
+
+                slelectObj.append('<option selected>Please Select Var Code</option>');
+                $.each(result, function (k, v) {
+                    slelectObj.append('<option value="' + v + '">' + v + '</option>');
+                });
+            }
+        });
+    }
+
+
+    $("input[name='numberOption']").change(function(){
+
+        var projectId = $('#project_2').val();
+
+        if ($(this).val() === "0") {
+
+            $("#VarCodeList").hide();
+            $("#SequenceNumberList").hide();
+            $("#txtICNNumberFormat").show();
+            $("#lblICNNumberFormat").show();
+            $("#lblSequenceNumber").hide();
+            $("#lblVarCode").hide();
+            
+        } else if ($(this).val() === "1") {
+
+            $("#VarCodeList").hide();
+            $("#SequenceNumberList").show();
+            $("#txtICNNumberFormat").hide();
+            $("#lblICNNumberFormat").hide();
+            $("#lblSequenceNumber").show();
+            $("#lblVarCode").hide();
+    
+            updateSequenceNumber(projectId);
+
+        } else if ($(this).val() === "2") {
+            
+            $("#VarCodeList").show();
+            $("#SequenceNumberList").show();
+            $("#txtICNNumberFormat").hide();
+            $("#lblICNNumberFormat").hide();
+            $("#lblSequenceNumber").show();
+            $("#lblVarCode").show();
+
+            updateSequenceNumber(projectId);
+        }
+    });
+
+
+    $("#btnGenerate").click(function () {
+        
+        if ($('#project_2').val() == 'Please select your project') {
+            $('#project_2').css('border-color', 'red');
+            return false;
+        }
+        else {
+            $('#project_2').css('border-color', '');
+        }
+
+        var selectedOption = $("input[name='numberOption']:checked").val();
+            
+        if (selectedOption === "0")
+        {
+            if ($('#txtICNNumberFormat').val() == '') {
+                $('#txtICNNumberFormat').css('border-color', 'red');
+                return false;
+            }
+            else {
+                $('#txtICNNumberFormat').css('border-color', '');
+            }
+        }
+        
+        var icnNumberGeneration = {}
+        icnNumberGeneration.ProjectId = $('#project_2').val();
+        icnNumberGeneration.Count = $('#txtICNNumberFormat').val();
+        icnNumberGeneration.GenerateBy =  selectedOption;
+        icnNumberGeneration.SequenceNumber = $('#SequenceNumberList').val();
+        icnNumberGeneration.VarCode = $('#VarCodeList').val();
+            
+        $.ajax({
+            type: "POST",
+            url: "ICN/CreateICNNumber",
+            data: {icnNumberGenerationModel: icnNumberGeneration },
+            dataType: "json",
+            success: function (data) {
+                if(data == 'Duplicate'){
+                    $("#errorICNMsg").html("Duplicate Record.");
+                    $("#icnmdl").modal('show')
+                }else{
+                $("#icnmdl").modal('hide');
+                    location.reload();
+                }
+            }
+        });
+    });
+</script>
+            }

@@ -1,0 +1,1323 @@
+﻿@model CSDBPortal.ViewModels.MaintenanceViewModel
+@{
+    ViewData["Title"] = "Maintenance";
+}
+
+<style>
+    .ml-1 {
+        font-size: 12px;
+        padding: 2px;
+    }
+</style>
+
+<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+<link href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css" />
+<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+<div class="row">
+    <!-- tab-content -->
+    <div class="col-12">
+        <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="pills-tab-6" data-toggle="pill" href="#pills-6">
+                    <img src="./dist/img/Icons/Maintenance/Location Code.png" alt="Location Code icon">
+                    <span class="ml-1">Location Code Set</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="pills-tab-1" data-toggle="pill" href="#pills-1">
+                    <img src="./dist/img/Icons/Maintenance/Location Code.png" alt="Location Code icon">
+                    <span class="ml-1">Location Code</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="pills-tab-2" data-toggle="pill" href="#pills-2">
+                    <img src="./dist/img/Icons/Maintenance/Responsible Partner Code.png"
+                         alt="Responsible Partner Code icon">
+                    <span class="ml-1"> Responsible Partner Code(RPC)</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-3">
+                    <img src="./dist/img/Icons/Maintenance/Data Module Type.png"
+                         alt="Data Module Type icon">
+                    <span class="ml-1">Data Module Type</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-4">
+                    <img src="./dist/img/Icons/Maintenance/Standard Numbering System.png"
+                         alt="Standard Numbering System icon">
+                    <span class="ml-1"> Standard Numbering System(SNS)</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="pills-tab-5" data-toggle="pill" href="#pills-5">
+                    <img src="./dist/img/Icons/Maintenance/Project.png" alt="Project icon">
+                    <span class="ml-1"> Project</span>
+                </a>
+            </li>
+        </ul>
+        <div class="tab-content" id="pills-tabContent">
+            <!-- tab-1 start -->
+            <div class="tab-pane fade show" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                <div class="actions mb-3">
+                    <div class="row">
+                        <div class="col-12 text-right">
+                            <a href="#" class="btn" id="btnCreateLocationCode">
+                                <i class="fas fa-plus"></i> Create New
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="padding:15px">
+                    <div class="table-responsive info_table">
+                        <table class="table table-bordered" id="locationCodeTable" width="100%">
+                            <thead class="thead text-center">
+                                <tr>
+                                    <th style="display:none"></th>
+                                    <th>Code Set</th>
+                                    <th>Code</th>
+                                    <th>Description</th>
+                                    <th width="20%">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var l in Model.LocationCodes)
+                                {
+                                    <tr>
+                                        <td style="display:none">@l.Id</td>
+                                        <td>@l.LocationCodeSetDescription</td>
+                                        <td>@l.Code</td>
+                                        <td>@l.Description</td>
+                                        <td width="20%">
+                                            <a class="btn edit_button locationEdit"> Edit </a>
+                                            <a class="btn locationDelete"> Delete </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- /. tab-1 end -->
+            <!-- tab-6 start -->
+            <div class="tab-pane fade show active" id="pills-6" role="tabpanel" aria-labelledby="pills-tab-6">
+                <div class="actions mb-3">
+                    <div class="row">
+                        <div class="col-12 text-right">
+                            <a href="#" class="btn" id="btnCreateLocationCodeSet">
+                                <i class="fas fa-plus"></i> Create New
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="padding:15px">
+                    <div class="table-responsive info_table">
+                        <table class="table table-bordered" id="tableLocationCodeSet" width="100%">
+                            <thead class="thead text-center">
+                                <tr>
+                                    <th style="display:none"></th>
+                                    <th>Description</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var i in Model.LocationCodesSets)
+                                {
+                                    <tr>
+                                        <td style="display:none">@i.Id</td>
+                                        <td>@i.Description</td>
+                                        <td class="d-flex">
+                                            <a class="btn edit_button editLocationCodeSet"> Edit </a>
+                                            <a class="btn deleteLocationCodeSet"> Delete </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- /. tab-6 end -->
+            <!-- tab-2 start -->
+            <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
+                <div class="actions mb-3">
+                    <div class="row">
+                        <div class="col-12 text-right">
+                            <a href="#" class="btn" data-toggle="modal" data-target="#addPostModal" id="CreateRPCCode">
+                                <i class="fas fa-plus"></i> Create New
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="padding:15px">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="resPartnerCodeTable" width="100%">
+                            <thead class="thead">
+                                <tr>
+                                    <th style="display:none"> </th>
+                                    <th>Code </th>
+                                    <th>RPC Cage</th>
+                                    <th>Orginator Cage</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Model.ResponsiblePartnerCodes)
+                                {
+                                    <tr style="background:#fff">
+                                        <td style="display:none">@r.Id</td>
+                                        <td>@r.Code</td>
+                                        <td>@r.Rpccage</td>
+                                        <td>@r.OrginatorCage</td>
+                                        <td>
+                                            <a class="btn edit_button editRPC"> Edit </a>
+                                            <a class="btn deleteRPC"> Delete </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- /. tab-2 end -->
+            <!-- tab-3 start -->
+            <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
+                <div class="actions mb-3">
+                    <div class="row">
+                        <div class="col-12 text-right">
+                            <a href="#" class="btn" id="CreateDataModuleType">
+                                <i class="fas fa-plus"></i> Create New
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="padding:15px;">
+                    <div class="table-responsive table-striped">
+                        <table class="table table-bordered" width="100%" id="dataModuleTypeTable">
+                            <thead class="thead">
+                                <tr>
+                                    <th style="display:none"> </th>
+                                    <th>Name </th>
+                                    <th>File Name</th>
+                                    <th>Created By</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var d in Model.DataModuleTypes)
+                                {
+                                    <tr style="background:#fff">
+                                        <td style="display:none">@d.Id</td>
+                                        <td>@d.Name</td>
+                                        <td>@d.FileName</td>
+                                        <td>@d.CreatedBy</td>
+                                        <td>
+                                            <a class="btn edit_button editDataTypeModule"> Edit </a>
+                                            <a class="btn deleteDataTypeModule"> Delete </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- /. tab-3 end -->
+            <!-- tab-4 start -->
+            <div class="tab-pane fade" id="pills-4" role="tabpanel" aria-labelledby="pills-tab-4">
+                <div class="actions mb-3">
+                    <div class="row">
+                        <div class="col-12 text-right">
+                            <a href="#" class="btn" id="btnCreateSNS">
+                                <i class="fas fa-plus"></i> Create New
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="padding:15px;">
+                    <div class="table-responsive table-striped">
+                        <ul id="tree"></ul>
+
+                        @*<table class="table table-bordered" width="100%" id="snsTable">
+                        <thead class="thead">
+                        <tr>
+                        <th style="display:none"> </th>
+                        <th>Parent</th>
+                        <th>Code</th>
+                        <th>Description</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var s in Model.StandardNumberingSystems)
+                        {
+                        <tr style="background:#fff;">
+                        <td style="display:none">@s.Id</td>
+                        <td> @s.ParentCode</td>
+                        <td> @s.Code</td>
+                        <td>@s.Description</td>
+                        </tr>
+                        }
+                        </tbody>
+                        </table>*@
+                    </div>
+                </div>
+            </div>
+            <!-- /. tab-4 end -->
+            <!-- tab-5 start -->
+            <div class="tab-pane fade" id="pills-5" role="tabpanel" aria-labelledby="pills-tab-5">
+                <div class="actions mb-3">
+                    <div class="row">
+                        <div class="col-12 text-right">
+                            <a href="#" class="btn" id="btnCreateProject">
+                                <i class="fas fa-plus"></i> Create New
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="padding:15px;">
+                    <div class="table-responsive table-striped tab_project-table">
+                        <table class="table table-bordered" width="100%" id="tableProject">
+                            <thead class="thead">
+                                <tr>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th style="display:none"></th>
+                                    <th>Name</th>
+                                    <th>Project Code</th>
+                                    <th>Title</th>
+                                    <th>Information Code - Variant</th>
+                                    <th>ICN Format</th>
+                                    <th width="25%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in Model.Projects)
+                                {
+                                    <tr style="background:#fff;">
+                                        <td style="display:none">@p.Id</td>
+                                        <td style="display:none">@p.IssueNoId</td>
+                                        <td style="display:none">@p.IcnformatId</td>
+                                        <td style="display:none">@p.SNSSetId</td>
+                                        <td style="display:none">@p.InformationCodeId</td>
+                                        <td style="display:none">@p.SDC</td>
+                                        <td style="display:none">@p.ModelIdentification</td>
+                                        <td style="display:none">@p.LocationCodeId</td>
+                                        <td style="display:none">@p.RPCId</td>
+                                        <td>@p.Name</td>
+                                        <td>@p.ProjectCode</td>
+                                        <td>@p.Title</td>
+                                        <td>@p.InformationCodeProp - @p.Variant</td>
+                                        <td>@p.ICNFormatDescription</td>
+                                        <td width="25%">
+                                            <a href="#" class="btn edit_button edit_project">Edit</a>
+                                            <a href="#" class="btn-sm btn-default project_sns_button">SNS</a>
+                                            <a href="#" class="btn-sm btn-primary">DMC</a>
+                                        </td>
+                                    </tr>
+
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- /. tab-5 end -->
+        </div>
+    </div>
+    <!-- /. tab-content -->
+</div>
+
+@*  Location Code Set*@
+<div class="modal fade" style=" -moz-border-radius:10px;" id="locatonCodeSetmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelTitle">Create Location Code Set</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <label id="errorlOCSetMsg" style="color:red"></label>
+                            <div class="col-md-12">
+                                <input class="form-control" type="hidden" id="hdnlocSetId" />
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Description</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtLocSetDescription" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="SaveLocationCodeSet" class="btn btn-primary" value="Save">Save</button>
+                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*  Location Code*@
+<div class="modal fade" style=" -moz-border-radius:10px;" id="locatonCodemdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelTitle">Create Location Code</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <label id="errorlOCMsg" style="color:red"></label>
+                            <div class="col-md-12">
+                                <input class="form-control" type="hidden" id="hdnlocId" />
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Code Set</label>
+                                    @Html.DropDownList("LocationCodeSetDropDown", new SelectList(Model.LocationCodesSets, "Id","Description"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Code</label>
+                                    <input class="form-control 1charonly" maxlength="1" id="txtLocCode"> </input>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input class="form-control" type="hidden" id="hdnlocId" />
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Description</label>
+                                    <input class="form-control" id="txtLocDescription"> </input>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button id="SaveLocationCode" class="btn btn-primary" value="Save">Save</button>
+                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* SNS *@
+<div class="modal fade" style=" -moz-border-radius:10px;" id="snsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelSnsTitle">Create Standard Number System</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <label id="errorSnsMsg" style="color:red"></label>
+                            <div class="col-md-12">
+                                <input class="form-control" type="hidden" id="hdnSnsId" />
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Code</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtSnsCode" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Description</label>
+                                    <textarea class="form-control" style="width:325px;height:75px;" id="txtSnsDescription"> </textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Parent</label>
+                                    @Html.DropDownList("SnsParentDropDown", new SelectList(Model.StandardNumberingSystems, "Id","Code"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="saveSns" class="btn btn-primary" value="Save">Save</button>
+                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* RPC*@
+<div class="modal fade" style=" -moz-border-radius:10px;" id="rpcModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelDeprtTitle">Create RPC</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <label id="errordesMsg" style="color:red"></label>
+                            <div class="col-md-12">
+                                <input class="form-control" type="hidden" id="hdnRPCId" />
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Code</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtRPCCode" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">RPC Cage</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtRpcCage" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Orginator Cage</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtOrginatorCage" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button id="btnRPCSave" class="btn btn-primary" value="Save">Save</button>
+                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@* Project *@
+<div class="modal fade" style=" -moz-border-radius:10px;" id="projectModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" style="margin-top:100px; -moz-border-radius::10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelProjectTitle">Create Project</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <label id="errorprojMsg" style="color:red"></label>
+                            <div class="col-md-12">
+                                <input class="form-control" type="hidden" id="hdnProjectId" />
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Project Name</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtProjectName" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Project Description</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtProjectDescription" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Issue Type</label><span style="color: red;">*</span>
+                                    @Html.DropDownList("IssueTypeDropDown", new SelectList(Model.Issues, "Id","Name"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">ICN Format</label><span style="color: red;">*</span>
+                                    @Html.DropDownList("ICNFormatDropDown", new SelectList(Model.Icnformats, "Id","Description"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">SNS Set</label>
+                                    @Html.DropDownList("SNSSetDropDown", new SelectList(Model.StandardNumberingSystems.Where(s => s.ParentId == 0), "Id","Description"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Information Code Set</label>
+                                    @Html.DropDownList("InformationCodeDropDown", new SelectList(Model.InformationCodeSets, "Id","Description"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">System Difference Code(SDC)</label>
+                                    <input class="form-control" type="text" id="txtSystemDifferenceCode" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Model Identification</label>
+                                    <input class="form-control" type="text" id="txtModelIdentification" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Location Code Set</label>
+                                    @Html.DropDownList("LocationCodeDropDown", new SelectList(Model.LocationCodesSets, "Id","Description"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Responsible Partner Company (RPC) Code</label>
+                                    @Html.DropDownList("RpcCodeDropDown", new SelectList(Model.ResponsiblePartnerCodes, "Id","Code"), "Please Select", new { @class="form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">RPC CAGE</label>
+                                    <input class="form-control" type="text" id="txtProjectRpcCage" disabled />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Originator CAGE</label>
+                                    <input class="form-control" type="text" id="txtOriginatorCage" disabled />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button id="btnProjectSave" class="btn btn-primary" value="Save">Save</button>
+                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Data Module Type*@
+<div class="modal fade" style=" -moz-border-radius:10px;" id="DataModuleTypeModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius:10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelicnTitle">Create RPC</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <label id="errorDMTMsg" style="color:red"></label>
+                            <div class="col-md-12">
+                                <input class="form-control" type="hidden" id="hdnModuleId" />
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Name</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtDataTypeModule" />
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">File Name</label><span style="color: red;">*</span>
+                                    <input class="form-control" type="text" id="txtDataTypeFileName" />
+                                </div>
+                            </div>
+
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button id="btnDMTypeSave" class="btn btn-primary" value="Save">Save</button>
+                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" style=" -moz-border-radius:10px;" id="projectSnsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 700px;margin-top:100px; -moz-border-radius:10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelprojectSns">Project Standard Numbering System</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="card">
+                <div class="row">
+                    <div class="table-responsive table-striped">
+                        <ul id="projectSnsTree"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        const sortable = new TreeSortable();
+
+        var data = [];
+        @foreach (var d in Model.StandardNumberingSystems)
+        {
+            @:var obj = { "id": @d.Id, "parent_id": @d.parent_id, "title": "@d.title", "level": @d.level };
+            @:data.push(obj);
+        }
+
+        const $tree = $("#tree");
+        const $content = data.map(sortable.createBranch);
+
+        $tree.html($content);
+        sortable.run();
+
+        const delay = () => {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, 1000);
+            });
+        };
+
+        sortable.onSortCompleted(async (event, ui) => {
+            await delay();
+            console.log(ui.item);
+        });
+
+        $(document).on("click", ".add-child", function(e) {
+            var selectedParent = $(this).getSelectedBranch();
+            const parent = selectedParent.innerText.split(" : ");
+
+            $("#SnsParentDropDown option:contains(" + parent[0] + ")").attr('selected', 'selected');
+
+            $('#hdnSnsId').val('0');
+            $('#txtSnsCode').val('');
+            $('#txtSnsDescription').val('');
+            $("#snsModel").modal('show');
+        });
+
+        $(document).on("click", ".edit-item", function(e) {
+            var selectedParent = $(this).getSelectedBranch();
+            var parent = selectedParent.innerText.split(" : ");
+            $('#txtSnsCode').val(parent[0]);
+            $('#txtSnsDescription').val(parent[1]);
+            $('#hdnSnsId').val(selectedParent.attributes['data-id'].value);
+            $("#SnsParentDropDown").val(selectedParent.attributes['data-parent'].value);
+
+            $("#saveSns").html("Update");
+            $(".modelSnsTitle").html("Edit Standard Number Systemt");
+            $("#snsModel").modal('show');
+        });
+
+
+        $(document).on("click", ".remove-branch", function(e) {
+            e.preventDefault();
+
+            const confirm = window.confirm("Are you sure you want to delete this branch?");
+            if (!confirm) {
+                return;
+            }
+
+            var selectedParent = $(this).getSelectedBranch();
+
+            var id = selectedParent.attributes['data-id'].value;
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/DeleteSns",
+                data: { id: id },
+                dataType: "json",
+                success: function(data) {
+                    location.reload();
+                }
+            });
+        });
+
+        var responsiblePartnerCodes = [];
+        $(document).ready(function() {
+
+            $('a[data-toggle="pill"]').on('show.bs.tab', function(e) {
+                localStorage.setItem('activeTab', $(e.target).attr('href'));
+            });
+
+            var activeTab = localStorage.getItem('activeTab');
+            if (activeTab) {
+                $('#pills-tab a[href="' + activeTab + '"]').tab('show');
+            }
+
+        @foreach (var d in Model.ResponsiblePartnerCodes)
+        {
+            @:var obj = { "Id": '@d.Id', "Code": '@d.Code', "Rpccage": '@d.Rpccage', "OrginatorCage": '@d.OrginatorCage' };
+            @:responsiblePartnerCodes.push(obj);
+        }
+
+                $('.1charonly').keypress(function(e) {
+                    var charCode = (e.which) ? e.which : event.keyCode
+                    if (String.fromCharCode(charCode).match(/[^A-Z, a-z]/g)) {
+                        return false;
+                    }
+                });
+        });
+
+        $('.table').DataTable();
+        $("#adminlink").removeClass("active");
+        $("#configlink").removeClass("active");
+        $("#mainlink").addClass("active");
+        $("#icnlink").removeClass("active");
+
+        //Close Model
+        $(".btn-close").click(function() {
+            $("#locatonCodemdl").modal('hide');
+            $("#locatonCodeSetmdl").modal('hide');
+            $("#snsModel").modal('hide');
+            $("#rpcModel").modal('hide');
+            $("#DataModuleTypeModel").modal('hide');
+            $("#rpcModel").modal('hide');
+            $("#projectModel").modal('hide');
+            $("#projectSnsModel").modal('hide');
+        });
+
+        //Close Model
+        $(".modelCancel").click(function() {
+            $("#locatonCodemdl").modal('hide');
+            $("#locatonCodeSetmdl").modal('hide');
+            $("#snsModel").modal('hide');
+            $("#rpcModel").modal('hide');
+            $("#DataModuleTypeModel").modal('hide');
+            $("#rpcModel").modal('hide');
+            $("#projectModel").modal('hide');
+            $("#projectSnsModel").modal('hide');
+        });
+
+        var projectTable = $('#tableProject').DataTable();
+        $("#btnCreateProject").click(function() {
+            $("#hdnProjectId").val('');
+            $("#txtProjectName").val('');
+            $("#txtProjectDescription").val('');
+
+            $("#IssueTypeDropDown").val('');
+            $("#ICNFormatDropDown").val('');
+            $("#SNSSetDropDown").val('');
+            $("#InformationCodeDropDown").val('');
+
+            $("#txtSystemDifferenceCode").val('');
+            $("#txtModelIdentification").val('');
+
+            $("#LocationCodeDropDown").val('');
+            $("#RpcCodeDropDown").val('');
+            $("#RpcCodeDropDown").change();
+
+            $("#projectModel").modal('show');
+
+            $("#btnProjectSave").html("Save");
+            $("#projectModel").modal('show');
+        });
+
+        $("#RpcCodeDropDown").change(function() {
+            $("#txtProjectRpcCage").val("");
+            $("#txtOriginatorCage").val("");
+
+            var selectedItem = $('option:selected', this).val();
+            responsiblePartnerCodes.forEach(function(e) {
+                if (selectedItem == e.Id) {
+                    $("#txtProjectRpcCage").val(e.Rpccage);
+                    $("#txtOriginatorCage").val(e.OrginatorCage);
+                }
+            });
+        });
+
+        $("#btnProjectSave").click(function() {
+
+            var project = {}
+            project.Id = $('#hdnProjectId').val();
+            //project.EndItem = $('#').val();
+            project.Name = $('#txtProjectName').val();
+            project.Title = $('#txtProjectDescription').val();
+            project.IssueNoId = $('#IssueTypeDropDown').val();
+            project.IcnformatId = $('#ICNFormatDropDown').val();
+            project.SnssetId = $('#SNSSetDropDown').val();
+            project.InformationCodeId = $('#InformationCodeDropDown').val();
+            project.LocationCodeId = $('#LocationCodeDropDown').val();
+            project.ModelIdentification = $('#txtModelIdentification').val();
+            project.Sdc = $('#txtSystemDifferenceCode').val();
+            //project.SubjectLength = $('#').val();
+            //project.ProjectCode = $('#').val();
+            project.Rpcid = $('#RpcCodeDropDown').val();
+            //project.TrackPercentComplete = $('#').val();
+            //project.CreateDefaultBrex = $('#').val();
+            //project.CreatedBy = $('#').val();
+            //project.CreatedDate = $('#').val();
+            //project.ModifiedBy = $('#').val();
+            //project.ModifiedDate = $('#').val();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/CreateProject",
+                data: { project: project },
+                dataType: "json",
+                success: function(data) {
+                    if (data == 'Duplicate') {
+                        $("#errorprojMsg").html("Duplicate Record.");
+                    } else {
+                        $("#errorprojMsg").html("");
+                        $("#projectModel").modal('hide');
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        $(".project_sns_button").click(function() {
+
+            var rowobj = $(this).closest("tr");
+            var id = rowobj.find("td:eq(0)").text();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/GetProjectSns",
+                data: { projectId: id },
+                dataType: "json",
+                success: function(data) {
+                    
+                    const sortableproj = new TreeSortable();
+                    const $treeproj = $("#projectSnsTree");
+                    const $contentproj = data.map(sortableproj.createBranch);
+
+                    $treeproj.html($contentproj);
+                    sortableproj.run();
+
+                    const delay = () => {
+                        return new Promise(resolve => {
+                            setTimeout(() => {
+                                resolve();
+                            }, 1000);
+                        });
+                    };
+
+                    sortableproj.onSortCompleted(async (event, ui) => {
+                        await delay();
+                        console.log(ui.item);
+                    });
+                }
+            });
+
+            $("#projectSnsModel").modal('show');
+        });
+
+
+        $('#tableProject tbody').on('click', '.edit_project', function() {
+            var rowobj = $(this).closest("tr");
+
+            var id = rowobj.find("td:eq(0)").text();
+            var issueTypeId = rowobj.find("td:eq(1)").text();
+            var icnFormatId = rowobj.find("td:eq(2)").text();
+            var snsSetId = rowobj.find("td:eq(3)").text();
+            var informationCodeId = rowobj.find("td:eq(4)").text();
+            var sdc = rowobj.find("td:eq(5)").text();
+            var modelIdentification = rowobj.find("td:eq(6)").text();
+            var locationCodeId = rowobj.find("td:eq(7)").text();
+            var rpcId = rowobj.find("td:eq(8)").text();
+            var name = rowobj.find("td:eq(9)").text();
+            var projectCode = rowobj.find("td:eq(10)").text();
+            var title = rowobj.find("td:eq(11)").text();
+
+            $("#hdnProjectId").val(id);
+            $("#txtProjectName").val(name);
+            $("#txtProjectDescription").val(title);
+
+            $("#IssueTypeDropDown").val(issueTypeId);
+            $("#ICNFormatDropDown").val(icnFormatId);
+            $("#SNSSetDropDown").val(snsSetId);
+            $("#SNSSetDropDown").prop('disabled', true);
+            $("#InformationCodeDropDown").val(informationCodeId);
+
+            $("#txtSystemDifferenceCode").val(sdc);
+            $("#txtModelIdentification").val(modelIdentification);
+
+            $("#LocationCodeDropDown").val(locationCodeId);
+            $("#RpcCodeDropDown").val(rpcId);
+            $("#RpcCodeDropDown").change();
+
+            $("#btnProjectSave").html("Update");
+            $(".modelProjectTitle").html("Edit Project");
+            $("#projectModel").modal('show');
+        });
+
+        var snsTable = $('#snsTable').DataTable();
+        $("#btnCreateSNS").click(function() {
+            $('#hdnSnsId').val('0');
+            $('#txtSnsCode').val('');
+            $('#txtSnsDescription').val('');
+            $("#SnsParentDropDown").val('');
+            $("#snsModel").modal('show');
+        });
+
+        $("#saveSns").click(function() {
+            if ($('#txtSnsCode').val() == '') {
+                $('#txtSnsCode').css('border-color', 'red');
+                return false;
+            }
+            else {
+                $('#txtSnsCode').css('border-color', '');
+            }
+
+            var sns = {}
+            sns.Id = $('#hdnSnsId').val();
+            sns.Code = $('#txtSnsCode').val();
+            sns.Description = $('#txtSnsDescription').val();
+            sns.ParentId = $('#SnsParentDropDown').val();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/CreateSns",
+                data: { sns: sns },
+                dataType: "json",
+                success: function(data) {
+                    if (data == 'Duplicate') {
+                        $("#errorSnsMsg").html("Duplicate Record.");
+                    } else {
+                        $("#snsModel").modal('hide');
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        $("#btnCreateLocationCodeSet").click(function() {
+            $('#hdnlocSetId').val('0');
+            $('#txtLocSetDescription').val('');
+            $("#errorlOCSetMsg").html('');
+            $(".modelTitle").html("Create Location Code Set");
+            $("#SaveLocationCodeSet").html("Save");
+            $("#locatonCodeSetmdl").modal('show');
+        });
+
+        // Save Location Code Set
+        $("#SaveLocationCodeSet").click(function() {
+
+            if ($('#txtLocSetDescription').val().trim() == '') {
+
+                $('#txtLocSetDescription').css('border-color', 'red');
+                return false;
+            }
+            else {
+
+                $('#txtLocSetDescription').css('border-color', '');
+            }
+
+            var locationCodeSet = {}
+            locationCodeSet.Id = $('#hdnlocSetId').val();
+            locationCodeSet.Description = $('#txtLocSetDescription').val();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/CreateLocationCodeSet",
+                data: {
+                    locationCodeSet: locationCodeSet
+                },
+                dataType: "json",
+                success: function(data) {
+                    if (data == 'Duplicate') {
+                        $("#errorlOCSetMsg").html("Duplicate Record.");
+                    } else {
+                        $("#locatonCodeSetmdl").modal('hide');
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        //Edit Location Code Set
+        $('#tableLocationCodeSet tbody').on('click', '.editLocationCodeSet', function() {
+            var rowobj = $(this).closest("tr");
+            var id = rowobj.find("td:eq(0)").text();
+            var description = rowobj.find("td:eq(1)").text();
+            $("#txtLocSetDescription").val(description);
+            $("#hdnlocSetId").val(id);
+            $("#SaveLocationCodeSet").html("Update");
+            $(".modelTitle").html("Edit Locstion Code Set");
+            $("#locatonCodeSetmdl").modal('show');
+        });
+
+        $("#btnCreateLocationCode").click(function() {
+            $('#hdnlocId').val('0');
+            $('#txtLocCode').val('');
+            $('#txtLocDescription').val('');
+            //$("#errorlOCMsg").html('');
+            $(".modelTitle").html("Create Location Code");
+            $("#SaveLocationCode").html("Save");
+            $("#locatonCodemdl").modal('show');
+        });
+
+        //Delete Location Code Set
+        $('#tableLocationCodeSet tbody').on('click', '.deleteLocationCodeSet', function() {
+            var Id = $(this).closest("tr").find("td:eq(0)").text();
+            $.confirmModal('Are you sure to delete this record?', function(el) {
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/DeleteLocationCodeSet",
+                    data: { id: Id },
+                    dataType: "json",
+                    success: function(data) {
+                        location.reload();
+                    }
+                });
+            });
+        });
+
+        // Save Location Code
+        $("#SaveLocationCode").click(function() {
+
+            if ($('#txtLocCode').val() == '') {
+
+                $('#txtLocCode').css('border-color', 'red');
+                isValid = false;
+            }
+            else {
+                $('#txtLocCode').css('border-color', '');
+            }
+
+            if ($('#LocationCodeSetDropDown').val() == '') {
+
+                $('#LocationCodeSetDropDown').css('border-color', 'red');
+                isValid = false;
+            }
+            else {
+                $('#LocationCodeSetDropDown').css('border-color', '');
+            }
+
+            if ($('#txtLocDescription').val().trim() == '') {
+
+                $('#txtLocDescription').css('border-color', 'red');
+                return false;
+            }
+            else {
+                $('#txtLocDescription').css('border-color', '');
+            }
+
+            var locationCode = {}
+            locationCode.Id = $('#hdnlocId').val();
+            locationCode.Description = $('#txtLocDescription').val();
+            locationCode.LocationCodeSetId = $('#LocationCodeSetDropDown').val();
+            locationCode.Code = $('#txtLocCode').val();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/CreateLocationCode",
+                data: { locationCode: locationCode },
+                dataType: "json",
+                success: function(data) {
+                    if (data == 'Duplicate') {
+                        $("#errorlOCMsg").html("Duplicate Record.");
+                    } else {
+                        $("#locatonCodemdl").modal('hide');
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        //Edit Location Code
+        $('#locationCodeTable tbody').on('click', '.locationEdit', function() {
+
+            var rowobj = $(this).closest("tr");
+            var id = rowobj.find("td:eq(0)").text();
+            var locationCodeSet = rowobj.find("td:eq(1)").text();
+            var code = rowobj.find("td:eq(2)").text();
+            var description = rowobj.find("td:eq(3)").text();
+
+            $("#txtLocDescription").val(description);
+            $("#hdnlocId").val(id);
+            $("#LocationCodeSetDropDown option:contains(" + locationCodeSet + ")").attr('selected', 'selected');
+            $("#txtLocCode").val(code);
+
+            $("#SaveLocationCode").html("Update");
+            $(".modelTitle").html("Edit Locstion Code");
+            $("#locatonCodemdl").modal('show');
+        });
+
+        //Delete Location Code
+        $('#locationCodeTable tbody').on('click', '.locationDelete', function() {
+            var Id = $(this).closest("tr").find("td:eq(0)").text();
+            $.confirmModal('Are you sure to delete this record?', function(el) {
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/DeleteLocationCode",
+                    data: { id: Id },
+                    dataType: "json",
+                    success: function(data) {
+                        location.reload();
+                    }
+                });
+            });
+        });
+
+        var resPartnerCodeTable = $('#resPartnerCodeTable').DataTable();
+        $("#CreateRPCCode").click(function() {
+            $('#hdnRPCId').val('0');
+            $('#txtRPCCode').val('');
+            $('#txtRpcCage').val('');
+            $('#txtOrginatorCage').val('');
+            $("#errorRPCMsg").html('');
+            $(".modelTitle").html("Create RPC");
+            $("#btnRPCSave").html("Save");
+            $("#rpcModel").modal('show');
+        });
+
+        //Save RPC
+        $("#btnRPCSave").click(function() {
+
+            if ($('#txtRPCCode').val() == '') {
+                $('#txtRPCCode').css('border-color', 'red');
+                return false;
+            }
+            else {
+                $('#txtRPCCode').css('border-color', '');
+            }
+
+            var rpc = {}
+            rpc.Id = $('#hdnRPCId').val();
+            rpc.Code = $('#txtRPCCode').val();
+            rpc.Rpccage = $('#txtRpcCage').val();
+            rpc.OrginatorCage = $('#txtOrginatorCage').val();
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/CreateRPC",
+                data: { rpc: rpc },
+                dataType: "json",
+                success: function(data) {
+                    if (data == 'Duplicate') {
+                        $("#errorRPCMsg").html("Duplicate Record.");
+                    } else {
+                        $("#rpcModel").modal('hide');
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        //Edit RPC
+        $('#resPartnerCodeTable tbody').on('click', '.editRPC', function() {
+            var rowobj = $(this).closest("tr");
+            var id = rowobj.find("td:eq(0)").text();
+            var code = rowobj.find("td:eq(1)").text();
+            var RpcCage = rowobj.find("td:eq(2)").text();
+            var OrginatorCage = rowobj.find("td:eq(3)").text();
+            $("#txtRPCCode").val(code);
+            $("#txtRpcCage").val(RpcCage);
+            $("#txtOrginatorCage").val(OrginatorCage);
+            $("#hdnRPCId").val(id);
+            $("#btnRPCSave").html("Update");
+            $(".modelTitle").html("Edit RPC");
+            $("#rpcModel").modal('show');
+        });
+
+        //Delete RPC
+        $('#resPartnerCodeTable tbody').on('click', '.deleteRPC', function() {
+            var Id = $(this).closest("tr").find("td:eq(0)").text();
+            $.confirmModal('Are you sure to delete this record?', function(el) {
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/DeleteRPC",
+                    data: { id: Id },
+                    dataType: "json",
+                    success: function(data) {
+                        location.reload();
+                    }
+                });
+            });
+        });
+
+        //Data Module Type
+        var dataModuleTypeTable = $('#dataModuleTypeTable').DataTable();
+        $("#CreateDataModuleType").click(function() {
+            $('#hdnModuleId').val('0');
+            $('#txtDataTypeModule').val('');
+            $('#txtDataTypeFileName').val('');
+            $("#errorDMTMsg").html('');
+            $(".modelTitle").html("Create Data Module Type");
+            $("#btnDMTypeSave").html("Save");
+            $("#DataModuleTypeModel").modal('show');
+        });
+
+        // Save Data Module Type
+        $("#btnDMTypeSave").click(function() {
+            if ($('#txtDataTypeModule').val() == '') {
+                $('#txtDataTypeModule').css('border-color', 'red');
+                return false;
+            }
+            else {
+                $('#txtDataTypeModule').css('border-color', '');
+            }
+
+            var dataModuleType = {}
+            dataModuleType.Id = $('#hdnModuleId').val();
+            dataModuleType.Name = $('#txtDataTypeModule').val();
+            dataModuleType.FileName = $('#txtDataTypeFileName').val();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/CreateDataTypeModule",
+                data: { dataModuleType: dataModuleType },
+                dataType: "json",
+                success: function(data) {
+                    if (data == 'Duplicate') {
+                        $("#errorDMTMsg").html("Duplicate Record.");
+                    } else {
+                        $("#DataModuleTypeModel").modal('hide');
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        //edit Data Module Type
+        $('#dataModuleTypeTable tbody').on('click', '.editDataTypeModule', function() {
+            var rowobj = $(this).closest("tr");
+            var id = rowobj.find("td:eq(0)").text();
+            var name = rowobj.find("td:eq(1)").text();
+            var filename = rowobj.find("td:eq(2)").text();
+            $("#txtDataTypeModule").val(name);
+            $("#txtDataTypeFileName").val(filename);
+            $("#hdnModuleId").val(id);
+            $("#btnDMTypeSave").html("Update");
+            $(".modelTitle").html("Edit Data Module Type");
+            $("#DataModuleTypeModel").modal('show');
+        });
+
+        //Delete Data Module Type
+        $('#dataModuleTypeTable tbody').on('click', '.deleteDataTypeModule', function() {
+            var Id = $(this).closest("tr").find("td:eq(0)").text();
+            $.confirmModal('Are you sure to delete this record?', function(el) {
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/DeleteDataTypeModule",
+                    data: { id: Id },
+                    dataType: "json",
+                    success: function(data) {
+                        location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+}
