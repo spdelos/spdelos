@@ -513,6 +513,7 @@
         </div>
     </div>
 </div>
+
 @* Project *@
 <div class="modal fade" style=" -moz-border-radius:10px;" id="projectModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -675,7 +676,7 @@
 
     <script type="text/javascript">
 
-        const sortable = new TreeSortable();
+        var sortable = new TreeSortable("#tree");
 
         var data = [];
         @foreach (var d in Model.StandardNumberingSystems)
@@ -684,10 +685,10 @@
             @:data.push(obj);
         }
 
-        const $tree = $("#tree");
-        const $content = data.map(sortable.createBranch);
+        var tree = $("#tree");
+        var content = data.map(sortable.createBranch);
 
-        $tree.html($content);
+        tree.html(content);
         sortable.run();
 
         const delay = () => {
@@ -707,7 +708,7 @@
             var selectedParent = $(this).getSelectedBranch();
             const parent = selectedParent.innerText.split(" : ");
 
-            $("#SnsParentDropDown option:contains(" + parent[0] + ")").attr('selected', 'selected');
+            $("#SnsParentDropDown").val(selectedParent.dataset.id);
 
             $('#hdnSnsId').val('0');
             $('#txtSnsCode').val('');
@@ -898,20 +899,12 @@
                 dataType: "json",
                 success: function(data) {
                     
-                    const sortableproj = new TreeSortable();
+                    const sortableproj = new TreeSortable("#projectSnsTree");
                     const $treeproj = $("#projectSnsTree");
                     const $contentproj = data.map(sortableproj.createBranch);
 
                     $treeproj.html($contentproj);
                     sortableproj.run();
-
-                    const delay = () => {
-                        return new Promise(resolve => {
-                            setTimeout(() => {
-                                resolve();
-                            }, 1000);
-                        });
-                    };
 
                     sortableproj.onSortCompleted(async (event, ui) => {
                         await delay();

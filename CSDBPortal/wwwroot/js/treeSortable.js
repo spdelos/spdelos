@@ -27,11 +27,11 @@ const getDistance = (elementA, elementB) => {
     return { distanceX, distanceY };
 };
 
-function TreeSortable() {
+function TreeSortable(name) {
     var treeSortable = {
         options: {
             depth: 30,
-            treeSelector: "#tree",
+            treeSelector: name,
             branchSelector: ".tree-branch",
             branchPathSelector: ".branch-path",
             dragHandlerSelector: ".branch-drag-handler",
