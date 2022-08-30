@@ -93,7 +93,7 @@ function TreeSortable(name) {
             return `
 		<li class="${cleanSelector(
                 branchSelector
-            )} ${levelPrefix}-${level}" data-${idAttr}="${id}" data-${parentAttr}="${parent_id}" data-${levelAttr}="${level}">
+                )} ${levelPrefix}-${level}" data-${idAttr}="${id}" data-${parentAttr}="${parent_id}" data-${levelAttr}="${level}" data-treename="${treeSortable.options.treeSelector}">
             <div class="contents">
                 <span class="${cleanSelector(branchPathSelector)}"></span>
                 <div class="branch-wrapper">

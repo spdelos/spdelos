@@ -277,6 +277,24 @@ namespace CSDBPortal.Business
             return result;
         }
 
+        public int CheckProjectSns(int projectId, ProjectStandardNumberingSystem projectSns)
+        {
+            int result = 0;
+            try
+            {
+                using (ApplicationDbContext applicationDbContext = new())
+                {
+                    result = applicationDbContext.ProjectStandardNumberingSystems.Where(a => a.Code == projectSns.Code && a.ProjectId == projectId).Count();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return result;
+        }
+
         public int CheckRPC(ResponsiblePartnerCode responsiblePartnerCode)
         {
             int result = 0;
@@ -376,7 +394,7 @@ namespace CSDBPortal.Business
                     {
                         snSystems.Add(new CustomStandardNumberingSystem()
                         {
-                            Id = item.Id,
+                            Id = item.Snsid.Value,
                             Code = item.Code,
                             Description = item.Description,
                             CreatedBy = item.CreatedBy,

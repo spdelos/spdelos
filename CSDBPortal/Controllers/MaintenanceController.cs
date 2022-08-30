@@ -193,17 +193,19 @@ namespace CSDBPortal.Controllers
 
         public JsonResult CreateSns(StandardNumberingSystem sns)
         {
-            // need to assign login user email here
-            sns.CreatedBy = User.Identity.Name;
-            sns.CreatedOn = DateTime.UtcNow;
-            
             string mode = string.Empty;
             if (sns.Id > 0)
             {
+                sns.UpdatedBy = User.Identity.Name;
+                sns.UpdatedOn = DateTime.UtcNow;
+
                 mode = "Edit";
             }
             else
             {
+                sns.CreatedBy = User.Identity.Name;
+                sns.CreatedOn = DateTime.UtcNow;
+
                 var recordCount = maintenancesManager.CheckSns(sns);
                 if (recordCount > 0)
                 {
@@ -212,6 +214,71 @@ namespace CSDBPortal.Controllers
                 mode = "Add";
             }
             return Json(_baseManager.CreateOrUpdateRecord(sns, mode));
+        }
+
+        public JsonResult CreateProjectSns(int projectId, StandardNumberingSystem sns)
+        {
+            // need to assign login user email here
+            sns.CreatedBy = User.Identity.Name;
+            sns.CreatedOn = DateTime.UtcNow;
+
+            string mode = string.Empty;
+            if (sns.Id > 0)
+            {
+                int projectSnsId = 0;
+
+                using (ApplicationDbContext applicationContext = new())
+                {
+                    projectSnsId = applicationContext.ProjectStandardNumberingSystems.Where(s => s.Code == sns.Code && s.ProjectId == projectId).Select(s => s.Id).SingleOrDefault();
+                }
+
+                ProjectStandardNumberingSystem projectSns = new ProjectStandardNumberingSystem()
+                {
+                    Id = projectSnsId,
+                    Code = sns.Code,
+                    Description = sns.Description,
+                    ParentId = sns.ParentId,
+                    ProjectId = projectId,
+                    Snsid = sns.Id,
+                    CreatedBy = sns.CreatedBy,
+                    CreatedOn = sns.CreatedOn,
+                };
+
+                mode = "Edit";
+
+                return Json(_baseManager.CreateOrUpdateRecord(projectSns, mode));
+            }
+            else
+            {
+                int maxSnsId = 0;
+
+                using (ApplicationDbContext applicationContext = new())
+                {
+                    maxSnsId = applicationContext.ProjectStandardNumberingSystems.Max(s => s.Snsid).Value;
+                }
+
+                ProjectStandardNumberingSystem projectSns = new ProjectStandardNumberingSystem()
+                {
+                    Code = sns.Code,
+                    Description = sns.Description,
+                    ParentId = sns.ParentId,
+                    ProjectId = projectId,
+                    Snsid = maxSnsId + 1,
+                    CreatedBy = sns.CreatedBy,
+                    CreatedOn = sns.CreatedOn,
+                    UpdatedBy = User.Identity.Name,
+                    UpdatedOn = DateTime.UtcNow,
+                };
+
+                var recordCount = maintenancesManager.CheckProjectSns(projectId, projectSns);
+                if (recordCount > 0)
+                {
+                    return Json("Duplicate");
+                }
+                mode = "Add";
+
+                return Json(_baseManager.CreateOrUpdateRecord(projectSns, mode));
+            }
         }
 
         public JsonResult DeleteSns(int id)

@@ -655,7 +655,7 @@
 </div>
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="projectSnsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog model-projectsnstree" role="document">
         <div class="modal-content" style="width: 700px;margin-top:100px; -moz-border-radius:10px;">
             <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
                 <h4 class="modal-title modelprojectSns">Project Standard Numbering System</h4>
@@ -664,7 +664,8 @@
             <div class="card">
                 <div class="row">
                     <div class="table-responsive table-striped">
-                        <ul id="projectSnsTree"></ul>
+                        <input class="form-control" type="hidden" id="hdnProjectSnsProjectId" />
+                        <ul id="projectSnsTree" class="fa-ul"></ul>
                     </div>
                 </div>
             </div>
@@ -676,6 +677,15 @@
 
     <script type="text/javascript">
 
+        var projectSTandardNumberingSystemDropDownData = [];
+        var standardNumberingSystemDropDownData = [];
+        @foreach (var s in Model.StandardNumberingSystems)
+        {
+            @:var obj = { "id": @s.Id, "code": '@s.Code' };
+            @:standardNumberingSystemDropDownData.push(obj);
+        }
+
+        var projectSns = false;
         var sortable = new TreeSortable("#tree");
 
         var data = [];
@@ -708,11 +718,34 @@
             var selectedParent = $(this).getSelectedBranch();
             const parent = selectedParent.innerText.split(" : ");
 
-            $("#SnsParentDropDown").val(selectedParent.dataset.id);
-
+            
             $('#hdnSnsId').val('0');
             $('#txtSnsCode').val('');
             $('#txtSnsDescription').val('');
+            $("#projectSnsModel").modal('hide');
+
+            if (selectedParent.attributes['data-treename'].value == "#projectSnsTree") {
+                projectSns = true;
+
+                var $dropdown = $("#SnsParentDropDown");
+                $dropdown.empty();
+                $.each(projectSTandardNumberingSystemDropDownData, function() {
+                    $dropdown.append($("<option />").val(this.id).text(this.code));
+                });
+            }
+            else
+            {
+                projectSns = false;
+
+                var $dropdown = $("#SnsParentDropDown");
+                $dropdown.empty();
+                $.each(standardNumberingSystemDropDownData, function() {
+                    $dropdown.append($("<option />").val(this.id).text(this.code));
+
+                });
+            }
+
+            $("#SnsParentDropDown").val(selectedParent.dataset.id);
             $("#snsModel").modal('show');
         });
 
@@ -722,10 +755,32 @@
             $('#txtSnsCode').val(parent[0]);
             $('#txtSnsDescription').val(parent[1]);
             $('#hdnSnsId').val(selectedParent.attributes['data-id'].value);
-            $("#SnsParentDropDown").val(selectedParent.attributes['data-parent'].value);
+            
 
             $("#saveSns").html("Update");
             $(".modelSnsTitle").html("Edit Standard Number Systemt");
+            $("#projectSnsModel").modal('hide');
+
+            if (selectedParent.attributes['data-treename'].value == "#projectSnsTree") {
+                projectSns = true;
+
+                var $dropdown = $("#SnsParentDropDown");
+                $.each(projectSTandardNumberingSystemDropDownData, function() {
+                    $dropdown.append($("<option />").val(this.id).text(this.code));
+                });
+            }
+            else
+            {
+                projectSns = false;
+
+                var $dropdown = $("#SnsParentDropDown");
+                $.each(standardNumberingSystemDropDownData, function() {
+                    $dropdown.append($("<option />").val(this.id).text(this.code));
+
+                });
+            }
+
+            $("#SnsParentDropDown").val(selectedParent.attributes['data-parent'].value);
             $("#snsModel").modal('show');
         });
 
@@ -891,6 +946,7 @@
 
             var rowobj = $(this).closest("tr");
             var id = rowobj.find("td:eq(0)").text();
+            $("#hdnProjectSnsProjectId").val(id);
 
             $.ajax({
                 type: "POST",
@@ -909,6 +965,11 @@
                     sortableproj.onSortCompleted(async (event, ui) => {
                         await delay();
                         console.log(ui.item);
+                    });
+
+                    $.each(data, function() {
+                        var obj = { "id": this.snsId, "code": this.code };
+                        projectSTandardNumberingSystemDropDownData.push(obj);
                     });
                 }
             });
@@ -979,20 +1040,39 @@
             sns.Description = $('#txtSnsDescription').val();
             sns.ParentId = $('#SnsParentDropDown').val();
 
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/CreateSns",
-                data: { sns: sns },
-                dataType: "json",
-                success: function(data) {
-                    if (data == 'Duplicate') {
-                        $("#errorSnsMsg").html("Duplicate Record.");
-                    } else {
-                        $("#snsModel").modal('hide');
-                        location.reload();
+            if (projectSns == true) {
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/CreateProjectSns",
+                    data: { projectId: $("#hdnProjectSnsProjectId").val(), sns: sns },
+                    dataType: "json",
+                    success: function(data) {
+                        if (data == 'Duplicate') {
+                            $("#errorSnsMsg").html("Duplicate Record.");
+                        } else {
+                            $("#snsModel").modal('hide');
+                            location.reload();
+                        }
                     }
-                }
-            });
+                });
+            }
+            else{
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/CreateSns",
+                    data: { sns: sns },
+                    dataType: "json",
+                    success: function(data) {
+                        if (data == 'Duplicate') {
+                            $("#errorSnsMsg").html("Duplicate Record.");
+                        } else {
+                            $("#snsModel").modal('hide');
+                            location.reload();
+                        }
+                    }
+                });
+            }
         });
 
         $("#btnCreateLocationCodeSet").click(function() {
