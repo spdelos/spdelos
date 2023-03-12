@@ -41,6 +41,8 @@ namespace CSDBPortal.Data
         public virtual DbSet<UserDetail> UserDetails { get; set; } = null!;
         public virtual DbSet<XmlValidation> XmlValidations { get; set; } = null!;
 
+        public virtual DbSet<DataModuleCode> DataModuleCodes { get; set; } = null;
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
