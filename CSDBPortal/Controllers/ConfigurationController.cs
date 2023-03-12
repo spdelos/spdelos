@@ -34,39 +34,59 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public IActionResult CreateIssueNo()
         {
-            using (ApplicationDbContext applicationDbContext = new ApplicationDbContext())
+            try
             {
-                IssueNo issueNo = new IssueNo();
-                issueNo.Name = Request.Form["Name"];
-                issueNo.CreatedBy = User.Identity.Name;
-                issueNo.CreateOn = DateTime.UtcNow;
-
-                issueNo.IssueTypeFiles = new List<IssueTypeFile>();
-                foreach (IFormFile file in Request.Form.Files)
+                using (ApplicationDbContext applicationDbContext = new ApplicationDbContext())
                 {
-                    IssueTypeFile issueTypeFile = new IssueTypeFile();
-                    issueTypeFile.Name = file.FileName;
-                    issueTypeFile.CreatedBy = User.Identity.Name;
-                    issueTypeFile.CreateOn = DateTime.UtcNow;
-
-                    var fileContent = new StringBuilder();
-                    using (var reader = new StreamReader(file.OpenReadStream()))
+                    int issueNoId = Convert.ToInt32(Request.Form["hdnId"]);
+                    IssueNo issueNo;
+                    if (issueNoId <= 0)
                     {
-                        //issueTypeFile.Data = new SqlXml(XmlReader.Create(reader));
+                        issueNo = new IssueNo();
+                        issueNo.IssueTypeFiles = new List<IssueTypeFile>();
+                        issueNo.CreatedBy = User.Identity.Name;
+                        issueNo.CreateOn = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        issueNo = applicationDbContext.IssueNos.Include(i => i.IssueTypeFiles).Where(i => i.Id == issueNoId).FirstOrDefault();
+                    }
+                    
+                    issueNo.Name = Request.Form["txtIssueNo"];
+                    
+                    foreach (IFormFile file in Request.Form.Files)
+                    {
+                        IssueTypeFile issueTypeFile = new IssueTypeFile();
+                        issueTypeFile.Name = file.FileName;
+                        issueTypeFile.CreatedBy = User.Identity.Name;
+                        issueTypeFile.CreateOn = DateTime.UtcNow;
 
-                        while (reader.Peek() >= 0)
-                            fileContent.AppendLine(reader.ReadLine());
+                        var fileContent = new StringBuilder();
+                        using (var reader = new StreamReader(file.OpenReadStream()))
+                        {
+                            //issueTypeFile.Data = new SqlXml(XmlReader.Create(reader));
+
+                            while (reader.Peek() >= 0)
+                                fileContent.AppendLine(reader.ReadLine());
+                        }
+
+                        issueTypeFile.Data = fileContent.ToString();
+                        issueNo.IssueTypeFiles.Add(issueTypeFile);
                     }
 
-                    issueTypeFile.Data = fileContent.ToString();
-                    issueNo.IssueTypeFiles.Add(issueTypeFile);
+                    if (issueNoId <= 0)
+                    {
+                        applicationDbContext.IssueNos.Add(issueNo);
+                    }
+
+                    applicationDbContext.SaveChanges();
+
+                    return RedirectToAction("Index", "Configuration");
                 }
-
-                applicationDbContext.IssueNos.Add(issueNo);
-
-                applicationDbContext.SaveChanges();
-
-                return RedirectToAction("Index", "Configuration");
+            }
+            catch (Exception e)
+            {
+                return View("failed");
             }
         }
                

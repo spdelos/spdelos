@@ -7,16 +7,9 @@ namespace CSDBPortal.Controllers
     public class BaseController : Controller
     {
         IServiceProvider serviceProvider;
+        private readonly IWebHostEnvironment appEnvironment;
         public BaseController()
         {
-            //if (User != null && User.Identity.IsAuthenticated)
-            //{
-            //    Response.Redirect("~/Administration");
-            //}
-            //else
-            //{
-            //    Response.Redirect("~/Identity/Account/Login");
-            //}
         }
     }
 }

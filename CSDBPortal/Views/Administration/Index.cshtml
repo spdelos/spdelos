@@ -53,116 +53,123 @@
     <!-- /.col-6 -->
     <!-- tab-content -->
     <div class="col-12">
+        
         <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
-            <li class="nav-item item-one" role="presentation">
-                <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
-                    <img src="./dist/img/Icons/Administration/Windows.png" alt="windows icon">
-                    <span class="ml-2">Users </span>
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-2">
-                    <img src="./dist/img/Icons/Administration/Add-roles.png" alt="Add-roles icon">
+            @if (User.HasClaim("Permission", Features.UserAndRoleAdministration))
+            {
+                <li class="nav-item item-one" role="presentation">
+                    <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
+                        <img src="./dist/img/Icons/Administration/Windows.png" alt="windows icon">
+                        <span class="ml-2">Users </span>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-2">
+                        <img src="./dist/img/Icons/Administration/Add-roles.png" alt="Add-roles icon">
 
-                    <span class="ml-2">Roles</span>
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-3">
-                    <img src="./dist/img/Icons/Administration/Encrypt.png" alt="encrypt icon">
-                    <span class="ml-2"> Encrypt</span>
-                </a>
-            </li>
+                        <span class="ml-2">Roles</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-3">
+                        <img src="./dist/img/Icons/Administration/Encrypt.png" alt="encrypt icon">
+                        <span class="ml-2"> Encrypt</span>
+                    </a>
+                </li>
+            }
         </ul>
         <!-- tab-content -->
         <div class="tab-content" id="pills-tabContent">
-            <!-- tab-1 start -->
-            <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
-                <div class="actions mb-3">
-                    <div class="row">
-                        <div class="col-12 text-right">
-                            <a href="#" class="btn" id="btnCreateUser">
-                                <i class="fas fa-plus"></i> Create New
-                            </a>
+            @if (User.HasClaim("Permission", Features.UserAndRoleAdministration))
+            {
+                <!-- tab-1 start -->
+                <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                    <div class="actions mb-3">
+                        <div class="row">
+                            <div class="col-12 text-right">
+                                <a href="#" class="btn" id="btnCreateUser">
+                                    <i class="fas fa-plus"></i> Create New
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding:15px">
+                        <div class="table-responsive">
+                            <table id="userTable" class="table table-bordered">
+                                <thead class="thead text-center">
+                                    <tr>
+                                        <th style="display:none">Id</th>
+                                        <th>User Name</th>
+                                        <th>Email</th>
+                                        <th>Phone Number</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var m in Model.Users)
+                                    {
+                                        <tr>
+                                            <td style="display:none">@m.Id</td>
+                                            <td>@m.UserName</td>
+                                            <td>@m.Email</td>
+                                            <td>@m.PhoneNumber</td>
+                                            <td>
+                                                <a class="btn edit_button editUser"> Edit </a>
+                                                <a class="btn deleteBtn deleteUser"> Delete </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:15px">
-                    <div class="table-responsive">
-                        <table id="userTable" class="table table-bordered">
-                            <thead class="thead text-center">
-                                <tr>
-                                    <th style="display:none">Id</th>
-                                    <th>User Name</th>
-                                    <th>Email</th>
-                                    <th>Phone Number</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var m in Model.Users)
-                                {
-                                    <tr>
-                                        <td style="display:none">@m.Id</td>
-                                        <td>@m.UserName</td>
-                                        <td>@m.Email</td>
-                                        <td>@m.PhoneNumber</td>
-                                        <td>
-                                            <a class="btn edit_button editUser"> Edit </a>
-                                            <a class="btn deleteBtn deleteUser"> Delete </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                <!-- /. tab-1 end -->
+                <!-- tab-2 start -->
+                <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
+                    <div class="actions mb-3">
+                        <div class="row">
+                            <div class="col-12 text-right">
+                                <a href="#" class="btn" id="btnCreateRole">
+                                    <i class="fas fa-plus"></i> Create New
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <!-- /. tab-1 end -->
-            <!-- tab-2 start -->
-            <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
-                <div class="actions mb-3">
-                    <div class="row">
-                        <div class="col-12 text-right">
-                            <a href="#" class="btn" id="btnCreateRole">
-                                <i class="fas fa-plus"></i> Create New
-                            </a>
+                    <div class="card" style="padding:15px">
+                        <div class="table-responsive">
+                            <table id="roleTable" class="table table-bordered">
+                                <thead class="thead text-center">
+                                    <tr>
+                                        <th style="display:none">Id</th>
+                                        <th>Name</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var m in Model.Roles)
+                                    {
+                                        <tr>
+                                            <td style="display:none">@m.Id</td>
+                                            <td>@m.Name</td>
+                                            <td>
+                                                <a class="btn edit_button eidtRole"> Edit </a>
+                                                <a class="btn deleteRole"> Delete </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:15px">
-                    <div class="table-responsive">
-                        <table id="roleTable" class="table table-bordered">
-                            <thead class="thead text-center">
-                                <tr>
-                                    <th style="display:none">Id</th>
-                                    <th>Name</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var m in Model.Roles)
-                                {
-                                    <tr>
-                                        <td style="display:none">@m.Id</td>
-                                        <td>@m.Name</td>
-                                        <td>
-                                            <a class="btn edit_button eidtRole"> Edit </a>
-                                            <a class="btn deleteRole"> Delete </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- /. tab-2 end -->
+                <!-- tab-3 start -->
+                <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
+                    test 456
                 </div>
-            </div>
-            <!-- /. tab-2 end -->
-            <!-- tab-3 start -->
-            <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
-                test 456
-            </div>
-            <!-- /. tab-3 end -->
+                <!-- /. tab-3 end -->
+            }
         </div>
     </div>
     <!-- /. tab-content -->
@@ -170,7 +177,7 @@
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="rolemdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 350px;margin-top:100px; -moz-border-radius::10px;">
+        <div class="modal-content" style="width: 500px;margin-top:100px; -moz-border-radius::10px;">
             <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
                 <h4 class="modal-title modelRoleTitle">Create Role</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
@@ -188,7 +195,14 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="example-text-input" class="form-label">Features</label>
+                                    @Html.ListBox("FeatureListBox", new SelectList(Model.Features), new { @class="form-control" })
+                                </div>
+                            </div>
+                        </div>
                         <div class="modal-footer">
                             <button id="btnRoleSave" class="btn btn-primary" value="Save">Save</button>
                             <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
@@ -323,10 +337,15 @@
             role.Id = $('#hdnRoleId').val();
             role.Name = $('#txtRoleName').val();
 
+            var features = [];
+            $('#FeatureListBox > option:selected').each(function() {
+                features.push($(this).text());
+            });
+
             $.ajax({
                 type: "POST",
                 url: "Administration/CreateRole",
-                data: { role: role },
+                data: { role: role, features: features },
                 dataType: "json",
                 success: function(data) {
                     if (data == 'Duplicate') {
@@ -351,6 +370,24 @@
 
             $("#btnRoleSave").html("Update");
             $(".modelRoleTitle").html("Edit Role");
+
+            $.ajax({
+                type: "POST",
+                url: "Administration/GetFeature",
+                data: { roleId: id },
+                dataType: "json",
+                success: function(result) {
+
+                    $('#FeatureListBox > option:selected').each(function() {
+                        $(this).removeAttr("selected");
+                    });
+
+                    result.forEach(function(e) {
+                        $("#FeatureListBox option:contains(" + e + ")").attr('selected', 'selected');
+                    });
+                }
+            });
+
             $("#rolemdl").modal('show');
         });
 

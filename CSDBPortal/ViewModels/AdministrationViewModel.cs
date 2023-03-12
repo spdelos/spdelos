@@ -7,7 +7,7 @@ namespace CSDBPortal.ViewModels
     {
         public List<IdentityUser> Users { get; set; }
         public List<IdentityRole> Roles { get; set; }
-
+        public List<string> Features { get; set; }
         public int ProjectCompleted { get; set; }
         public int UserCount { get; set; }
         public int ActiveUsers { get; set; }

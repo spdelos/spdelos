@@ -9,9 +9,18 @@ namespace CSDBPortal.ViewModels
         public List<CustomStandardNumberingSystem>? StandardNumberingSystems { get; set; }
         public List<DataModuleType>? DataModuleTypes { get; set; }
         public List<CustomProjet>? Projects { get; set; }
+
+        public List<CustomDataModuleCode>? DataModuleCodes { get; set; }
         public List<IssueNo>? Issues { get; set; }
         public List<InformationCodeSet>? InformationCodeSets { get; set;}
         public List<Icnformat>? Icnformats { get; set; }
+    }
+
+    public class CustomDataModuleCode : DataModuleCode
+    {
+        public string ProjectName { get; set; }
+        public string InformationCodeDesc { get; set; }
+        public string LocationCodeDesc { get; set; }
     }
 
     public class CustomProjet : Project

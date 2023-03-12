@@ -34,83 +34,97 @@
     <!-- tab-content -->
     <div class="col-12">
         <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
-            <li class="nav-item item-one" role="presentation">
-                <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
-                    <img src="./dist/img/Icons/Configuration/Issues.png" alt="Issues icon">
-                    <span class="ml-2">Issues </span>
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
+            @if (User.HasClaim("Permission", Features.IssuAdministration))
+            {
+                <li class="nav-item item-one" role="presentation">
+                    <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
+                        <img src="./dist/img/Icons/Configuration/Issues.png" alt="Issues icon">
+                        <span class="ml-2">Issues </span>
+                    </a>
+                </li>
+            }
+            @*<li class="nav-item" role="presentation">
                 <a class="nav-link" id="pills-tab-2" data-toggle="pill" href="#pills-2">
                     <img src="./dist/img/Icons/Configuration/Designation.png" alt="Designation icon">
                     <span class="ml-2"> Designation</span>
                 </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="pills-tab-5" data-toggle="pill" href="#pills-5">
-                    <img src="./dist/img/Icons/Configuration/Info Code.png" alt="Info Code icon">
-                    <span class="ml-2">Info Code Set</span>
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-3">
-                    <img src="./dist/img/Icons/Configuration/Info Code.png" alt="Info Code icon">
-                    <span class="ml-2">Info Code</span>
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-4">
-                    <img src="./dist/img/Icons/Configuration/ICN Format.png" alt="ICN Format icon">
-                    <span class="ml-2"> ICN Format</span>
-                </a>
-            </li>
+            </li>*@
+            @if (User.HasClaim("Permission", Features.InfoCodeSetAdministration))
+            {
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-5" data-toggle="pill" href="#pills-5">
+                        <img src="./dist/img/Icons/Configuration/Info Code.png" alt="Info Code icon">
+                        <span class="ml-2">Info Code Set</span>
+                    </a>
+                </li>
+            }
+            @if (User.HasClaim("Permission", Features.InfoCodeAdministration))
+            {
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-3">
+                        <img src="./dist/img/Icons/Configuration/Info Code.png" alt="Info Code icon">
+                        <span class="ml-2">Info Code</span>
+                    </a>
+                </li>
+            }
+            @if (User.HasClaim("Permission", Features.IcnFormatAdministration))
+            {
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-4">
+                        <img src="./dist/img/Icons/Configuration/ICN Format.png" alt="ICN Format icon">
+                        <span class="ml-2"> ICN Format</span>
+                    </a>
+                </li>
+            }
         </ul>
         <div class="tab-content" id="pills-tabContent">
-            <!-- tab-1 start -->
-            <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
-                <div class="actions mb-3">
-                    <div class="row">
-                        <div class="col-12 text-right">
-                            <a href="#" class="btn" id="btnSaveIssue">
-                                <i class="fas fa-plus"></i> Create New
-                            </a>
+            @if (User.HasClaim("Permission", Features.IssuAdministration))
+            {
+                <!-- tab-1 start -->
+                <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                    <div class="actions mb-3">
+                        <div class="row">
+                            <div class="col-12 text-right">
+                                <a href="#" class="btn" id="btnCreateNewIssue">
+                                    <i class="fas fa-plus"></i> Create New
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding:15px">
+                        <div class="table-responsive">
+                            <table id="issueTable" class="table table-bordered">
+                                <thead class="thead text-center">
+                                    <tr>
+                                        <th style="display:none">Issue No</th>
+                                        <th>Issue No</th>
+                                        <th>Created By</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var m in Model.IssueNos)
+                                    {
+                                        <tr>
+                                            <td style="display:none">@m.Id</td>
+                                            <td>@m.Name</td>
+                                            <td>@m.CreatedBy</td>
+                                            <td>
+                                                <a class="btn edit_button editIssue"> Edit </a>
+                                                <a class="btn deleteBtn"> Delete </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:15px">
-                    <div class="table-responsive">
-                        <table id="issueTable" class="table table-bordered">
-                            <thead class="thead text-center">
-                                <tr>
-                                    <th style="display:none">Issue No</th>
-                                    <th>Issue No</th>
-                                    @*<th>Path</th>*@
-                                    <th>Created By</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var m in Model.IssueNos)
-                                {
-                                    <tr>
-                                        <td style="display:none">@m.Id</td>
-                                        <td>@m.Name</td>
-                                        @*<td>@m.Path</td>*@
-                                        <td>@m.CreatedBy</td>
-                                        <td>
-                                            <a class="btn edit_button editIssue"> Edit </a>
-                                            <a class="btn deleteBtn"> Delete </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <!-- /. tab-1 end -->
+                <!-- /. tab-1 end -->
+            }
+
             <!-- tab-2 start -->
-            <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
+            @*<div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
                 <div class="actions mb-3">
                     <div class="row">
                         <div class="col-12 text-right">
@@ -147,144 +161,152 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div>*@
             <!-- /. tab-2 end -->
-            <!-- tab-3 start -->
-            <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
-                <div class="actions mb-3">
-                    <div class="row">
-                        <div class="col-12 text-right">
-                            <a href="#" class="btn" id="createInfoCode">
-                                <i class="fas fa-plus"></i> Create New
-                            </a>
+            @if (User.HasClaim("Permission", Features.InfoCodeSetAdministration))
+            {
+                <!-- tab-3 start -->
+                <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
+                    <div class="actions mb-3">
+                        <div class="row">
+                            <div class="col-12 text-right">
+                                <a href="#" class="btn" id="createInfoCode">
+                                    <i class="fas fa-plus"></i> Create New
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding:15px">
+                        <div class="table-responsive info_table">
+                            <table class="table table-bordered" id="tableInfoCode" width="100%">
+                                <thead class="thead text-center">
+                                    <tr>
+                                        <th style="display:none"></th>
+                                        <th>Code Set</th>
+                                        <th>Code</th>
+                                        <th>Description</th>
+                                        <th>DM Type</th>
+                                        <th style="display:none;"></th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var i in Model.InformationCodes)
+                                    {
+                                        <tr>
+                                            <td style="display:none">@i.Id</td>
+                                            <td>@i.InformationCodeSetDescription</td>
+                                            <td style="display:none">@i.InformationCodeSetId</td>
+                                            <td>@i.Code</td>
+                                            <td>@i.Description</td>
+                                            <td>@i.DataModuleName</td>
+                                            <td style="display:none">@i.DataModuleId</td>
+                                            <td class="d-flex">
+                                                <a class="btn edit_button editInfoCode"> Edit </a>
+                                                <a class="btn deleteInfoCode"> Delete </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:15px">
-                    <div class="table-responsive info_table">
-                        <table class="table table-bordered" id="tableInfoCode" width="100%">
-                            <thead class="thead text-center">
-                                <tr>
-                                    <th style="display:none"></th>
-                                    <th>Code Set</th>
-                                    <th>Code</th>
-                                    <th>Description</th>
-                                    <th>DM Type</th>
-                                    <th style="display:none;"></th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var i in Model.InformationCodes)
-                                {
-                                    <tr>
-                                        <td style="display:none">@i.Id</td>
-                                        <td>@i.InformationCodeSetDescription</td>
-                                        <td style="display:none">@i.InformationCodeSetId</td>
-                                        <td>@i.Code</td>
-                                        <td>@i.Description</td>
-                                        <td>@i.DataModuleName</td>
-                                        <td style="display:none">@i.DataModuleId</td>
-                                        <td class="d-flex">
-                                            <a class="btn edit_button editInfoCode"> Edit </a>
-                                            <a class="btn deleteInfoCode"> Delete </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                <!-- /. tab-3 end -->
+            }
+            @if (User.HasClaim("Permission", Features.InfoCodeAdministration))
+            {
+                <!-- tab-5 start -->
+                <div class="tab-pane fade" id="pills-5" role="tabpanel" aria-labelledby="pills-tab-5">
+                    <div class="actions mb-3">
+                        <div class="row">
+                            <div class="col-12 text-right">
+                                <a href="#" class="btn" id="createInfoCodeSet">
+                                    <i class="fas fa-plus"></i> Create New
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <!-- /. tab-3 end -->
-            <!-- tab-5 start -->
-            <div class="tab-pane fade" id="pills-5" role="tabpanel" aria-labelledby="pills-tab-5">
-                <div class="actions mb-3">
-                    <div class="row">
-                        <div class="col-12 text-right">
-                            <a href="#" class="btn" id="createInfoCodeSet">
-                                <i class="fas fa-plus"></i> Create New
-                            </a>
+                    <div class="card" style="padding:15px">
+                        <div class="table-responsive info_table">
+                            <table class="table table-bordered" id="tableInfoCodeSet" width="100%">
+                                <thead class="thead text-center">
+                                    <tr>
+                                        <th style="display:none"></th>
+                                        <th>Description</th>
+                                        <th>Variant</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var i in Model.InformationCodesSets)
+                                    {
+                                        <tr>
+                                            <td style="display:none">@i.Id</td>
+                                            <td>@i.Description</td>
+                                            <td>@i.Variant</td>
+                                            <td class="d-flex">
+                                                <a class="btn edit_button editInfoCodeSet"> Edit </a>
+                                                <a class="btn deleteInfoCodeSet"> Delete </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:15px">
-                    <div class="table-responsive info_table">
-                        <table class="table table-bordered" id="tableInfoCodeSet" width="100%">
-                            <thead class="thead text-center">
-                                <tr>
-                                    <th style="display:none"></th>
-                                    <th>Description</th>
-                                    <th>Variant</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var i in Model.InformationCodesSets)
-                                {
-                                    <tr>
-                                        <td style="display:none">@i.Id</td>
-                                        <td>@i.Description</td>
-                                        <td>@i.Variant</td>
-                                        <td class="d-flex">
-                                            <a class="btn edit_button editInfoCodeSet"> Edit </a>
-                                            <a class="btn deleteInfoCodeSet"> Delete </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                <!-- /. tab-5 end -->
+            }
+            @if (User.HasClaim("Permission", Features.IcnFormatAdministration))
+            {
+                <!-- tab-4 start -->
+                <div class="tab-pane fade" id="pills-4" role="tabpanel" aria-labelledby="pills-tab-4">
+                    <div class="actions mb-3">
+                        <div class="row">
+                            <div class="col-12 text-right">
+                                <a href="#" class="btn" id="btnICNCreate">
+                                    <i class="fas fa-plus"></i> Create New
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <!-- /. tab-5 end -->
-            <!-- tab-4 start -->
-            <div class="tab-pane fade" id="pills-4" role="tabpanel" aria-labelledby="pills-tab-4">
-                <div class="actions mb-3">
-                    <div class="row">
-                        <div class="col-12 text-right">
-                            <a href="#" class="btn" id="btnICNCreate">
-                                <i class="fas fa-plus"></i> Create New
-                            </a>
+                    <div class="card" style="padding:15px">
+                        <div class="table-responsive">
+                            <table class="table icn table-bordered" id="tableICNFormat" width="100%">
+                                <thead class="thead">
+                                    <tr class="text-left">
+                                        <th style="display:none"></th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var icn in Model.Icnformats)
+                                    {
+                                        <tr>
+                                            <td style="display:none">@icn.Id</td>
+                                            <td>@icn.Code</td>
+                                            <td>@icn.Description</td>
+                                            <td>
+                                                @if (icn.CanEdit)
+                                                {
+                                                    <a class="btn edit_button icnEdited"> Edit </a>
+                                                    <a class="btn deleteICN"> Delete </a>
+                                                    @Html.ListBox("IcnFormatListBox" + @icn.Id, new SelectList(icn.IcnFormatFields, "ICNFormatMasterFieldId","Field"), new { @class="form-control", @style="display:none" })
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:15px">
-                    <div class="table-responsive">
-                        <table class="table icn table-bordered" id="tableICNFormat" width="100%">
-                            <thead class="thead">
-                                <tr class="text-left">
-                                    <th style="display:none"></th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var icn in Model.Icnformats)
-                                {
-                                    <tr>
-                                        <td style="display:none">@icn.Id</td>
-                                        <td>@icn.Code</td>
-                                        <td>@icn.Description</td>
-                                        <td>
-                                            @if (icn.CanEdit)
-                                            {
-                                                <a class="btn edit_button icnEdited"> Edit </a>
-                                                <a class="btn deleteICN"> Delete </a>
-                                                @Html.ListBox("IcnFormatListBox" + @icn.Id, new SelectList(icn.IcnFormatFields, "ICNFormatMasterFieldId","Field"), new { @class="form-control", @style="display:none" })
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <!-- /. tab-4 end -->
+                <!-- /. tab-4 end -->
+            }
         </div>
-
     </div>
     <!-- /. tab-content -->
 </div>
@@ -293,7 +315,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content" style="width: 350px;margin-top:100px; -moz-border-radius::10px;">
             <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
-                <h4 class="modal-title modelTitle"></h4>
+                <h4 class="modal-title modelIssueNoTitle"></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <div class="modal-body">
@@ -303,21 +325,14 @@
                             <div class="row">
                                 <label id="errorMsg" style="color:red"></label>
                                 <div class="col-md-12">
-                                    <input class="form-control" type="hidden" id="hdnId" />
+                                    <input class="form-control" type="text" name="hdnId" id="hdnId" style="display:none" />
+                                    @*<input class="form-control" type="hidden" id="" />*@
                                     <div class="form-group">
                                         <label for="example-text-input" class="form-label">Issue No</label><span style="color: red;">*</span>
-                                        <input class="form-control" type="text" name="Name" id="Name" />
+                                        <input class="form-control" type="text" name="txtIssueNo" id="txtIssueNo" />
                                     </div>
                                 </div>
                             </div>
-                            @*<div class="row">
-                                <div class="col-md-12">
-                                <div class="form-group">
-                                <label for="example-text-input" class="form-label">Path</label><span style="color: red;">*</span>
-                                <input class="form-control" type="text" id="txtPath"     />
-                                </div>
-                                </div>
-                                </div>*@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
@@ -327,7 +342,7 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button id="btnSave" class="btn btn-primary" value="Save">Save</button>
+                                <button id="btnSaveIssueNo" class="btn btn-primary" value="Save">Save</button>
                                 <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
                             </div>
                         </div>
@@ -509,10 +524,10 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <button id="leftArrow" class="btn btn-primary" value="Save">&#8592;</button>
-                            <button id="rightArrow" class="btn btn-primary" value="Save">&#8594;</button>
-                            <button id="upArrow" class="btn btn-primary" value="Save">&#8593;</button>
-                            <button id="downArrow" class="btn btn-primary" value="Save">&#8595;</button>
+                            <span id="leftArrow" style="cursor:pointer">&#8592;</span>
+                            <span id="rightArrow" style="cursor:pointer">&#8594;</span>
+                            <span id="upArrow" style="cursor:pointer">&#8593;</span>
+                            <span id="downArrow" style="cursor:pointer">&#8595;</span>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -609,19 +624,19 @@
     $("#mainlink").removeClass("active");
     $("#icnlink").removeClass("active");
 
-      /*Issue No - Start*/
+    /*Issue No - Start*/
     var issueTable=  $('#issueTable').DataTable();
-    $("#btnSaveIssue").click(function () {
+    $("#btnCreateNewIssue").click(function () {
+
         $('#hdnId').val('0');
         $('#txtIssueNo').val('');
-        $('#txtPath').val('');
         $("#errorMsg").html('');
-        $(".modelTitle").html("Create Issue");
+        $(".modelIssueNoTitle").html("Create Issue");
         $("#btnSave").html("Save");
         $("#Configurationmdl").modal('show');
-        });
+    });
 
-        //Close Model
+    //Close Model
     $(".btn-close").click(function () {
         $("#Configurationmdl").modal('hide');
         $("#desigmdl").modal('hide');
@@ -630,7 +645,7 @@
         $("#icnmdl").modal('hide');
     });
 
-        //Close Model
+    //Close Model
     $(".modelCancel").click(function () {
         $("#Configurationmdl").modal('hide');
         $("#desigmdl").modal('hide');
@@ -700,12 +715,10 @@
             var rowobj =$(this).closest("tr");
             var id =  rowobj.find("td:eq(0)").text();
             var issue =  rowobj.find("td:eq(1)").text();
-            var path =  rowobj.find("td:eq(2)").text();
             $("#txtIssueNo").val(issue);
-            $("#txtPath").val(path);
             $("#hdnId").val(id);
             $("#btnSave").html("Update");
-            $(".modelTitle").html("Edit Issue");
+            $(".modelIssueNoTitle").html("Edit Issue");
             $("#Configurationmdl").modal('show');
     });
 

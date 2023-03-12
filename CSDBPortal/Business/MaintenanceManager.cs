@@ -1,6 +1,13 @@
 ﻿using CSDBPortal.Data;
 using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
+using Microsoft.Build.Evaluation;
+using Microsoft.CodeAnalysis;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Text;
+using Project = CSDBPortal.Models.Project;
 
 namespace CSDBPortal.Business
 {
@@ -61,7 +68,6 @@ namespace CSDBPortal.Business
                                       p.ModelIdentification,
                                       p.SDC,
                                       p.SubjectLength,
-                                      p.ProjectCode,
                                       p.RPCId,
                                       p.TrackPercentComplete,
                                       p.CreateDefaultBrex,
@@ -92,7 +98,6 @@ namespace CSDBPortal.Business
                             ModelIdentification = item.ModelIdentification,
                             SDC = item.SDC,
                             SubjectLength = item.SubjectLength,
-                            ProjectCode = item.ProjectCode,
                             RPCId = item.RPCId,
                             TrackPercentComplete = item.TrackPercentComplete,
                             CreateDefaultBrex = item.CreateDefaultBrex,
@@ -142,6 +147,57 @@ namespace CSDBPortal.Business
                         newStandardNumbers.AddRange(OrderTree(sns, maintenanceViewModel.StandardNumberingSystems));
                     }
                     maintenanceViewModel.StandardNumberingSystems = newStandardNumbers;
+
+                    var dataModuleCodes = (from dmc in applicationDbContext.DataModuleCodes
+                                    join p in applicationDbContext.Projects on dmc.ProjectId equals p.Id
+                                    join ic in applicationDbContext.InformationCodes on dmc.InformationCodeId equals ic.Id
+                                    join lc in applicationDbContext.LocationCodes on dmc.LocationCodeId equals lc.Id
+                                    where dmc.IsDeleted == false
+                                    select new {
+                                        dmc.Id,
+                                        dmc.DMC,
+                                        dmc.ProjectId,
+                                        dmc.ModelIdentification,
+                                        dmc.SDC,
+                                        dmc.StandardNumberingSystem,
+                                        dmc.DCV,
+                                        dmc.InformationCodeId,
+                                        dmc.ICV,
+                                        dmc.LocationCodeId,
+                                        dmc.CreatedBy,
+                                        dmc.CreatedOn,
+                                        dmc.UpdatedBy,
+                                        dmc.UpdatedOn,
+                                        ProjectName = p.Title,
+                                        InformationCodeDesc = ic.Code,
+                                        dmc.xml,
+                                        LocationCodeDesc = lc.Code}).ToList();
+
+                    maintenanceViewModel.DataModuleCodes = new List<CustomDataModuleCode>();
+                    foreach (var dataModuleCode in dataModuleCodes)
+                    {
+                        maintenanceViewModel.DataModuleCodes.Add(new CustomDataModuleCode()
+                        {
+                            CreatedBy = dataModuleCode.CreatedBy,
+                            CreatedOn = dataModuleCode.CreatedOn,
+                            DCV = dataModuleCode.DCV,
+                            DMC = dataModuleCode.DMC,
+                            ICV = dataModuleCode.ICV,
+                            Id = dataModuleCode.Id,
+                            InformationCodeDesc = dataModuleCode.InformationCodeDesc,
+                            InformationCodeId = dataModuleCode.InformationCodeId,
+                            LocationCodeDesc = dataModuleCode.LocationCodeDesc,
+                            LocationCodeId = dataModuleCode.LocationCodeId,
+                            ModelIdentification = dataModuleCode.ModelIdentification,
+                            ProjectId = dataModuleCode.ProjectId,
+                            ProjectName = dataModuleCode.ProjectName ,
+                            StandardNumberingSystem = dataModuleCode.StandardNumberingSystem,
+                            SDC = dataModuleCode.SDC,
+                            xml = dataModuleCode.xml,
+                            UpdatedBy = dataModuleCode.UpdatedBy,
+                            UpdatedOn = dataModuleCode.UpdatedOn
+                        });
+                    }
 
                     return maintenanceViewModel;
                 }
@@ -277,14 +333,32 @@ namespace CSDBPortal.Business
             return result;
         }
 
-        public int CheckProjectSns(int projectId, ProjectStandardNumberingSystem projectSns)
+        public int CheckProjectSns(ProjectStandardNumberingSystem projectSns)
         {
             int result = 0;
             try
             {
                 using (ApplicationDbContext applicationDbContext = new())
                 {
-                    result = applicationDbContext.ProjectStandardNumberingSystems.Where(a => a.Code == projectSns.Code && a.ProjectId == projectId).Count();
+                    result = applicationDbContext.ProjectStandardNumberingSystems.Where(a => a.Code == projectSns.Code && a.ProjectId == projectSns.ProjectId).Count();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return result;
+        }
+
+        public int CheckDMC(DataModuleCode dataModuleCode)
+        {
+            int result = 0;
+            try
+            {
+                using (ApplicationDbContext applicationDbContext = new())
+                {
+                    result = applicationDbContext.DataModuleCodes.Where(d => d.DMC == dataModuleCode.DMC).Count();
                 }
             }
             catch (Exception ex)
@@ -426,6 +500,87 @@ namespace CSDBPortal.Business
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+
+        public List<LocationCode> GetLocationCodes(int projectId)
+        {
+            using (ApplicationDbContext applicationDbContext = new())
+            {
+                List<LocationCode> locationCodes = new List<LocationCode>();
+                Project project = applicationDbContext.Projects.Where(p => p.Id == projectId).FirstOrDefault();
+                if (project != null)
+                {
+                    locationCodes = applicationDbContext.LocationCodes.Where(l => l.LocationCodeSetId == project.LocationCodeId).ToList();
+                }
+
+                return locationCodes;
+            }
+        }
+
+        public List<InformationCode> GetInformationCodes(int projectId)
+        {
+            using (ApplicationDbContext applicationDbContext = new())
+            {
+                List<InformationCode> inforamtionCodes = new List<InformationCode>();
+                Project project = applicationDbContext.Projects.Where(p => p.Id == projectId).FirstOrDefault();
+                if (project != null)
+                {
+                    inforamtionCodes = applicationDbContext.InformationCodes.Where(i => i.InformationCodeSetId == project.InformationCodeId).ToList();
+                }
+
+                return inforamtionCodes;
+            }
+        }
+
+        public Project GetProject(int projectId)
+        {
+            using (ApplicationDbContext applicationDbContext = new())
+            {
+                return applicationDbContext.Projects.Where(p => p.Id == projectId).FirstOrDefault();
+            }
+        }
+
+        public string GetSnsCode(int snsId, int projectId)
+        {
+            using (ApplicationDbContext applicationDbContext = new())
+            {
+                string snsCode = string.Empty;
+                int depth = 0;
+                ProjectStandardNumberingSystem sns = applicationDbContext.ProjectStandardNumberingSystems.Where(s => s.Snsid == snsId).FirstOrDefault();
+
+                GetSnsCode(sns.Snsid.Value, projectId, applicationDbContext, out snsCode, out depth);
+                int nodesToAdd = 4 - depth % 4;
+
+                if (nodesToAdd < 4)
+                {
+                    for (int count = 0; count < nodesToAdd; count++)
+                    {
+                        snsCode = snsCode + "00-";
+                    }
+                }
+
+                snsCode = snsCode.Substring(0, snsCode.Length - 1);
+
+                return snsCode;
+            }
+        }
+
+        private void GetSnsCode(int snsId, int projectId, ApplicationDbContext context, out string snsCode, out int depth)
+        {
+            snsCode = string.Empty;
+            depth = 0;
+            ProjectStandardNumberingSystem sns = context.ProjectStandardNumberingSystems.Where(s => s.Snsid == snsId && s.ProjectId == projectId).FirstOrDefault();
+            if (sns.ParentId > 0)
+            {
+                GetSnsCode(sns.ParentId, projectId, context, out snsCode, out depth);
+                snsCode = snsCode + sns.Code + "-";
+                depth++;
+            }
+            else
+            {
+                snsCode = snsCode + sns.Code + "-";
+                depth++;
             }
         }
     }

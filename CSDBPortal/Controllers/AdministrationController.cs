@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CSDBPortal.Controllers
 {
@@ -37,7 +38,26 @@ namespace CSDBPortal.Controllers
             return View();
         }
 
-        public JsonResult CreateRole(IdentityRole role)
+        public JsonResult GetFeature(string roleId)
+        {
+            List<string> features = new List<string>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            if (roleManager != null)
+            {
+                IdentityRole role = roleManager.Roles.Where(r => r.Id == roleId).FirstOrDefault();
+                if (role != null)
+                {
+                    var claims = roleManager.GetClaimsAsync(role).Result;
+                    foreach(Claim claim in claims)
+                    {
+                        features.Add(claim.Value);
+                    }
+                }
+            }
+
+            return Json(features);
+        }
+        public JsonResult CreateRole(IdentityRole role, List<string> features)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
@@ -47,13 +67,43 @@ namespace CSDBPortal.Controllers
                 if (recordCount > 0)
                 {
                     return Json("Duplicate");
-                }    
-                return Json(roleManager.CreateAsync(new IdentityRole(role.Name)).Result);
+                }
+
+                var newRole = new IdentityRole(role.Name);
+                var roleCreationResult = roleManager.CreateAsync(newRole).Result;
+                if (roleCreationResult.Succeeded)
+                {
+                    foreach (var feature in features)
+                    {
+                        var claimAddedResult = roleManager.AddClaimAsync(newRole, new Claim("Permission", feature)).Result;
+                    }
+                }
+
+                return Json(roleCreationResult);
             }
             else
             {
                 IdentityRole identityRole = roleManager.Roles.Where(r => r.Id == role.Id).FirstOrDefault();
                 identityRole.Name = role.Name;
+
+                var claims = roleManager.GetClaimsAsync(identityRole).Result;
+                foreach (Claim claim in claims)
+                {
+                    if (features.Contains(claim.Value) == false)
+                    {
+                        var result = roleManager.RemoveClaimAsync(identityRole, claim).Result;
+                    }
+                }
+
+                foreach (string feature in features)
+                {
+                    var claim = claims.Where(c => c.Value == feature).FirstOrDefault();
+                    if (claim == null)
+                    {
+                        var result = roleManager.AddClaimAsync(identityRole, new Claim("Permission", feature)).Result;
+                    }
+                }
+
                 return Json(roleManager.UpdateAsync(identityRole).Result);
             }
         }

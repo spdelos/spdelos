@@ -1,6 +1,7 @@
 ﻿using CSDBPortal.Data;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Identity;
+using System.Reflection;
 
 namespace CSDBPortal.Business
 {
@@ -26,6 +27,13 @@ namespace CSDBPortal.Business
 
                     administrationViewModel.UserCount = administrationViewModel.Users.Count();
                     administrationViewModel.ActiveUsers = administrationViewModel.Users.Count();
+
+                    administrationViewModel.Features = new List<string>();
+                    var fields = typeof(Features).GetFields(BindingFlags.Public | BindingFlags.Static);
+                    foreach (FieldInfo field in fields)
+                    {
+                        administrationViewModel.Features.Add(field.GetValue(null).ToString());
+                    }
 
                     return administrationViewModel;
                 }

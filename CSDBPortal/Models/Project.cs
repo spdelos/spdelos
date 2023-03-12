@@ -31,8 +31,6 @@ namespace CSDBPortal.Models
         public string? SDC { get; set; }
         [Column("SubjectLength")]
         public int SubjectLength { get; set; }
-        [Column("ProjectCode")]
-        public string? ProjectCode { get; set; }
         [Column("RPCId")]
         public int RPCId { get; set; }
         [Column("TrackPercentComplete")]
