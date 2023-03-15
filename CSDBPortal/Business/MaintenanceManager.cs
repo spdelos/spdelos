@@ -401,14 +401,20 @@ namespace CSDBPortal.Business
             return result;
         }
 
-        public int CheckProject(Project project)
+        public int CheckProject(Project project, out string brexTemplate)
         {
             int result = 0;
+            brexTemplate = string.Empty;
             try
             {
                 using (ApplicationDbContext ApplicationDbContext = new())
                 {
-                    result = ApplicationDbContext.Projects.Where(p => p.Name == project.Name).Count();
+                    Project newProject = ApplicationDbContext.Projects.Where(p => p.Name == project.Name).FirstOrDefault();
+                    if (newProject != null)
+                    {
+                        brexTemplate = newProject.BrexTemplate;
+                        result = 1;
+                    }
                 }
             }
             catch (Exception ex)

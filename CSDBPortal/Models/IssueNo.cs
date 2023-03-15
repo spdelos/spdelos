@@ -11,8 +11,8 @@ namespace CSDBPortal.Models
         public int Id { get; set; }
         [Column("Name")] 
         public string? Name { get; set; }
-        [Column("Path")] 
-        public string? Path { get; set; }
+        [Column("BrexTemplate")]
+        public string BrexTemplate { get; set; }
         [Column("IsDelete")] 
         public bool IsDelete { get; set; }
         [Column("CreateOn")] 

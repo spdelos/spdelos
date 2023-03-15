@@ -17,6 +17,10 @@ ion-icon:before {
     height: 100%;
 }
 
+ul {
+    list-style-type: none;
+}
+
 body,
 input,
 select,

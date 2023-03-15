@@ -16,6 +16,10 @@
 <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
 <div class="row">
+
+    <div class="alert" style="display:none">
+        <span id="alertMessage">This alert box could indicate a successful or positive action.</span>
+    </div>
     <!-- tab-content -->
     <div class="col-12">
         <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
@@ -365,7 +369,7 @@
                                                 <a href="#" class="btn edit_button edit_project">Edit</a>
                                                 <a href="#" class="btn-sm btn-default project_sns_button">SNS</a>
                                                 <a href="#" class="btn-sm btn-primary project_dmc_button">DMC</a>
-                                                <a href="#" class="btn-sm btn-primary project_dmc_generate_button">Generate</a>
+                                                <a href="#" class="btn-sm btn-primary project_dmc_generate_button">Brex Xml</a>
                                             </td>
                                         </tr>
                                     }
@@ -429,10 +433,9 @@
                                             }
                                             else
                                             {
-                                                <td width="5%"></td>
+                                                <a href="#" class="btn edit_button generate_DMC">Generate</a>
                                             }
                                             <td width="20%">
-                                                <a href="#" class="btn edit_button generate_DMC">Generate</a>
                                                 <a href="#" class="btn edit_button delete_DMC">Delete</a>
                                             </td>
                                         </tr>
@@ -1452,6 +1455,34 @@
                 }
             });
         });
+
+        $(".project_dmc_generate_button").click(function () {
+            var rowobj = $(this).closest("tr");
+            selectedProject = rowobj.find("td:eq(0)").text();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/GenerateBrexXml",
+                data: { projectId: selectedProject },
+                dataType: "json",
+                success: function (result) {
+
+                    if (result.status == true)
+                    {
+                        $('.alert').addClass("alert-success");
+                    }
+                    else
+                    {
+                        $('.alert').addClass("alert-warning");
+                    }
+
+                    $('#alertMessage').text(result.message);
+                    $('.alert').show();
+                    $('.alert').fadeIn().delay(3000).fadeOut();
+                }
+            });
+        });
+        
 
         $(".project_dmc_button").click(function () {
 

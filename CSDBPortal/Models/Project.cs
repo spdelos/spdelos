@@ -33,6 +33,8 @@ namespace CSDBPortal.Models
         public int SubjectLength { get; set; }
         [Column("RPCId")]
         public int RPCId { get; set; }
+        [Column("BrexTemplate")]
+        public string BrexTemplate { get; set; }
         [Column("TrackPercentComplete")]
         public bool TrackPercentComplete { get; set; }
         [Column("CreateDefaultBrex")]

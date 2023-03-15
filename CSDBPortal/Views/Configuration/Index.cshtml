@@ -337,7 +337,15 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label for="example-text-input" class="form-label">Files</label><span style="color: red;">*</span>
-                                        <input class="form-control" type="file" name="name" id="Files" multiple>
+                                        <input class="form-control" type="file" name="name" id="issueFiles" multiple>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="example-text-input" class="form-label">Brex File Template</label><span style="color: red;">*</span>
+                                        <input class="form-control" type="file" name="brexFile" id="brexFile" accept=".xml">
                                     </div>
                                 </div>
                             </div>
@@ -570,6 +578,38 @@
 <script type="text/javascript">
 
     $(document).ready( function() {
+
+        $("#btnSaveIssueNo").click(function (e){
+
+            var isValid = true;            
+            if ($('#txtIssueNo').val() == '') {
+                $('#txtIssueNo').css('border-color', 'red');
+                isValid = false;
+            }
+            else {
+                $('#txtIssueNo').css('border-color', '');
+            }
+            if ($('#issueFiles')[0].files.length <= 0 ) {
+                $('#issueFiles').css('border-color', 'red');
+                isValid = false;
+            }
+            else {
+                $('#issueFiles').css('border-color', '');
+            }
+
+            if ($('#brexFile')[0].files.length <= 0 ) {
+                $('#brexFile').css('border-color', 'red');
+                isValid = false;
+            }
+            else {
+                $('#brexFile').css('border-color', '');
+            }
+
+            if (isValid == false)
+            {
+                e.preventDefault();
+            }
+        });
 
         $('a[data-toggle="pill"]').on('show.bs.tab', function(e) {
             localStorage.setItem('activeTab', $(e.target).attr('href'));

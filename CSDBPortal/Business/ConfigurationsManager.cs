@@ -36,7 +36,7 @@ namespace CSDBPortal.Business
                         {
                             Id = issueNo.Id,
                             Name = issueNo.Name,
-                            Path = issueNo.Path,
+                            BrexTemplate = issueNo.BrexTemplate,
                             IsDelete = issueNo.IsDelete,
                             CreatedBy = issueNo.CreatedBy,
                             CreateOn = issueNo.CreateOn

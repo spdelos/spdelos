@@ -93,7 +93,7 @@ function TreeSortable(name) {
             return `
 		<li class="${cleanSelector(
                 branchSelector
-                )} ${levelPrefix}-${level}" data-${idAttr}="${id}" data-${parentAttr}="${parent_id}" data-${levelAttr}="${level}" data-treename="${treeSortable.options.treeSelector}">
+            )} ${levelPrefix}-${level}" data-${idAttr}="${id}" data-${parentAttr}="${parent_id}" data-${levelAttr}="${level}">
             <div class="contents">
                 <span class="${cleanSelector(branchPathSelector)}"></span>
                 <div class="branch-wrapper">
@@ -112,6 +112,9 @@ function TreeSortable(name) {
                         </button>
                         <button type="button" class="button remove-branch" title="Remove Branch">
                             <ion-icon name="trash-outline" title="Remove Branch"></ion-icon>
+                        </button>
+                        <button type="button" class="button create-dmc" title="DMC">
+                            <ion-icon name="logo-codepen" title="DMC"></ion-icon>
                         </button>
                     </div>
                 </div>
@@ -445,7 +448,6 @@ function TreeSortable(name) {
                         options: { treeSelector, branchSelector },
                         updateBranchZIndex,
                     } = treeSortable;
-
                     const $branch = $(this).closest(`${treeSelector} ${branchSelector}`);
                     return $branch[0];
                 },

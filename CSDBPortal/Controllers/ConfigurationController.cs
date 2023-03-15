@@ -56,22 +56,27 @@ namespace CSDBPortal.Controllers
                     
                     foreach (IFormFile file in Request.Form.Files)
                     {
-                        IssueTypeFile issueTypeFile = new IssueTypeFile();
-                        issueTypeFile.Name = file.FileName;
-                        issueTypeFile.CreatedBy = User.Identity.Name;
-                        issueTypeFile.CreateOn = DateTime.UtcNow;
-
                         var fileContent = new StringBuilder();
                         using (var reader = new StreamReader(file.OpenReadStream()))
                         {
-                            //issueTypeFile.Data = new SqlXml(XmlReader.Create(reader));
-
                             while (reader.Peek() >= 0)
                                 fileContent.AppendLine(reader.ReadLine());
                         }
 
-                        issueTypeFile.Data = fileContent.ToString();
-                        issueNo.IssueTypeFiles.Add(issueTypeFile);
+                        string extension = Path.GetExtension(file.FileName);
+                        if (!string.IsNullOrEmpty(extension) && extension.ToLower().CompareTo(".xml") == 0)
+                        {
+                            issueNo.BrexTemplate = fileContent.ToString();
+                        }
+                        else
+                        {
+                            IssueTypeFile issueTypeFile = new IssueTypeFile();
+                            issueTypeFile.Name = file.FileName;
+                            issueTypeFile.CreatedBy = User.Identity.Name;
+                            issueTypeFile.CreateOn = DateTime.UtcNow;
+                            issueTypeFile.Data = fileContent.ToString();
+                            issueNo.IssueTypeFiles.Add(issueTypeFile);
+                        }
                     }
 
                     if (issueNoId <= 0)

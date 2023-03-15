@@ -23,6 +23,7 @@ namespace CSDBPortal.Models
         public string InfoName { get; set; }
 	    public int IssueFileId { get; set; }
         public string? xml { get; set; }
+        public bool IsBrexXml { get; set; }
         public bool IsDeleted { get; set; }
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
