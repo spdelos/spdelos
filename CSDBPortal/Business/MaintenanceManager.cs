@@ -163,8 +163,11 @@ namespace CSDBPortal.Business
                                         dmc.DCV,
                                         dmc.InformationCodeId,
                                         dmc.ICV,
+                                        dmc.InfoName,
+                                        dmc.TechName,
                                         dmc.LocationCodeId,
                                         dmc.CreatedBy,
+                                        dmc.IsBrexXml,
                                         dmc.CreatedOn,
                                         dmc.UpdatedBy,
                                         dmc.UpdatedOn,
@@ -190,7 +193,10 @@ namespace CSDBPortal.Business
                             LocationCodeId = dataModuleCode.LocationCodeId,
                             ModelIdentification = dataModuleCode.ModelIdentification,
                             ProjectId = dataModuleCode.ProjectId,
-                            ProjectName = dataModuleCode.ProjectName ,
+                            ProjectName = dataModuleCode.ProjectName,
+                            InfoName = dataModuleCode.InfoName,
+                            TechName = dataModuleCode.TechName,
+                            IsBrexXml = dataModuleCode.IsBrexXml,
                             StandardNumberingSystem = dataModuleCode.StandardNumberingSystem,
                             SDC = dataModuleCode.SDC,
                             xml = dataModuleCode.xml,
@@ -242,6 +248,23 @@ namespace CSDBPortal.Business
             return newStandardNumbers;
         }
 
+        private List<CustomProjectNavigation> OrderTreeProjectSns(CustomProjectNavigation projectNavigation, List<CustomProjectNavigation> projectNavigations)
+        {
+            List<CustomProjectNavigation> newProjectNavigations = new List<CustomProjectNavigation>();
+            IEnumerable<CustomProjectNavigation> projectNavigations_new = projectNavigations.Where(s => s.parent_id == projectNavigation.Id);
+
+            newProjectNavigations.Add(projectNavigation);
+            if (projectNavigations_new.Any())
+            {
+                foreach (CustomProjectNavigation projectNavigation1 in projectNavigations_new)
+                {
+                    newProjectNavigations.AddRange(OrderTreeProjectSns(projectNavigation1, projectNavigations));
+                }
+            }
+
+            return newProjectNavigations;
+        }
+
         private int GetAncisterCount(CustomStandardNumberingSystem sns, List<CustomStandardNumberingSystem> standardNumberingSystems)
         {
             int count = 0;
@@ -259,6 +282,26 @@ namespace CSDBPortal.Business
             foreach(CustomStandardNumberingSystem sns in standardNumberingSystems)
             {
                 sns.level = GetAncisterCount(sns, standardNumberingSystems);
+            }
+        }
+
+        private int GetAncisterCountProjectNavigation(CustomProjectNavigation projectNavigation, List<CustomProjectNavigation> projectNavigations)
+        {
+            int count = 0;
+            if (projectNavigation.ParentId > 0)
+            {
+                CustomProjectNavigation parentNavigation = projectNavigations.Where(n => n.Id == projectNavigation.ParentId).FirstOrDefault();
+                count += GetAncisterCountProjectNavigation(parentNavigation, projectNavigations);
+            }
+
+            return ++count;
+        }
+
+        private void AssignLevelProjectNavigation(List<CustomProjectNavigation> projectNavigations)
+        {
+            foreach (CustomProjectNavigation projectNavigation in projectNavigations)
+            {
+                projectNavigation.level = GetAncisterCountProjectNavigation(projectNavigation, projectNavigations);
             }
         }
 
@@ -454,6 +497,58 @@ namespace CSDBPortal.Business
                 StandardNumberingSystem sns = context.StandardNumberingSystems.Where(s => s.Id == project.SNSSetId).FirstOrDefault();
                 CopySNSRecursive(project.Id, sns, context, userName);
                 return context.SaveChanges();
+            }
+        }
+
+        public List<CustomProjectNavigation> GetProjectNavigation(int projectId)
+        {
+            try
+            {
+                using (ApplicationDbContext applicationDbContext = new())
+                {
+                    var navigationResult = (from n1 in applicationDbContext.ProjectNavigations
+                                     join dmc1 in applicationDbContext.DataModuleCodes on n1.DMCId equals dmc1.Id
+                                     join dmc2 in applicationDbContext.DataModuleCodes on n1.ParentId equals dmc2.Id
+                                     join n2 in applicationDbContext.ProjectNavigations on n1.ParentId equals n2.Id into n3
+                                     from n2 in n3.DefaultIfEmpty()
+                                     where n1.ProjectId == projectId
+                                     select new { n1.Id, n1.DMCId, dmc1.DMC, n1.CreatedBy, n1.CreatedOn, n1.ParentId, n1.UpdatedBy, n1.UpdatedOn, ParentDMC = dmc2.DMC }).ToList();
+
+                    List<CustomProjectNavigation> projectNavigations = new List<CustomProjectNavigation>();
+                    foreach (var item in navigationResult)
+                    {
+                        projectNavigations.Add(new CustomProjectNavigation()
+                        {
+                            Id = item.Id,
+                            DMCId = item.DMCId,
+                            DMC = item.DMC,
+                            ParentDMC = item.ParentDMC,
+                            CreatedBy = item.CreatedBy,
+                            CreatedOn = item.CreatedOn,
+                            ParentId = item.ParentId,
+                            UpdatedBy = item.UpdatedBy,
+                            UpdatedOn = item.UpdatedOn,
+                            
+                            parent_id = item.ParentId,
+                            title = item.DMC
+                        });
+                    }
+
+                    AssignLevelProjectNavigation(projectNavigations);
+
+                    List<CustomProjectNavigation> newProjectNavigations = new List<CustomProjectNavigation>();
+                    IEnumerable<CustomProjectNavigation> rootElements = projectNavigations.Where(s => s.parent_id == 0);
+                    foreach (CustomProjectNavigation projectNavigation in rootElements)
+                    {
+                        newProjectNavigations.AddRange(OrderTreeProjectSns(projectNavigation, projectNavigations));
+                    }
+
+                    return newProjectNavigations;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 

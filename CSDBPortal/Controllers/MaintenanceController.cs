@@ -1,24 +1,12 @@
 ﻿using CSDBPortal.Business;
 using CSDBPortal.Data;
 using CSDBPortal.Models;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Presentation;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualBasic.FileIO;
-using Microsoft.Xml.XMLGen;
-using System;
 using System.Data;
-using System.Data.SqlTypes;
-using System.Net.Security;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Reflection.PortableExecutable;
-using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Xml;
-using System.Xml.Schema;
 using Project = CSDBPortal.Models.Project;
 
 namespace CSDBPortal.Controllers
@@ -304,6 +292,25 @@ namespace CSDBPortal.Controllers
         public JsonResult CreateDMC(DataModuleCode dataModuleCode)
         {
             string mode = string.Empty;
+
+            using (ApplicationDbContext applicationContext = new())
+            {
+                InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Id == dataModuleCode.InformationCodeId).FirstOrDefault();
+                LocationCode locationCode = applicationContext.LocationCodes.Where(i => i.Id == dataModuleCode.LocationCodeId).FirstOrDefault();
+
+                string dcValue = string.IsNullOrEmpty(dataModuleCode.DC) ? "-" : "-" + dataModuleCode.DC;
+
+                dataModuleCode.DMC = @"DMC -"
+                                    + dataModuleCode.ModelIdentification + "-"
+                                    + dataModuleCode.SDC + "-"
+                                    + dataModuleCode.StandardNumberingSystem
+                                    + dcValue
+                                    + dataModuleCode.DCV + "-"
+                                    + informationCode.Code
+                                    + dataModuleCode.ICV + "-"
+                                    + locationCode.Code;
+            }
+
             if (dataModuleCode.Id > 0)
             {
                 mode = "Edit";
@@ -322,24 +329,6 @@ namespace CSDBPortal.Controllers
                 dataModuleCode.CreatedOn = DateTime.UtcNow;
             }
 
-            using (ApplicationDbContext applicationContext = new())
-            {
-                InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Id == dataModuleCode.InformationCodeId).FirstOrDefault();
-                LocationCode locationCode = applicationContext.LocationCodes.Where(i => i.Id == dataModuleCode.LocationCodeId).FirstOrDefault();
-
-                string dcValue = string.IsNullOrEmpty(dataModuleCode.DC) ? "-" : "-" + dataModuleCode.DC;
-
-                dataModuleCode.DMC = @"DMC -"
-                                        + dataModuleCode.ModelIdentification + "-"
-                                        + dataModuleCode.SDC + "-"
-                                        + dataModuleCode.StandardNumberingSystem
-                                        + dcValue
-                                        + dataModuleCode.DCV + "-"
-                                        + informationCode.Code
-                                        + dataModuleCode.ICV + "-"
-                                        + locationCode.Code;
-            }
-
             return Json(_baseManager.CreateOrUpdateRecord(dataModuleCode, mode));
         }
 
@@ -355,6 +344,11 @@ namespace CSDBPortal.Controllers
 
                 return Json(applicationContext.SaveChanges());
             }
+        }
+
+        public JsonResult GetProjectNavigation(int projectId)
+        {
+            return Json(maintenancesManager.GetProjectNavigation(projectId));
         }
 
         public JsonResult GetProjectSns(int projectId)
@@ -535,181 +529,188 @@ namespace CSDBPortal.Controllers
 
         public JsonResult GenerateBrexXml(int projectId)
         {
-            using (ApplicationDbContext applicationContext = new())
+            try
             {
-                DataModuleCode dmcCode = applicationContext.DataModuleCodes.Where(d => d.IsBrexXml == true && d.ProjectId == projectId).FirstOrDefault();
-                if (dmcCode == null)
+                using (ApplicationDbContext applicationContext = new())
                 {
-                    Project project = applicationContext.Projects.Where(p => p.Id == projectId).FirstOrDefault();
-                    ResponsiblePartnerCode rpc = applicationContext.ResponsiblePartnerCodes.Where(r => r.Id == project.RPCId).FirstOrDefault();
-
-                    string xmlContext = project.BrexTemplate;
-
-                    XmlDocument xmlDoc = new XmlDocument();
-                    xmlDoc.LoadXml(xmlContext);
-
-                    XmlNamespaceManager xMan = new XmlNamespaceManager(xmlDoc.NameTable);
-
-                    StringBuilder dmcString = new StringBuilder();
-                    dmcString.Append("DMC -");
-                    dmcString.Append(project.ModelIdentification);
-                    dmcString.Append("-");
-                    dmcString.Append(project.SDC);
-                    dmcString.Append("-");
-
-                    string informationCodeString = string.Empty;
-                    string locationCodeString = string.Empty;
-                    string dcString = string.Empty;
-                    string dcvString = string.Empty;
-                    string icString = string.Empty;
-                    string icvString = string.Empty;
-                    string infoNameString = string.Empty;
-                    string snsString = string.Empty;
-                    string techNameString = string.Empty;
-
-                    XmlNode node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/dmCode", xMan);
-                    if (node != null)
+                    DataModuleCode dmcCode = applicationContext.DataModuleCodes.Where(d => d.IsBrexXml == true && d.ProjectId == projectId).FirstOrDefault();
+                    if (dmcCode == null)
                     {
-                        dmcString.Append(node.Attributes["systemCode"].Value);
+                        Project project = applicationContext.Projects.Where(p => p.Id == projectId).FirstOrDefault();
+                        ResponsiblePartnerCode rpc = applicationContext.ResponsiblePartnerCodes.Where(r => r.Id == project.RPCId).FirstOrDefault();
+
+                        string xmlContext = project.BrexTemplate;
+
+                        XmlDocument xmlDoc = new XmlDocument();
+                        xmlDoc.LoadXml(xmlContext);
+
+                        XmlNamespaceManager xMan = new XmlNamespaceManager(xmlDoc.NameTable);
+
+                        StringBuilder dmcString = new StringBuilder();
+                        dmcString.Append("DMC -");
+                        dmcString.Append(project.ModelIdentification);
                         dmcString.Append("-");
-                        dmcString.Append(node.Attributes["disassyCode"].Value);
-                        dmcString.Append("-");
-                        dmcString.Append(node.Attributes["disassyCodeVariant"].Value);
-                        dmcString.Append("-");
-                        dmcString.Append(node.Attributes["infoCode"].Value);
-                        dmcString.Append("-");
-                        dmcString.Append(node.Attributes["infoCodeVariant"].Value);
-                        dmcString.Append("-");
-                        dmcString.Append(node.Attributes["itemLocationCode"].Value);
+                        dmcString.Append(project.SDC);
                         dmcString.Append("-");
 
-                        informationCodeString = node.Attributes["infoCode"].Value;
-                        locationCodeString = node.Attributes["itemLocationCode"].Value;
-                        snsString = node.Attributes["systemCode"].Value;
+                        string informationCodeString = string.Empty;
+                        string locationCodeString = string.Empty;
+                        string dcString = string.Empty;
+                        string dcvString = string.Empty;
+                        string icString = string.Empty;
+                        string icvString = string.Empty;
+                        string infoNameString = string.Empty;
+                        string snsString = string.Empty;
+                        string techNameString = string.Empty;
 
-                        node.Attributes["modelIdentCode"].Value = project.ModelIdentification;
-                        node.Attributes["subSubSystemCode"].Value = "0";
-                        node.Attributes["subSystemCode"].Value = "0";
-                        node.Attributes["systemDiffCode"].Value = project.SDC;
-                    }
+                        XmlNode node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/dmCode", xMan);
+                        if (node != null)
+                        {
+                            dmcString.Append(node.Attributes["systemCode"].Value);
+                            dmcString.Append("-");
+                            dmcString.Append(node.Attributes["disassyCode"].Value);
+                            dmcString.Append("-");
+                            dmcString.Append(node.Attributes["disassyCodeVariant"].Value);
+                            dmcString.Append("-");
+                            dmcString.Append(node.Attributes["infoCode"].Value);
+                            dmcString.Append("-");
+                            dmcString.Append(node.Attributes["infoCodeVariant"].Value);
+                            dmcString.Append("-");
+                            dmcString.Append(node.Attributes["itemLocationCode"].Value);
+                            dmcString.Append("-");
 
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/title", xMan);
-                    if (node != null)
-                    {
-                        techNameString = node.InnerText;
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/subject", xMan);
-                    if (node != null)
-                    {
-                        infoNameString = node.InnerText;
-                    }
+                            informationCodeString = node.Attributes["infoCode"].Value;
+                            locationCodeString = node.Attributes["itemLocationCode"].Value;
+                            snsString = node.Attributes["systemCode"].Value;
 
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/creator", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = rpc.Rpccage;
-                    }
+                            node.Attributes["modelIdentCode"].Value = project.ModelIdentification;
+                            node.Attributes["subSubSystemCode"].Value = "0";
+                            node.Attributes["subSystemCode"].Value = "0";
+                            node.Attributes["systemDiffCode"].Value = project.SDC;
+                        }
 
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/publisher", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = rpc.Rpccage;
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/contributor", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = rpc.Rpccage;
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/date", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = DateTime.Now.Date.ToString("yyyy-MM-dd");
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/type", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = "text";
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/format", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = "text / xml";
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/identifier", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = dmcString.ToString();
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/language", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = "en-US";
-                    }
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/rights", xMan);
-                    if (node != null)
-                    {
-                        node.InnerText = "01_cc51"; //need to check
-                    }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/title", xMan);
+                        if (node != null)
+                        {
+                            techNameString = node.InnerText;
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/subject", xMan);
+                        if (node != null)
+                        {
+                            infoNameString = node.InnerText;
+                        }
 
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/language", xMan);
-                    if (node != null)
-                    {
-                        node.Attributes["countryIsoCode"].Value = "US";
-                        node.Attributes["languageIsoCode"].Value = "en";
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/creator", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = rpc.Rpccage;
+                        }
+
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/publisher", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = rpc.Rpccage;
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/contributor", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = rpc.Rpccage;
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/date", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = DateTime.Now.Date.ToString("yyyy-MM-dd");
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/type", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = "text";
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/format", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = "text / xml";
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/identifier", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = dmcString.ToString();
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/language", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = "en-US";
+                        }
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/rights", xMan);
+                        if (node != null)
+                        {
+                            node.InnerText = "01_cc51"; //need to check
+                        }
+
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/language", xMan);
+                        if (node != null)
+                        {
+                            node.Attributes["countryIsoCode"].Value = "US";
+                            node.Attributes["languageIsoCode"].Value = "en";
+                        }
+
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/issueInfo", xMan);
+                        if (node != null)
+                        {
+                            node.Attributes["inWork"].Value = "00";
+                            node.Attributes["issueNumber"].Value = "001";
+                        }
+
+                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/issueDate", xMan);
+                        if (node != null)
+                        {
+                            node.Attributes["day"].Value = DateTime.Now.Date.Day.ToString("D2");
+                            node.Attributes["month"].Value = DateTime.Now.Date.Month.ToString("D2");
+                            node.Attributes["year"].Value = DateTime.Now.Date.Year.ToString("D4");
+                        }
+
+                        StringWriter stringWriter = new StringWriter();
+                        XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter);
+
+                        xmlDoc.WriteTo(xmlTextWriter);
+                        InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Code == informationCodeString).FirstOrDefault();
+                        LocationCode locationCode = applicationContext.LocationCodes.Where(i => i.Code == locationCodeString).FirstOrDefault();
+
+                        DataModuleCode dataModuleCode = new DataModuleCode()
+                        {
+                            IsDeleted = false,
+                            InformationCodeId = informationCode.Id,
+                            LocationCodeId = locationCode.Id,
+                            CreatedBy = User.Identity.Name,
+                            CreatedOn = DateTime.UtcNow,
+                            DC = dcString,
+                            DCV = dcvString,
+                            DMC = dmcString.ToString(),
+                            ICV = icvString,
+                            InfoName = infoNameString,
+                            IssueFileId = 1,
+                            ModelIdentification = project.ModelIdentification,
+                            ProjectId = project.Id,
+                            SDC = project.SDC,
+                            StandardNumberingSystem = snsString,
+                            TechName = techNameString,
+                            IsBrexXml = true,
+                            xml = stringWriter.ToString()
+                        };
+
+                        applicationContext.DataModuleCodes.Add(dataModuleCode);
+                        applicationContext.SaveChanges();
+                        return (new JsonResult(new { Status = true, Message = "Brex XML Created Successfully!" }));
                     }
-
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/issueInfo", xMan);
-                    if (node != null)
+                    else
                     {
-                        node.Attributes["inWork"].Value = "00";
-                        node.Attributes["issueNumber"].Value = "001";
+                        return (new JsonResult(new { Status = false, Message = "Brex XML is already available for this Project!" }));
                     }
-
-                    node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/issueDate", xMan);
-                    if (node != null)
-                    {
-                        node.Attributes["day"].Value = DateTime.Now.Date.Day.ToString("D2");
-                        node.Attributes["month"].Value = DateTime.Now.Date.Month.ToString("D2");
-                        node.Attributes["year"].Value = DateTime.Now.Date.Year.ToString("D4");
-                    }
-
-                    StringWriter stringWriter = new StringWriter();
-                    XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter);
-
-                    xmlDoc.WriteTo(xmlTextWriter);
-                    InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Code == informationCodeString).FirstOrDefault();
-                    LocationCode locationCode = applicationContext.LocationCodes.Where(i => i.Code == locationCodeString).FirstOrDefault();
-
-                    DataModuleCode dataModuleCode = new DataModuleCode()
-                    {
-                        IsDeleted = false,
-                        InformationCodeId = 0,
-                        LocationCodeId = locationCode.Id,
-                        CreatedBy = User.Identity.Name,
-                        CreatedOn = DateTime.UtcNow,
-                        DC = dcString,
-                        DCV = dcvString,
-                        DMC = dmcString.ToString(),
-                        ICV = icvString,
-                        InfoName = infoNameString,
-                        IssueFileId = 1,
-                        ModelIdentification = project.ModelIdentification,
-                        ProjectId = project.Id,
-                        SDC = project.SDC,
-                        StandardNumberingSystem = snsString,
-                        TechName = techNameString,
-                        IsBrexXml = true,
-                        xml = stringWriter.ToString()
-                    };
-
-                    applicationContext.DataModuleCodes.Add(dataModuleCode);
-                    applicationContext.SaveChanges();
-                    return (new JsonResult(new { Status = true, Message = "Brex XML Created Successfully!" }));
                 }
-                else
-                {
-                    return (new JsonResult(new { Status = false, Message = "Brex XML is already available for this Project!" }));
-                }
+            }
+            catch(Exception e)
+            {
+                return (new JsonResult(new { Status = false, Message = "Error while generating Brex XML!" }));
             }
         }
 

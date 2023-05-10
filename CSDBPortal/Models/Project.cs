@@ -35,6 +35,8 @@ namespace CSDBPortal.Models
         public int RPCId { get; set; }
         [Column("BrexTemplate")]
         public string BrexTemplate { get; set; }
+        [Column("NavigationXml")]
+        public string? NavigationXml { get; set; }
         [Column("TrackPercentComplete")]
         public bool TrackPercentComplete { get; set; }
         [Column("CreateDefaultBrex")]

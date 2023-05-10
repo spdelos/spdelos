@@ -14,10 +14,10 @@ namespace CSDBPortal.Models
         public string ModelIdentification { get; set; }
         public string SDC { get; set; }
         public string StandardNumberingSystem { get; set; }
-        public string DC { get; set; }
+        public string? DC { get; set; }
         public string DCV { get; set; }
         public int InformationCodeId { get; set; }
-        public string ICV { get; set; }
+        public string? ICV { get; set; }
         public int LocationCodeId { get; set; }
         public string TechName { get; set; }
         public string InfoName { get; set; }

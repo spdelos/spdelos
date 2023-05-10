@@ -36,6 +36,7 @@ namespace CSDBPortal.Data
         public virtual DbSet<LocationCodeSet> LocationCodeSets { get; set; } = null!;
         public virtual DbSet<Project> Projects { get; set; } = null!;
         public virtual DbSet<ProjectStandardNumberingSystem> ProjectStandardNumberingSystems { get; set; } = null!;
+        public virtual DbSet<ProjectNavigation> ProjectNavigations { get; set; } = null!;
         public virtual DbSet<ResponsiblePartnerCode> ResponsiblePartnerCodes { get; set; } = null!;
         public virtual DbSet<StandardNumberingSystem> StandardNumberingSystems { get; set; } = null!;
         public virtual DbSet<UserDetail> UserDetails { get; set; } = null!;

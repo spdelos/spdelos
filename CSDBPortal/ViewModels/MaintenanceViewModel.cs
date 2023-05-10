@@ -30,6 +30,15 @@ namespace CSDBPortal.ViewModels
         public string Variant { get; set; }
     }
 
+    public class CustomProjectNavigation : ProjectNavigation
+    {
+        public string DMC { get; set; }
+        public string ParentDMC { get; set; }
+        public int parent_id { get; set; }
+        public string title { get; set; }
+        public int level { get; set; }
+    }
+
     public class CustomStandardNumberingSystem : StandardNumberingSystem
     {
         public string? ParentCode { get; set; }

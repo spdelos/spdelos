@@ -15,11 +15,11 @@
 <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
-<div class="row">
+<div class="alert" style="display:none;position: absolute">
+    <span id="alertMessage">This alert box could indicate a successful or positive action.</span>
+</div>
 
-    <div class="alert" style="display:none">
-        <span id="alertMessage">This alert box could indicate a successful or positive action.</span>
-    </div>
+<div class="row">
     <!-- tab-content -->
     <div class="col-12">
         <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
@@ -365,11 +365,12 @@
                                             <td>@p.Title</td>
                                             <td>@p.InformationCodeProp - @p.Variant</td>
                                             <td>@p.ICNFormatDescription</td>
-                                            <td width="25%">
+                                            <td width="30%">
                                                 <a href="#" class="btn edit_button edit_project">Edit</a>
                                                 <a href="#" class="btn-sm btn-default project_sns_button">SNS</a>
                                                 <a href="#" class="btn-sm btn-primary project_dmc_button">DMC</a>
-                                                <a href="#" class="btn-sm btn-primary project_dmc_generate_button">Brex Xml</a>
+                                                <a href="#" class="btn-sm btn-primary project_dmc_generate_button">Brex</a>
+                                                <a href="#" class="btn-sm btn-primary project_navigation_generate_button">Navigation</a>
                                             </td>
                                         </tr>
                                     }
@@ -433,7 +434,7 @@
                                             }
                                             else
                                             {
-                                                <a href="#" class="btn edit_button generate_DMC">Generate</a>
+                                                <td width="5%"><a href="#" class="btn edit_button generate_DMC">Generate</a></td>
                                             }
                                             <td width="20%">
                                                 <a href="#" class="btn edit_button delete_DMC">Delete</a>
@@ -895,6 +896,65 @@
     </div>
 </div>
 
+<div class="modal fade" style=" -moz-border-radius:10px;" id="projectNavigationModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="margin-left: 20rem">
+        <div class="modal-content" style="width: 1000px;margin-top:100px; -moz-border-radius:10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelprojectSns">Project Navigation</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label id="errorICNMsg" style="color:red"></label>
+                            <input type="checkbox" id="projectNavigationAutoGenerate" /> Auto Generate
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group draggable">
+                            <input type="radio" id="projectNavigationDMC" value="dmc" name="dmctype" checked /> DMC
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group draggable">                            
+                            <input type="radio" id="projectNavigationTitle" value="title" name="dmctype" /> Title
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <span>Unallocated DMC</span>
+                            @foreach(var code in Model.DataModuleCodes.Where(d => d.IsBrexXml == false))
+                            {
+                                <div class="draggable dmcList form-control" id="@code.Id"><span>@code.DMC</span></div>
+                                <div class="draggable titleList form-control" id="@code.Id"><span>@code.InfoName - @code.TechName</span></div>
+                            }
+                            @*<select class="form-control" required id="projectNavigationUnallocatedDMC" size="10"></select>*@
+                            @*@Html.ListBox("projectNavigationUnallocatedDMCList", new SelectList(Model.DataModuleCodes, "Id","DMC"), new { @class="form-control draggable" })*@
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <span>Navigation Tree</span>
+                            <div class="table-responsive table-striped droppable">
+                                <ul id="projectNavigationTree" style="padding: 0"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveProjectNavigationTree" class="btn btn-primary" value="Save">Save</button>
+                    <button type="button" class="btn btn-default modelCancelProjectNavigationTree" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 
     <script type="text/javascript">
@@ -909,7 +969,16 @@
             @:data.push(obj);
         }
 
-                var sortable = new TreeSortable("#tree");
+        var dmcList = [];
+        var allocatedDmcList = [];
+        @foreach (var d in Model.DataModuleCodes.Where(d => d.IsBrexXml == false))
+        {
+            @:var obj = { "id": @d.Id, "DMC": "@d.DMC", "Title" : "@d.InfoName - @d.TechName" };
+            @:dmcList.push(obj);
+            @:allocatedDmcList.push(obj);
+        }
+
+        var sortable = new TreeSortable("#tree");
         var content = data.map(sortable.createBranch);
         $("#tree").html(content);
         sortable.run();
@@ -927,7 +996,25 @@
             console.log(ui.item);
         });
 
+        function showAlert(status, message)
+        {
+            $('#alertMessage').text(message);
 
+            if (status == true)
+            {
+                $('.alert').removeClass("alert-warning");
+                $('.alert').addClass("alert-success");
+                $('.alert').fadeIn().fadeOut(3000, function(){
+                    location.reload();
+                });
+            }
+            else
+            {
+                $('.alert').removeClass("alert-success");
+                $('.alert').addClass("alert-warning");
+                $('.alert').fadeIn().fadeOut(3000);
+            }
+        }
 
         $(document).on("click", ".add-child", function (e) {
 
@@ -1007,8 +1094,60 @@
             });
         });
 
+        function populateNavigationTree()
+        {
+            var navigationTreeList = [];
+            if ($('input[name=dmctype]:checked').val() == "dmc") {
+
+                $.each(dmcList, function( index, value ) {
+                    navigationTreeList.push({ "id": value.id, "parent_id": 0, "title": value.DMC, "level": 0 });
+                });
+            }
+            else {
+                $.each(dmcList, function( index, value ) {
+                    navigationTreeList.push({ "id": value.id, "parent_id": 0, "title": value.Title, "level": 0 });
+                });
+            }
+
+            $('.dmcList').hide();
+            $('.titleList').hide();
+                
+            var projectNavigationTree = new TreeSortable("#projectNavigationTree");
+            var contentProjectNavigation = navigationTreeList.map(projectNavigationTree.createBranch);
+            $("#projectNavigationTree").html(contentProjectNavigation);
+            projectNavigationTree.run();
+            $('.create-dmc').hide();
+        }
+
+        $('#projectNavigationAutoGenerate').change(function() {
+            if(this.checked) {
+                populateNavigationTree();
+            }
+        });
+
+        $('#saveProjectNavigationTree').click(function () {
+            alert('test');
+        });
+
+        $('input[type=radio][name=dmctype]').change(function() {
+            if (this.id == 'projectNavigationDMC') {
+                populateNavigationTree();
+                $(".titleList").hide();
+                $(".dmcList").show();
+            }
+            else if (this.id == 'projectNavigationTitle') {
+                populateNavigationTree();
+                $(".titleList").show();
+                $(".dmcList").hide();
+            }
+        });
+
         var responsiblePartnerCodes = [];
         $(document).ready(function () {
+
+            $(".draggable").draggable();
+
+            $(".titleList").hide();
 
             $("#btnUploadDMC").on('click', function (e) {
                 e.preventDefault();
@@ -1082,8 +1221,8 @@
             $("#rpcModel").modal('hide');
             $("#projectModel").modal('hide');
             $("#projectSnsModel").modal('hide');
+            $("#projectNavigationModel").modal('hide');
             selectedProject = 0;
-
         });
 
         $(".btn-close-sns").click(function () {
@@ -1104,11 +1243,16 @@
             $("#rpcModel").modal('hide');
             $("#projectModel").modal('hide');
             $("#projectSnsModel").modal('hide');
+            $("#projectNavigationModel").modal('hide');
             selectedProject = 0;
         });
 
         $(".modelCancelsns").click(function () {
             $("#snsModel").modal('hide');
+        });
+
+        $(".modelCancelProjectNavigationTree").click(function () {
+            $("#projectNavigationModel").modal('hide');
         });
 
         $(".modelCancelDMC").click(function () {
@@ -1466,19 +1610,7 @@
                 data: { projectId: selectedProject },
                 dataType: "json",
                 success: function (result) {
-
-                    if (result.status == true)
-                    {
-                        $('.alert').addClass("alert-success");
-                    }
-                    else
-                    {
-                        $('.alert').addClass("alert-warning");
-                    }
-
-                    $('#alertMessage').text(result.message);
-                    $('.alert').show();
-                    $('.alert').fadeIn().delay(3000).fadeOut();
+                    showAlert(result.status, result.message);
                 }
             });
         });
@@ -1536,6 +1668,33 @@
             });
 
             $("#projectSnsModel").modal('show');
+        });
+
+        $(".project_navigation_generate_button").click(function () {
+
+            var rowobj = $(this).closest("tr");
+            selectedProject = rowobj.find("td:eq(0)").text();
+
+            $.ajax({
+                type: "POST",
+                url: "Maintenance/GetProjectNavigation",
+                data: { projectId: selectedProject },
+                dataType: "json",
+                success: function (result) {
+
+                    if (result.length > 0)
+                    {
+                        $("#projectNavigationAutoGenerate").attr("disabled", true);
+                    }
+
+                    var projectNavigationTree = new TreeSortable("#projectNavigationTree");
+                    var contentProjectNavigation = result.map(projectNavigationTree.createBranch);
+                    $("#projectNavigationTree").html(contentProjectNavigation);
+                    projectNavigationTree.run();
+                }
+            });
+
+            $("#projectNavigationModel").modal('show');
         });
 
         $('#tableDMC tbody').on('click', '.generate_DMC', function () {
