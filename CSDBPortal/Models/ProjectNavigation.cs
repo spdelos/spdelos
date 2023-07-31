@@ -13,6 +13,10 @@ namespace CSDBPortal.Models
         public int ProjectId { get; set; }
         [Column("DMCId")] 
         public int DMCId { get; set; }
+
+        [Column("Title")]
+        public string Title { get; set; }
+
         [Column("ParentId")] 
         public int ParentId { get; set; }
         [Column("CreatedBy")] 

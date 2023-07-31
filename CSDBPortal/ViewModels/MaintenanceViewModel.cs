@@ -11,6 +11,8 @@ namespace CSDBPortal.ViewModels
         public List<CustomProjet>? Projects { get; set; }
 
         public List<CustomDataModuleCode>? DataModuleCodes { get; set; }
+
+        public string ProjectNavigationJson { get; set; }
         public List<IssueNo>? Issues { get; set; }
         public List<InformationCodeSet>? InformationCodeSets { get; set;}
         public List<Icnformat>? Icnformats { get; set; }
@@ -35,8 +37,19 @@ namespace CSDBPortal.ViewModels
         public string DMC { get; set; }
         public string ParentDMC { get; set; }
         public int parent_id { get; set; }
-        public string title { get; set; }
         public int level { get; set; }
+
+        public List<CustomProjectNavigation> Children { get; set; }
+    }
+
+    public class NavigationTreeData
+    {
+        public string name { get; set; }
+        public int id { get; set; }
+        public string dmc { get; set; }
+        public int dmcId { get; set; }
+        public string title { get; set; }
+        public NavigationTreeData[] children { get; set; }
     }
 
     public class CustomStandardNumberingSystem : StandardNumberingSystem

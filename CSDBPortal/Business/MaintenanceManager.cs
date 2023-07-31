@@ -1,9 +1,13 @@
 ﻿using CSDBPortal.Data;
 using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
+using DocumentFormat.OpenXml.EMMA;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text;
@@ -75,6 +79,7 @@ namespace CSDBPortal.Business
                                       p.CreatedDate,
                                       p.ModifiedBy,
                                       p.ModifiedDate,
+                                      p.NavigationXml,
                                       InformationCodeSetDescription = d.Description,
                                       Variant = d.Variant,
                                       ICNDescription = icn.Description
@@ -107,7 +112,8 @@ namespace CSDBPortal.Business
                             ModifiedDate = item.ModifiedDate,
                             InformationCodeProp = item.InformationCodeSetDescription,
                             ICNFormatDescription = item.ICNDescription,
-                            Variant = item.Variant
+                            Variant = item.Variant,
+                            NavigationXml = item.NavigationXml
                         });
 
                     }
@@ -500,6 +506,127 @@ namespace CSDBPortal.Business
             }
         }
 
+        private void SaveProjectNavigationTreeRecursive(int projectId, NavigationTreeData[] children, int parentId, ApplicationDbContext context, string userName)
+        {
+            if (children != null)
+            {
+                foreach (NavigationTreeData navTree in children)
+                {
+                    var datamoduleCode = context.DataModuleCodes.Where(d => d.Id == navTree.dmcId).FirstOrDefault();
+                    var projectNavigation = new ProjectNavigation()
+                    {
+                        Id = 0,
+                        ParentId = parentId,
+                        ProjectId = projectId,
+                        DMCId = navTree.dmcId,
+                        Title = navTree.title,
+                        CreatedBy = userName,
+                        CreatedOn = DateTime.UtcNow,
+                    };
+                    context.Add(projectNavigation);
+                    context.SaveChanges();
+
+                    SaveProjectNavigationTreeRecursive(projectId, navTree.children, projectNavigation.Id, context, userName);
+                }
+            }
+        }
+
+        public bool SaveProjectNavigationTree(int projectId, NavigationTreeData[] navigationTreeData, string userName)
+        {
+            using (ApplicationDbContext context = new())
+            {
+                var projectNavigations = context.ProjectNavigations.Where(n => n.ProjectId == projectId);
+                foreach (var projectNavigation in projectNavigations)
+                {
+                    context.Remove(projectNavigation);
+                }
+                context.SaveChanges();
+
+                SaveProjectNavigationTreeRecursive(projectId, navigationTreeData, 0, context, userName);
+            }
+            return true;
+        }
+
+        private List<CustomProjectNavigation> BuildNavigationTree(int projectId, int parentId, ApplicationDbContext context)
+        {
+            List<CustomProjectNavigation> navigationTrees = new List<CustomProjectNavigation>();
+
+            var navigationResult = (from n in context.ProjectNavigations
+                                    join dmc in context.DataModuleCodes on n.DMCId equals dmc.Id
+                                    where n.ProjectId == projectId && n.ParentId == parentId
+                                    select new { n.Id, n.DMCId, dmc.DMC, n.ParentId, dmc.InfoName, dmc.TechName }).ToList();
+
+            foreach (var navigation in navigationResult)
+            {
+                navigationTrees.Add(new CustomProjectNavigation()
+                {
+                    Id = navigation.Id,
+                    ParentId = parentId,
+                    DMCId = navigation.DMCId,
+                    DMC = navigation.DMC,
+                    level = 0,
+                    parent_id = navigation.ParentId,
+                    Title = navigation.InfoName + " - " + navigation.TechName,
+                    ProjectId = projectId,
+                    Children = BuildNavigationTree(projectId, navigation.Id, context)
+                });
+            }
+
+            return navigationTrees;
+        }
+
+        public List<CustomProjectNavigation> GetProjectNavigationTree(int projectId)
+        {
+            List<CustomProjectNavigation> navigationTrees = new List<CustomProjectNavigation>();
+
+            try
+            {
+                using (ApplicationDbContext context = new())
+                {
+                    Project project = context.Projects.Where(p => p.Id == projectId).FirstOrDefault();
+                    
+                    if (project != null)
+                    {
+                        var projectNavigations = context.ProjectNavigations.Where(p => p.ProjectId == projectId).ToList();
+
+                        if (projectNavigations.Count <= 0)
+                        {
+                            var dataModelCodes = context.DataModuleCodes.Where(p => p.ProjectId == projectId).ToList();
+                            foreach(DataModuleCode code in  dataModelCodes)
+                            {
+                                navigationTrees.Add(new CustomProjectNavigation()
+                                {
+                                    Id = 0,
+                                    ParentId = 0,
+                                    DMCId = code.Id,
+                                    DMC = code.DMC,
+                                    level = 0,
+                                    parent_id = 0,
+                                    Title = code.InfoName + " - " + code.TechName,
+                                    ProjectId = projectId,
+                                    Children = new List<CustomProjectNavigation>()
+                                });
+                            }
+                        }
+                        else
+                        {
+                            var trees = BuildNavigationTree(projectId, 0, context);
+                            foreach(var tree in trees)
+                            {
+                                navigationTrees.Add(tree);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return navigationTrees;
+        }
+
         public List<CustomProjectNavigation> GetProjectNavigation(int projectId)
         {
             try
@@ -530,7 +657,7 @@ namespace CSDBPortal.Business
                             UpdatedOn = item.UpdatedOn,
                             
                             parent_id = item.ParentId,
-                            title = item.DMC
+                            Title = item.DMC
                         });
                     }
 

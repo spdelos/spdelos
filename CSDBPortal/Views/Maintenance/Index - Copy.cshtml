@@ -288,7 +288,7 @@
                         <div class="table-responsive table-striped">
                             <ul id="tree"></ul>
 
-                        @*<table class="table table-bordered" width="100%" id="snsTable">
+                            @*<table class="table table-bordered" width="100%" id="snsTable">
                         <thead class="thead">
                         <tr>
                         <th style="display:none"> </th>
@@ -906,6 +906,14 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
+                        <div class="form-group">
+                            <label id="errorICNMsg" style="color:red"></label>
+                            <input type="checkbox" id="projectNavigationAutoGenerate" /> Auto Generate
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
                         <div class="form-group draggable">
                             <input type="radio" id="projectNavigationDMC" value="dmc" name="dmctype" checked /> DMC
                         </div>
@@ -919,9 +927,21 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
+                            <span>Unallocated DMC</span>
+                            @foreach(var code in Model.DataModuleCodes.Where(d => d.IsBrexXml == false))
+                            {
+                                <div class="draggable dmcList form-control" id="@code.Id"><span>@code.DMC</span></div>
+                                <div class="draggable titleList form-control" id="@code.Id"><span>@code.InfoName - @code.TechName</span></div>
+                            }
+                            @*<select class="form-control" required id="projectNavigationUnallocatedDMC" size="10"></select>*@
+                            @*@Html.ListBox("projectNavigationUnallocatedDMCList", new SelectList(Model.DataModuleCodes, "Id","DMC"), new { @class="form-control draggable" })*@
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
                             <span>Navigation Tree</span>
                             <div class="table-responsive table-striped droppable">
-                                <div id="projectNavigationTree" style="padding: 0"></div>
+                                <ul id="projectNavigationTree" style="padding: 0"></ul>
                             </div>
                         </div>
                     </div>
@@ -1074,59 +1094,43 @@
             });
         });
 
-        function refreshProjectNavigationTree(obj)
-        {
-            $('#projectNavigationTree').tree('loadData', obj);
-        }
-
-        function BuildNavigationTree(children)
-        {
-            var jsonObj = [];
-            children.forEach(function (e) {
-
-                if ($('input[name=dmctype]:checked').val() == "dmc") {
-                    jsonObj.push({ "name": e.dmc, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": ((e.children === undefined) ? [] : BuildNavigationTree(e.children)) });
-                }
-                else {
-                    jsonObj.push({ "name": e.title, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": ((e.children === undefined) ? [] : BuildNavigationTree(e.children)) });
-                }
-            });
-            return jsonObj;
-        }
-
         function populateNavigationTree()
         {
-            var navigationTreeDataString = $('#projectNavigationTree').tree('toJson');
-            var navigationTreeData = JSON.parse(navigationTreeDataString);
+            var navigationTreeList = [];
+            if ($('input[name=dmctype]:checked').val() == "dmc") {
 
-            var jsonObj = BuildNavigationTree(navigationTreeData);
+                $.each(dmcList, function( index, value ) {
+                    navigationTreeList.push({ "id": value.id, "parent_id": 0, "title": value.DMC, "level": 0 });
+                });
+            }
+            else {
+                $.each(dmcList, function( index, value ) {
+                    navigationTreeList.push({ "id": value.id, "parent_id": 0, "title": value.Title, "level": 0 });
+                });
+            }
 
-            //var jsonObj = [];
-            //navigationTreeData.forEach(function (e) {
-
-            //    if ($('input[name=dmctype]:checked').val() == "dmc") {
-            //        jsonObj.push({ "name": e.dmc, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": ((e.children === undefined) ? [] : BuildNavigationTree(e.children)) });
-            //    }
-            //    else {
-            //        jsonObj.push({ "name": e.title, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": ((e.children === undefined) ? [] : BuildNavigationTree(e.children)) });
-            //    }
-            //});
-
-            refreshProjectNavigationTree(jsonObj);
+            $('.dmcList').hide();
+            $('.titleList').hide();
+                
+            var projectNavigationTree = new TreeSortable("#projectNavigationTree");
+            if (projectNavigationTree.getTreeLength() <= 0)
+            {
+                var contentProjectNavigation = navigationTreeList.map(projectNavigationTree.createBranch);
+                $("#projectNavigationTree").html(contentProjectNavigation);
+                projectNavigationTree.run();
+            }
+            $('.create-dmc').hide();
         }
 
+        $('#projectNavigationAutoGenerate').change(function() {
+            if(this.checked) {
+                populateNavigationTree();
+                $('#projectNavigationAutoGenerate').attr("disable","disable")
+            }
+        });
+
         $('#saveProjectNavigationTree').click(function () {
-
-            var navigationTreeData = $('#projectNavigationTree').tree('toJson');
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/SaveProjectNavigationTree",
-                data: { projectId: selectedProject, navigationTreeDataJson: navigationTreeData },
-                dataType: "json",
-                success: function (result) {
-                }
-            });
+            alert('test');
         });
 
         $('input[type=radio][name=dmctype]').change(function() {
@@ -1677,28 +1681,20 @@
 
             $.ajax({
                 type: "POST",
-                url: "Maintenance/GetProjectNavigationTree",
+                url: "Maintenance/GetProjectNavigation",
                 data: { projectId: selectedProject },
                 dataType: "json",
                 success: function (result) {
 
-                    var jsonObj = BuildNavigationTree(result);
+                    if (result.length > 0)
+                    {
+                        $("#projectNavigationAutoGenerate").attr("disabled", true);
+                    }
 
-                    //result.forEach(function (e) {
-
-                    //    if ($('input[name=dmctype]:checked').val() == "dmc") {
-                    //        jsonObj.push({ "name": e.dmc, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": e.children });
-                    //    }
-                    //    else {
-                    //        jsonObj.push({ "name": e.title, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": e.children });
-                    //    }
-                    //});
-
-                    $('#projectNavigationTree').tree({
-                        data: jsonObj,
-                        autoOpen: true,
-                        dragAndDrop: true
-                    });
+                    var projectNavigationTree = new TreeSortable("#projectNavigationTree");
+                    var contentProjectNavigation = result.map(projectNavigationTree.createBranch);
+                    $("#projectNavigationTree").html(contentProjectNavigation);
+                    projectNavigationTree.run();
                 }
             });
 

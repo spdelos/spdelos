@@ -454,6 +454,14 @@ function TreeSortable(name) {
             });
         },
 
+        getTreeLength() {
+            const {
+                options: { treeSelector, branchSelector },
+            } = treeSortable;
+            const $branches = $(`${treeSelector} > ${branchSelector}`);
+            return $branches.length;
+        },
+
         updateBranchZIndex() {
             const {
                 options: { treeSelector, branchSelector },
@@ -466,6 +474,7 @@ function TreeSortable(name) {
                     $(this).css("z-index", Math.max(1, length - index));
                 });
         },
+
         initSorting() {
             const { options, pxToNumber, numberToPx, updateBranchZIndex } = treeSortable;
             const {

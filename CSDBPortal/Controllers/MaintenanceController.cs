@@ -1,11 +1,13 @@
 ﻿using CSDBPortal.Business;
 using CSDBPortal.Data;
 using CSDBPortal.Models;
+using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualBasic.FileIO;
 using System.Data;
 using System.Text;
+using System.Text.Json;
 using System.Xml;
 using Project = CSDBPortal.Models.Project;
 
@@ -344,6 +346,19 @@ namespace CSDBPortal.Controllers
 
                 return Json(applicationContext.SaveChanges());
             }
+        }
+
+        public JsonResult GetProjectNavigationTree(int projectId)
+        {
+            return Json(maintenancesManager.GetProjectNavigationTree(projectId));
+        }
+
+        public JsonResult SaveProjectNavigationTree(int projectId, string navigationTreeDataJson)
+        {
+            List<NavigationTreeData>? navigationTreeData =
+                JsonSerializer.Deserialize<List<NavigationTreeData>>(navigationTreeDataJson);
+
+            return Json(maintenancesManager.SaveProjectNavigationTree(projectId, navigationTreeData.ToArray(), User.Identity.Name));
         }
 
         public JsonResult GetProjectNavigation(int projectId)
