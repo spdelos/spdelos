@@ -3,6 +3,7 @@ using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
 using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
@@ -11,6 +12,7 @@ using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text;
+using System.Xml;
 using Project = CSDBPortal.Models.Project;
 
 namespace CSDBPortal.Business
@@ -506,7 +508,7 @@ namespace CSDBPortal.Business
             }
         }
 
-        private void SaveProjectNavigationTreeRecursive(int projectId, NavigationTreeData[] children, int parentId, ApplicationDbContext context, string userName)
+        private void SaveProjectNavigationTreeRecursive(int projectId, NavigationTreeData[] children, int parentId, ApplicationDbContext context, string userName, XmlDocument doc, XmlElement parentNode)
         {
             if (children != null)
             {
@@ -526,7 +528,17 @@ namespace CSDBPortal.Business
                     context.Add(projectNavigation);
                     context.SaveChanges();
 
-                    SaveProjectNavigationTreeRecursive(projectId, navTree.children, projectNavigation.Id, context, userName);
+                    XmlElement siteMapNode = doc.CreateElement(string.Empty, "siteMapNode", string.Empty);
+                    siteMapNode.SetAttribute("title", navTree.name);
+
+                    if (!string.IsNullOrEmpty(datamoduleCode.xml))
+                    {
+                        siteMapNode.SetAttribute("url", datamoduleCode.DMC + ".xml");
+                    }
+
+                    parentNode.AppendChild(siteMapNode);
+
+                    SaveProjectNavigationTreeRecursive(projectId, navTree.children, projectNavigation.Id, context, userName, doc, siteMapNode);
                 }
             }
         }
@@ -542,7 +554,23 @@ namespace CSDBPortal.Business
                 }
                 context.SaveChanges();
 
-                SaveProjectNavigationTreeRecursive(projectId, navigationTreeData, 0, context, userName);
+                XmlDocument doc = new XmlDocument();
+
+                XmlDeclaration xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
+                XmlElement root = doc.DocumentElement;
+                doc.InsertBefore(xmlDeclaration, root);
+
+                XmlElement siteMap = doc.CreateElement(string.Empty, "siteMap", string.Empty);
+                doc.AppendChild(siteMap);
+
+                SaveProjectNavigationTreeRecursive(projectId, navigationTreeData, 0, context, userName, doc, siteMap);
+
+                var project = context.Projects.Where(p => p.Id == projectId).FirstOrDefault();
+                if (project != null)
+                {
+                    project.NavigationXml = doc.OuterXml;
+                    context.SaveChanges();
+                }
             }
             return true;
         }
@@ -554,7 +582,7 @@ namespace CSDBPortal.Business
             var navigationResult = (from n in context.ProjectNavigations
                                     join dmc in context.DataModuleCodes on n.DMCId equals dmc.Id
                                     where n.ProjectId == projectId && n.ParentId == parentId
-                                    select new { n.Id, n.DMCId, dmc.DMC, n.ParentId, dmc.InfoName, dmc.TechName }).ToList();
+                                    select new { n.Id, n.DMCId, dmc.DMC, n.ParentId, dmc.InfoName, dmc.TechName, n.Title }).ToList();
 
             foreach (var navigation in navigationResult)
             {
@@ -566,7 +594,7 @@ namespace CSDBPortal.Business
                     DMC = navigation.DMC,
                     level = 0,
                     parent_id = navigation.ParentId,
-                    Title = navigation.InfoName + " - " + navigation.TechName,
+                    Title = navigation.Title,
                     ProjectId = projectId,
                     Children = BuildNavigationTree(projectId, navigation.Id, context)
                 });
@@ -625,6 +653,14 @@ namespace CSDBPortal.Business
             }
 
             return navigationTrees;
+        }
+
+        public List<DataModuleCode> GetDataModuleCodes(int projectId)
+        {
+            using (ApplicationDbContext applicationDbContext = new())
+            {
+                return applicationDbContext.DataModuleCodes.Where(d => d.ProjectId == projectId && d.IsBrexXml == false && d.IsDeleted == false).ToList();
+            }
         }
 
         public List<CustomProjectNavigation> GetProjectNavigation(int projectId)

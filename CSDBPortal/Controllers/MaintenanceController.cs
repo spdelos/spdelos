@@ -302,7 +302,7 @@ namespace CSDBPortal.Controllers
 
                 string dcValue = string.IsNullOrEmpty(dataModuleCode.DC) ? "-" : "-" + dataModuleCode.DC;
 
-                dataModuleCode.DMC = @"DMC -"
+                dataModuleCode.DMC = @"DMC-"
                                     + dataModuleCode.ModelIdentification + "-"
                                     + dataModuleCode.SDC + "-"
                                     + dataModuleCode.StandardNumberingSystem
@@ -357,8 +357,9 @@ namespace CSDBPortal.Controllers
         {
             List<NavigationTreeData>? navigationTreeData =
                 JsonSerializer.Deserialize<List<NavigationTreeData>>(navigationTreeDataJson);
+            maintenancesManager.SaveProjectNavigationTree(projectId, navigationTreeData.ToArray(), User.Identity.Name);
 
-            return Json(maintenancesManager.SaveProjectNavigationTree(projectId, navigationTreeData.ToArray(), User.Identity.Name));
+            return Json(maintenancesManager.GetProjectNavigationTree(projectId));
         }
 
         public JsonResult GetProjectNavigation(int projectId)
@@ -369,6 +370,11 @@ namespace CSDBPortal.Controllers
         public JsonResult GetProjectSns(int projectId)
         {
             return Json(maintenancesManager.GetProjectSns(projectId));
+        }
+
+        public JsonResult GetDataModuleCodes(int projectId)
+        {
+            return Json(maintenancesManager.GetDataModuleCodes(projectId));
         }
 
         public JsonResult GetLocationCodes(int projectId)
@@ -486,7 +492,7 @@ namespace CSDBPortal.Controllers
                                     IssueTypeFile issueTypeFile = context.IssueTypeFiles.Where(f => f.Name == fields[3]).FirstOrDefault();
 
                                     string dcValue = string.IsNullOrEmpty(fields[5]) ? "-" : "-" + fields[5];
-                                    string dmCode = @"DMC -"
+                                    string dmCode = @"DMC-"
                                                         + project.ModelIdentification + "-"
                                                             + project.SDC + "-"
                                                             + fields[4]
@@ -562,7 +568,7 @@ namespace CSDBPortal.Controllers
                         XmlNamespaceManager xMan = new XmlNamespaceManager(xmlDoc.NameTable);
 
                         StringBuilder dmcString = new StringBuilder();
-                        dmcString.Append("DMC -");
+                        dmcString.Append("DMC-");
                         dmcString.Append(project.ModelIdentification);
                         dmcString.Append("-");
                         dmcString.Append(project.SDC);

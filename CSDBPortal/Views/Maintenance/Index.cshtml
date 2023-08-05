@@ -46,7 +46,7 @@
                 <li class="nav-item" role="presentation">
                     <a class="nav-link" id="pills-tab-2" data-toggle="pill" href="#pills-2">
                         <img src="./dist/img/Icons/Maintenance/Responsible Partner Code.png"
-                         alt="Responsible Partner Code icon">
+                             alt="Responsible Partner Code icon">
                         <span class="ml-1"> Responsible Partner Code(RPC)</span>
                     </a>
                 </li>
@@ -56,7 +56,7 @@
                 <li class="nav-item" role="presentation">
                     <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-3">
                         <img src="./dist/img/Icons/Maintenance/Data Module Type.png"
-                         alt="Data Module Type icon">
+                             alt="Data Module Type icon">
                         <span class="ml-1">Data Module Type</span>
                     </a>
                 </li>
@@ -66,7 +66,7 @@
                 <li class="nav-item" role="presentation">
                     <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-4">
                         <img src="./dist/img/Icons/Maintenance/Standard Numbering System.png"
-                         alt="Standard Numbering System icon">
+                             alt="Standard Numbering System icon">
                         <span class="ml-1"> Standard Numbering System(SNS)</span>
                     </a>
                 </li>
@@ -288,7 +288,7 @@
                         <div class="table-responsive table-striped">
                             <ul id="tree"></ul>
 
-                        @*<table class="table table-bordered" width="100%" id="snsTable">
+                            @*<table class="table table-bordered" width="100%" id="snsTable">
                         <thead class="thead">
                         <tr>
                         <th style="display:none"> </th>
@@ -897,8 +897,8 @@
 </div>
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="projectNavigationModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document" style="margin-left: 20rem">
-        <div class="modal-content" style="width: 1000px;margin-top:100px; -moz-border-radius:10px;">
+    <div class="modal-dialog" role="document" style="margin-left: 10rem">
+        <div class="modal-content" style="width: 1200px;margin-top:100px; -moz-border-radius:10px;">
             <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
                 <h4 class="modal-title modelprojectSns">Project Navigation</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
@@ -906,17 +906,24 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group draggable">
+                        <div class="form-group">
                             <input type="radio" id="projectNavigationDMC" value="dmc" name="dmctype" checked /> DMC
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group draggable">                            
+                        <div class="form-group">
                             <input type="radio" id="projectNavigationTitle" value="title" name="dmctype" /> Title
                         </div>
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <span>DMC List</span>
+                            <select class="form-select form-control" aria-label="Default select example" required id="projectNavigationTreeDmcDropDown"></select>
+                            <button id="addDMCtoTree" class="btn btn-primary" value="AddDMC">Add to Tree</button>
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <span>Navigation Tree</span>
@@ -941,21 +948,13 @@
 
         var selectedProject = 0;
         var selectedSNS;
+        var currentNodeText;
 
         var data = [];
         @foreach (var d in Model.StandardNumberingSystems)
         {
             @:var obj = { "id": @d.Id, "parent_id": @d.parent_id, "title": "@d.title", "level": @d.level };
             @:data.push(obj);
-        }
-
-        var dmcList = [];
-        var allocatedDmcList = [];
-        @foreach (var d in Model.DataModuleCodes.Where(d => d.IsBrexXml == false))
-        {
-            @:var obj = { "id": @d.Id, "DMC": "@d.DMC", "Title" : "@d.InfoName - @d.TechName" };
-            @:dmcList.push(obj);
-            @:allocatedDmcList.push(obj);
         }
 
         var sortable = new TreeSortable("#tree");
@@ -976,111 +975,28 @@
             console.log(ui.item);
         });
 
-        function showAlert(status, message)
-        {
+        function showAlert(status, message) {
             $('#alertMessage').text(message);
 
-            if (status == true)
-            {
+            if (status == true) {
                 $('.alert').removeClass("alert-warning");
                 $('.alert').addClass("alert-success");
-                $('.alert').fadeIn().fadeOut(3000, function(){
+                $('.alert').fadeIn().fadeOut(3000, function () {
                     location.reload();
                 });
             }
-            else
-            {
+            else {
                 $('.alert').removeClass("alert-success");
                 $('.alert').addClass("alert-warning");
                 $('.alert').fadeIn().fadeOut(3000);
             }
         }
 
-        $(document).on("click", ".add-child", function (e) {
-
-            var selectedParent = $(this).getSelectedBranch();
-            const parent = selectedParent.innerText.split(" : ");
-
-            $("#SnsParentDropDown").val(selectedParent.dataset.id);
-
-            $('#hdnSnsId').val('0');
-            $('#txtSnsCode').val('');
-            $('#txtSnsDescription').val('');
-            $("#saveSns").html("Save");
-            $(".modelSnsTitle").html("Create Standard Number System");
-            $("#snsModel").modal('show');
-        });
-
-        $(document).on("click", ".edit-item", function (e) {
-
-            var selectedParent = $(this).getSelectedBranch();
-            var parent = selectedParent.innerText.split(" : ");
-            $('#txtSnsCode').val(parent[0]);
-            $('#txtSnsDescription').val(parent[1]);
-            $('#hdnSnsId').val(selectedParent.attributes['data-id'].value);
-            $("#SnsParentDropDown").val(selectedParent.attributes['data-parent'].value);
-
-            $("#saveSns").html("Update");
-            $(".modelSnsTitle").html("Edit Standard Number System");
-            $("#snsModel").modal('show');
-        });
-
-        $(document).on("click", ".create-dmc", function (e) {
-            var selectedParent = $(this).getSelectedBranch();
-            selectedSNS = selectedParent.dataset.id;
-
-            $("#hdnDmcId").val('');
-            $("#DMCProjectDropDown").val(selectedProject);
-            $("#DMCProjectDropDown").trigger("change");
-
-            $("#txtDMCModelIdentification").val('');
-            $("#txtDMCSDC").val('');
-            $("#txtDMCSnsCode").val('');
-            $("#txtDMCDCV").val('A');
-            $("#txtDMCICV").val('A');
-            $("#DMCInformationCodeDropDown").val('');
-            $("#DMCLocationCodeDropDown").val('');
-            $("#DMCSchemaFileDropDown").val('');
-            $("#txtDC").val('');
-            $("#txtDMCTechName").val('');
-            $("#txtDMCInfoName").val('');
-
-            $(".modelDMCTitle").html("Create DMC");
-            $("#btnDMCSave").html("Save");
-
-            $("#DMCModel").modal('show');
-        });
-
-        $(document).on("click", ".remove-branch", function (e) {
-            e.preventDefault();
-
-            const confirm = window.confirm("Are you sure you want to delete this branch?");
-            if (!confirm) {
-                return;
-            }
-
-            var selectedParent = $(this).getSelectedBranch();
-
-            var id = selectedParent.attributes['data-id'].value;
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/DeleteSns",
-                data: { id: id },
-                dataType: "json",
-                success: function (data) {
-                    location.reload();
-                }
-            });
-        });
-
-        function refreshProjectNavigationTree(obj)
-        {
+        function refreshProjectNavigationTree(obj) {
             $('#projectNavigationTree').tree('loadData', obj);
         }
 
-        function BuildNavigationTree(children)
-        {
+        function BuildNavigationTree(children) {
             var jsonObj = [];
             children.forEach(function (e) {
 
@@ -1094,60 +1010,193 @@
             return jsonObj;
         }
 
-        function populateNavigationTree()
-        {
+        function populateNavigationTree() {
             var navigationTreeDataString = $('#projectNavigationTree').tree('toJson');
             var navigationTreeData = JSON.parse(navigationTreeDataString);
 
             var jsonObj = BuildNavigationTree(navigationTreeData);
 
-            //var jsonObj = [];
-            //navigationTreeData.forEach(function (e) {
-
-            //    if ($('input[name=dmctype]:checked').val() == "dmc") {
-            //        jsonObj.push({ "name": e.dmc, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": ((e.children === undefined) ? [] : BuildNavigationTree(e.children)) });
-            //    }
-            //    else {
-            //        jsonObj.push({ "name": e.title, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": ((e.children === undefined) ? [] : BuildNavigationTree(e.children)) });
-            //    }
-            //});
-
             refreshProjectNavigationTree(jsonObj);
         }
-
-        $('#saveProjectNavigationTree').click(function () {
-
-            var navigationTreeData = $('#projectNavigationTree').tree('toJson');
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/SaveProjectNavigationTree",
-                data: { projectId: selectedProject, navigationTreeDataJson: navigationTreeData },
-                dataType: "json",
-                success: function (result) {
-                }
-            });
-        });
-
-        $('input[type=radio][name=dmctype]').change(function() {
-            if (this.id == 'projectNavigationDMC') {
-                populateNavigationTree();
-                $(".titleList").hide();
-                $(".dmcList").show();
-            }
-            else if (this.id == 'projectNavigationTitle') {
-                populateNavigationTree();
-                $(".titleList").show();
-                $(".dmcList").hide();
-            }
-        });
 
         var responsiblePartnerCodes = [];
         $(document).ready(function () {
 
-            $(".draggable").draggable();
+            $(".jqtree-title").dblclick(function () {
 
-            $(".titleList").hide();
+               alert('test');
+            });
+
+            $(document).on("click", ".add-child", function (e) {
+
+                var selectedParent = $(this).getSelectedBranch();
+                const parent = selectedParent.innerText.split(" : ");
+
+                $("#SnsParentDropDown").val(selectedParent.dataset.id);
+
+                $('#hdnSnsId').val('0');
+                $('#txtSnsCode').val('');
+                $('#txtSnsDescription').val('');
+                $("#saveSns").html("Save");
+                $(".modelSnsTitle").html("Create Standard Number System");
+                $("#snsModel").modal('show');
+            });
+
+            $(document).on("click", ".edit-item", function (e) {
+
+                var selectedParent = $(this).getSelectedBranch();
+                var parent = selectedParent.innerText.split(" : ");
+                $('#txtSnsCode').val(parent[0]);
+                $('#txtSnsDescription').val(parent[1]);
+                $('#hdnSnsId').val(selectedParent.attributes['data-id'].value);
+                $("#SnsParentDropDown").val(selectedParent.attributes['data-parent'].value);
+
+                $("#saveSns").html("Update");
+                $(".modelSnsTitle").html("Edit Standard Number System");
+                $("#snsModel").modal('show');
+            });
+
+            $(document).on("click", ".create-dmc", function (e) {
+                var selectedParent = $(this).getSelectedBranch();
+                selectedSNS = selectedParent.dataset.id;
+
+                $("#hdnDmcId").val('');
+                $("#DMCProjectDropDown").val(selectedProject);
+                $("#DMCProjectDropDown").trigger("change");
+
+                $("#txtDMCModelIdentification").val('');
+                $("#txtDMCSDC").val('');
+                $("#txtDMCSnsCode").val('');
+                $("#txtDMCDCV").val('A');
+                $("#txtDMCICV").val('A');
+                $("#DMCInformationCodeDropDown").val('');
+                $("#DMCLocationCodeDropDown").val('');
+                $("#DMCSchemaFileDropDown").val('');
+                $("#txtDC").val('');
+                $("#txtDMCTechName").val('');
+                $("#txtDMCInfoName").val('');
+
+                $(".modelDMCTitle").html("Create DMC");
+                $("#btnDMCSave").html("Save");
+
+                $("#DMCModel").modal('show');
+            });
+
+            $(document).on("click", ".remove-branch", function (e) {
+                e.preventDefault();
+
+                const confirm = window.confirm("Are you sure you want to delete this branch?");
+                if (!confirm) {
+                    return;
+                }
+
+                var selectedParent = $(this).getSelectedBranch();
+
+                var id = selectedParent.attributes['data-id'].value;
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/DeleteSns",
+                    data: { id: id },
+                    dataType: "json",
+                    success: function (data) {
+                        location.reload();
+                    }
+                });
+            });
+
+            $('#projectNavigationTree').on(
+                'tree.move',
+                function (event) {
+                    event.preventDefault();
+                    // do the move first, and _then_ POST back.
+                    event.move_info.do_move();
+                    $(".editTitle").show();
+                }
+            );
+
+            $('#addDMCtoTree').click(function () {
+
+                var dmcId = parseInt($("#projectNavigationTreeDmcDropDown").val());
+                var dmcText = $("#projectNavigationTreeDmcDropDown option:selected").text();
+                var dmc = $("#projectNavigationTreeDmcDropDown option:selected").attr("dmc");
+                var title = $("#projectNavigationTreeDmcDropDown option:selected").attr("title");
+
+                var navigationTreeDataString = $('#projectNavigationTree').tree('toJson');
+                var navigationTreeData = JSON.parse(navigationTreeDataString);
+
+                if ($('input[name=dmctype]:checked').val() == "dmc") {
+                    navigationTreeData.push({ "name": dmc, "dmcId": dmcId, "dmc": dmc, "title": title, "id": 0, "children": [] });
+                }
+                else {
+                    navigationTreeData.push({ "name": title, "dmcId": dmcId, "dmc": dmc, "title": title, "id": 0, "children": [] });
+                }
+
+                var jsonObj = BuildNavigationTree(navigationTreeData);
+                refreshProjectNavigationTree(jsonObj);
+            });
+            
+
+            $('#saveProjectNavigationTree').click(function () {
+
+                var navigationTreeData = $('#projectNavigationTree').tree('toJson');
+                $('html').addClass("wait");
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/SaveProjectNavigationTree",
+                    data: { projectId: selectedProject, navigationTreeDataJson: navigationTreeData },
+                    dataType: "json",
+                    success: function (result) {
+
+                        var jsonObj = BuildNavigationTree(result);
+
+                        $('#projectNavigationTree').tree({
+                            data: jsonObj,
+                            autoOpen: true,
+                            dragAndDrop: true,
+                            onCreateLi: function (node, $li) {
+                                // Append a link to the jqtree-element div.
+                                // The link has an url '#node-[id]' and a data property 'node-id'.
+                                $li.find('.jqtree-element').append(
+                                    ' <a href="#" class="edit editTitle" style="display: none;" data-node-id="' + node.id + '">&nbsp;<i class="fas fa-edit"></i></a>'
+                                );
+                            }
+                        });
+                        $('html').removeClass("wait");
+                    }
+                });
+            });
+
+            
+            $('#projectNavigationTree').on('click', '.editTitle', function (e) {
+                var node = $(e.target).parent().siblings('.jqtree-title');
+                currentNodeText = node[0].innerText;
+
+                node.inlineEdit({
+                    defaultText: true,
+                    onUpdate: function (val) {
+
+                        var navigationTreeDataString = $('#projectNavigationTree').tree('toJson');
+                        navigationTreeDataString = navigationTreeDataString.replaceAll(currentNodeText, val);
+
+                        var jsonObj = BuildNavigationTree(JSON.parse(navigationTreeDataString));
+                        refreshProjectNavigationTree(jsonObj);
+                        $(".editTitle").show();
+                    }
+                });
+            });
+
+            $('input[type=radio][name=dmctype]').change(function () {
+                if (this.id == 'projectNavigationDMC') {
+                    populateNavigationTree();
+                    $(".editTitle").hide();
+                }
+                else if (this.id == 'projectNavigationTitle') {
+                    populateNavigationTree();
+                    $(".editTitle").show();
+                }
+            });
 
             $("#btnUploadDMC").on('click', function (e) {
                 e.preventDefault();
@@ -1204,971 +1253,986 @@
                         return false;
                     }
                 });
-        });
 
-        $('.table').DataTable();
-        $("#adminlink").removeClass("active");
-        $("#configlink").removeClass("active");
-        $("#mainlink").addClass("active");
-        $("#icnlink").removeClass("active");
 
-        //Close Model
-        $(".btn-close").click(function () {
-            $("#locatonCodemdl").modal('hide');
-            $("#locatonCodeSetmdl").modal('hide');
-            $("#rpcModel").modal('hide');
-            $("#DataModuleTypeModel").modal('hide');
-            $("#rpcModel").modal('hide');
-            $("#projectModel").modal('hide');
-            $("#projectSnsModel").modal('hide');
-            $("#projectNavigationModel").modal('hide');
-            selectedProject = 0;
-        });
+            $('.table').DataTable();
+            $("#adminlink").removeClass("active");
+            $("#configlink").removeClass("active");
+            $("#mainlink").addClass("active");
+            $("#icnlink").removeClass("active");
 
-        $(".btn-close-sns").click(function () {
-            $("#snsModel").modal('hide');
-        });
-
-        $(".btn-close-dmc").click(function () {
-            $("#DMCModel").modal('hide');
-        });
-
-        //Close Model
-        $(".modelCancel").click(function () {
-            $("#locatonCodemdl").modal('hide');
-            $("#locatonCodeSetmdl").modal('hide');
-            $("#snsModel").modal('hide');
-            $("#rpcModel").modal('hide');
-            $("#DataModuleTypeModel").modal('hide');
-            $("#rpcModel").modal('hide');
-            $("#projectModel").modal('hide');
-            $("#projectSnsModel").modal('hide');
-            $("#projectNavigationModel").modal('hide');
-            selectedProject = 0;
-        });
-
-        $(".modelCancelsns").click(function () {
-            $("#snsModel").modal('hide');
-        });
-
-        $(".modelCancelProjectNavigationTree").click(function () {
-            $("#projectNavigationModel").modal('hide');
-        });
-
-        $(".modelCancelDMC").click(function () {
-            $("#DMCModel").modal('hide');
-        });
-
-        var projectTable = $('#tableProject').DataTable();
-        $("#btnCreateProject").click(function () {
-            $("#hdnProjectId").val('');
-            $("#txtProjectName").val('');
-            $("#txtProjectDescription").val('');
-
-            $("#IssueTypeDropDown").val('');
-            $("#ICNFormatDropDown").val('');
-
-            $("#SNSSetDropDown").val('');
-            $("#SNSSetDropDown").prop('disabled', false);
-
-            $("#InformationCodeDropDown").val('');
-
-            $("#txtSystemDifferenceCode").val('');
-            $("#txtModelIdentification").val('');
-
-            $("#LocationCodeDropDown").val('');
-            $("#RpcCodeDropDown").val('');
-            $("#RpcCodeDropDown").change();
-
-            $(".modelProjectTitle").html("Create Project");
-
-            $("#projectModel").modal('show');
-
-            $("#btnProjectSave").html("Save");
-            $("#projectModel").modal('show');
-        });
-
-        $("#RpcCodeDropDown").change(function () {
-            $("#txtProjectRpcCage").val("");
-            $("#txtOriginatorCage").val("");
-
-            var selectedItem = $('option:selected', this).val();
-            responsiblePartnerCodes.forEach(function (e) {
-                if (selectedItem == e.Id) {
-                    $("#txtProjectRpcCage").val(e.Rpccage);
-                    $("#txtOriginatorCage").val(e.OrginatorCage);
-                }
+            //Close Model
+            $(".btn-close").click(function () {
+                $("#locatonCodemdl").modal('hide');
+                $("#locatonCodeSetmdl").modal('hide');
+                $("#rpcModel").modal('hide');
+                $("#DataModuleTypeModel").modal('hide');
+                $("#rpcModel").modal('hide');
+                $("#projectModel").modal('hide');
+                $("#projectSnsModel").modal('hide');
+                $("#projectNavigationModel").modal('hide');
+                selectedProject = 0;
             });
-        });
 
-        $("#btnProjectSave").click(function () {
+            $(".btn-close-sns").click(function () {
+                $("#snsModel").modal('hide');
+            });
 
-            var project = {}
-            project.Id = $('#hdnProjectId').val();
-            //project.EndItem = $('#').val();
-            project.Name = $('#txtProjectName').val();
-            project.Title = $('#txtProjectDescription').val();
-            project.IssueNoId = $('#IssueTypeDropDown').val();
-            project.IcnformatId = $('#ICNFormatDropDown').val();
-            project.SnssetId = $('#SNSSetDropDown').val();
-            project.InformationCodeId = $('#InformationCodeDropDown').val();
-            project.LocationCodeId = $('#LocationCodeDropDown').val();
-            project.ModelIdentification = $('#txtModelIdentification').val();
-            project.Sdc = $('#txtSystemDifferenceCode').val();
-            //project.SubjectLength = $('#').val();
-            //project.ProjectCode = $('#').val();
-            project.Rpcid = $('#RpcCodeDropDown').val();
-            //project.TrackPercentComplete = $('#').val();
-            //project.CreateDefaultBrex = $('#').val();
-            //project.CreatedBy = $('#').val();
-            //project.CreatedDate = $('#').val();
-            //project.ModifiedBy = $('#').val();
-            //project.ModifiedDate = $('#').val();
+            $(".btn-close-dmc").click(function () {
+                $("#DMCModel").modal('hide');
+            });
 
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/CreateProject",
-                data: { project: project },
-                dataType: "json",
-                success: function (data) {
-                    if (data == 'Duplicate') {
-                        $("#errorprojMsg").html("Duplicate Record.");
-                    } else {
-                        $("#errorprojMsg").html("");
-                        $("#projectModel").modal('hide');
-                        location.reload();
+            //Close Model
+            $(".modelCancel").click(function () {
+                $("#locatonCodemdl").modal('hide');
+                $("#locatonCodeSetmdl").modal('hide');
+                $("#snsModel").modal('hide');
+                $("#rpcModel").modal('hide');
+                $("#DataModuleTypeModel").modal('hide');
+                $("#rpcModel").modal('hide');
+                $("#projectModel").modal('hide');
+                $("#projectSnsModel").modal('hide');
+                $("#projectNavigationModel").modal('hide');
+                selectedProject = 0;
+            });
+
+            $(".modelCancelsns").click(function () {
+                $("#snsModel").modal('hide');
+            });
+
+            $(".modelCancelProjectNavigationTree").click(function () {
+                $("#projectNavigationModel").modal('hide');
+            });
+
+            $(".modelCancelDMC").click(function () {
+                $("#DMCModel").modal('hide');
+            });
+
+            var projectTable = $('#tableProject').DataTable();
+            $("#btnCreateProject").click(function () {
+                $("#hdnProjectId").val('');
+                $("#txtProjectName").val('');
+                $("#txtProjectDescription").val('');
+
+                $("#IssueTypeDropDown").val('');
+                $("#ICNFormatDropDown").val('');
+
+                $("#SNSSetDropDown").val('');
+                $("#SNSSetDropDown").prop('disabled', false);
+
+                $("#InformationCodeDropDown").val('');
+
+                $("#txtSystemDifferenceCode").val('');
+                $("#txtModelIdentification").val('');
+
+                $("#LocationCodeDropDown").val('');
+                $("#RpcCodeDropDown").val('');
+                $("#RpcCodeDropDown").change();
+
+                $(".modelProjectTitle").html("Create Project");
+
+                $("#projectModel").modal('show');
+
+                $("#btnProjectSave").html("Save");
+                $("#projectModel").modal('show');
+            });
+
+            $("#RpcCodeDropDown").change(function () {
+                $("#txtProjectRpcCage").val("");
+                $("#txtOriginatorCage").val("");
+
+                var selectedItem = $('option:selected', this).val();
+                responsiblePartnerCodes.forEach(function (e) {
+                    if (selectedItem == e.Id) {
+                        $("#txtProjectRpcCage").val(e.Rpccage);
+                        $("#txtOriginatorCage").val(e.OrginatorCage);
                     }
-                }
-            });
-        });
-
-        $("#btnCreateDMC").click(function () {
-            $("#hdnDmcId").val('');
-            $("#DMCProjectDropDown").val('');
-            $("#txtDMCModelIdentification").val('');
-            $("#txtDMCSDC").val('');
-            $("#DMCSNSSetDropDown").val('');
-            $("#txtDMCSnsCode").val('');
-            $("#txtDMCDCV").val('A');
-            $("#txtDMCICV").val('A');
-            $("#DMCInformationCodeDropDown").val('');
-            $("#DMCLocationCodeDropDown").val();
-            $("#txtDC").val('');
-            $("#txtDMCTechName").val('');
-            $("#txtDMCInfoName").val('');
-
-            $(".modelDMCTitle").html("Create DMC");
-            $("#btnDMCSave").html("Save");
-
-            $("#DMCModel").modal('show');
-        });
-
-        $("#DMCProjectDropDown").change(function () {
-
-            $("#txtDMCModelIdentification").val('');
-            $("#DMCSNSSetDropDown").val('');
-            $("#txtDMCSDC").val('');
-            $("#DMCSNSSetDropDown").val('');
-            $("#txtDMCSnsCode").val('');
-            $("#DMCInformationCodeDropDown").val('');
-            $("#DMCLocationCodeDropDown").val();
-
-            var selectedItem = $('option:selected', this).val();
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetProject",
-                data: { projectId: selectedItem },
-                dataType: "json",
-                success: function (data) {
-                    $("#txtDMCModelIdentification").val(data.modelIdentification);
-                    $("#txtDMCSDC").val(data.sdc);
-                }
+                });
             });
 
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetLocationCodes",
-                data: { projectId: selectedItem },
-                dataType: "json",
-                success: function (data) {
-                    $("#DMCLocationCodeDropDown option").remove();
+            $("#btnProjectSave").click(function () {
 
-                    var slelectObj = $('#DMCLocationCodeDropDown');
-                    slelectObj.append('<option selected>Please Select Location Code</option>');
+                var project = {}
+                project.Id = $('#hdnProjectId').val();
+                //project.EndItem = $('#').val();
+                project.Name = $('#txtProjectName').val();
+                project.Title = $('#txtProjectDescription').val();
+                project.IssueNoId = $('#IssueTypeDropDown').val();
+                project.IcnformatId = $('#ICNFormatDropDown').val();
+                project.SnssetId = $('#SNSSetDropDown').val();
+                project.InformationCodeId = $('#InformationCodeDropDown').val();
+                project.LocationCodeId = $('#LocationCodeDropDown').val();
+                project.ModelIdentification = $('#txtModelIdentification').val();
+                project.Sdc = $('#txtSystemDifferenceCode').val();
+                //project.SubjectLength = $('#').val();
+                //project.ProjectCode = $('#').val();
+                project.Rpcid = $('#RpcCodeDropDown').val();
+                //project.TrackPercentComplete = $('#').val();
+                //project.CreateDefaultBrex = $('#').val();
+                //project.CreatedBy = $('#').val();
+                //project.CreatedDate = $('#').val();
+                //project.ModifiedBy = $('#').val();
+                //project.ModifiedDate = $('#').val();
 
-                    $.each(data, function (idx, obj) {
-                        slelectObj.append('<option value="' + obj.id + '">' + obj.code + '</option>');
-                    });
-                }
-            });
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetInformationCodes",
-                data: { projectId: selectedItem },
-                dataType: "json",
-                success: function (data) {
-                    $("#DMCInformationCodeDropDown option").remove();
-
-                    var slelectObj = $('#DMCInformationCodeDropDown');
-                    slelectObj.append('<option selected>Please Select Information Code</option>');
-
-                    $.each(data, function (idx, obj) {
-                        slelectObj.append('<option value="' + obj.id + '">' + obj.code + '</option>');
-                    });
-                }
-            });
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetProjectSns",
-                data: { projectId: selectedItem },
-                dataType: "json",
-                success: function (data) {
-                    $("#DMCSNSSetDropDown option").remove();
-
-                    var slelectObj = $('#DMCSNSSetDropDown');
-                    slelectObj.append('<option selected>Please Select SNS</option>');
-
-                    $.each(data, function (idx, obj) {
-                        if (selectedSNS == obj.id) {
-                            slelectObj.append('<option selected value="' + obj.id + '">' + obj.code + '</option>');
-                            $('#DMCSNSSetDropDown').trigger("change");
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/CreateProject",
+                    data: { project: project },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data == 'Duplicate') {
+                            $("#errorprojMsg").html("Duplicate Record.");
+                        } else {
+                            $("#errorprojMsg").html("");
+                            $("#projectModel").modal('hide');
+                            location.reload();
                         }
-                        else {
+                    }
+                });
+            });
+
+            $("#btnCreateDMC").click(function () {
+                $("#hdnDmcId").val('');
+                $("#DMCProjectDropDown").val('');
+                $("#txtDMCModelIdentification").val('');
+                $("#txtDMCSDC").val('');
+                $("#DMCSNSSetDropDown").val('');
+                $("#txtDMCSnsCode").val('');
+                $("#txtDMCDCV").val('A');
+                $("#txtDMCICV").val('A');
+                $("#DMCInformationCodeDropDown").val('');
+                $("#DMCLocationCodeDropDown").val();
+                $("#txtDC").val('');
+                $("#txtDMCTechName").val('');
+                $("#txtDMCInfoName").val('');
+
+                $(".modelDMCTitle").html("Create DMC");
+                $("#btnDMCSave").html("Save");
+
+                $("#DMCModel").modal('show');
+            });
+
+            $("#DMCProjectDropDown").change(function () {
+
+                $("#txtDMCModelIdentification").val('');
+                $("#DMCSNSSetDropDown").val('');
+                $("#txtDMCSDC").val('');
+                $("#DMCSNSSetDropDown").val('');
+                $("#txtDMCSnsCode").val('');
+                $("#DMCInformationCodeDropDown").val('');
+                $("#DMCLocationCodeDropDown").val();
+
+                var selectedItem = $('option:selected', this).val();
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetProject",
+                    data: { projectId: selectedItem },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#txtDMCModelIdentification").val(data.modelIdentification);
+                        $("#txtDMCSDC").val(data.sdc);
+                    }
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetLocationCodes",
+                    data: { projectId: selectedItem },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#DMCLocationCodeDropDown option").remove();
+
+                        var slelectObj = $('#DMCLocationCodeDropDown');
+                        slelectObj.append('<option selected>Please Select Location Code</option>');
+
+                        $.each(data, function (idx, obj) {
                             slelectObj.append('<option value="' + obj.id + '">' + obj.code + '</option>');
-                        }
-                    });
-                }
+                        });
+                    }
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetInformationCodes",
+                    data: { projectId: selectedItem },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#DMCInformationCodeDropDown option").remove();
+
+                        var slelectObj = $('#DMCInformationCodeDropDown');
+                        slelectObj.append('<option selected>Please Select Information Code</option>');
+
+                        $.each(data, function (idx, obj) {
+                            slelectObj.append('<option value="' + obj.id + '">' + obj.code + '</option>');
+                        });
+                    }
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetProjectSns",
+                    data: { projectId: selectedItem },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#DMCSNSSetDropDown option").remove();
+
+                        var slelectObj = $('#DMCSNSSetDropDown');
+                        slelectObj.append('<option selected>Please Select SNS</option>');
+
+                        $.each(data, function (idx, obj) {
+                            if (selectedSNS == obj.id) {
+                                slelectObj.append('<option selected value="' + obj.id + '">' + obj.code + '</option>');
+                                $('#DMCSNSSetDropDown').trigger("change");
+                            }
+                            else {
+                                slelectObj.append('<option value="' + obj.id + '">' + obj.code + '</option>');
+                            }
+                        });
+                    }
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetIssueTypeFiles",
+                    data: { projectId: selectedItem },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#DMCSchemaFileDropDown option").remove();
+
+                        var slelectObj = $('#DMCSchemaFileDropDown');
+                        slelectObj.append('<option selected>Please Select Schema Filename</option>');
+
+                        $.each(data, function (idx, obj) {
+                            if (selectedSNS == obj.id) {
+                                slelectObj.append('<option selected value="' + obj.id + '">' + obj.name + '</option>');
+                            }
+                            else {
+                                slelectObj.append('<option value="' + obj.id + '">' + obj.name + '</option>');
+                            }
+                        });
+                    }
+                });
             });
 
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetIssueTypeFiles",
-                data: { projectId: selectedItem },
-                dataType: "json",
-                success: function (data) {
-                    $("#DMCSchemaFileDropDown option").remove();
+            $('#DMCSNSSetDropDown').change(function () {
+                var selectedItem = $('option:selected', this).val();
 
-                    var slelectObj = $('#DMCSchemaFileDropDown');
-                    slelectObj.append('<option selected>Please Select Schema Filename</option>');
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetSnsCode",
+                    data: {
+                        snsId: selectedItem,
+                        projectId: $('#DMCProjectDropDown').val()
+                    },
+                    dataType: "json",
+                    success: function (data) {
 
-                    $.each(data, function (idx, obj) {
-                        if (selectedSNS == obj.id) {
-                            slelectObj.append('<option selected value="' + obj.id + '">' + obj.name + '</option>');
+                        var dcValue = data.substring(data.length - 2, data.length);
+
+                        if (dcValue === "00") {
+                            $('#txtDMCSnsCode').val(data.substring(0, data.length - 3));
+                            $('#txtDC').val("00");
+                            $('#txtDC').removeAttr('disabled');
                         }
                         else {
-                            slelectObj.append('<option value="' + obj.id + '">' + obj.name + '</option>');
+                            $('#txtDC').val("");
+                            $('#txtDC').attr('disabled', 'disabled');
+                            $('#txtDMCSnsCode').val(data);
                         }
-                    });
-                }
-            });
-        });
-
-        $('#DMCSNSSetDropDown').change(function () {
-            var selectedItem = $('option:selected', this).val();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetSnsCode",
-                data: {
-                    snsId: selectedItem,
-                    projectId: $('#DMCProjectDropDown').val()
-                },
-                dataType: "json",
-                success: function (data) {
-
-                    var dcValue = data.substring(data.length - 2, data.length);
-
-                    if (dcValue === "00") {
-                        $('#txtDMCSnsCode').val(data.substring(0, data.length - 3));
-                        $('#txtDC').val("00");
-                        $('#txtDC').removeAttr('disabled');
                     }
-                    else {
-                        $('#txtDC').val("");
-                        $('#txtDC').attr('disabled', 'disabled');
-                        $('#txtDMCSnsCode').val(data);
-                    }
-                }
-            });
-        });
-
-        $("#btnDMCSave").click(function () {
-
-            if ($('#DMCProjectDropDown').val() == '') {
-                $('#DMCProjectDropDown').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#DMCProjectDropDown').css('border-color', '');
-            }
-
-            if ($('#DMCSNSSetDropDown').val() == '') {
-                $('#DMCSNSSetDropDown').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#DMCSNSSetDropDown').css('border-color', '');
-            }
-
-            if ($('#txtDMCDCV').val() == '') {
-                $('#txtDMCDCV').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtDMCDCV').css('border-color', '');
-            }
-
-            if ($('#txtDMCICV').val() == '') {
-                $('#txtDMCICV').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtDMCICV').css('border-color', '');
-            }
-
-            if ($('#DMCInformationCodeDropDown').val() == '') {
-                $('#DMCInformationCodeDropDown').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#DMCInformationCodeDropDown').css('border-color', '');
-            }
-
-            if ($('#DMCLocationCodeDropDown').val() == '') {
-                $('#DMCLocationCodeDropDown').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#DMCLocationCodeDropDown').css('border-color', '');
-            }
-
-            if ($("#txtDMCTechName").val() == '') {
-                $("#txtDMCTechName").css('border-color', 'red');
-                return false;
-            }
-            else {
-                $("#txtDMCTechName").css('border-color', '');
-            }
-
-            if ($("#txtDMCInfoName").val() == '') {
-                $("#txtDMCInfoName").css('border-color', 'red');
-                return false;
-            }
-            else {
-                $("#txtDMCInfoName").css('border-color', '');
-            }
-
-            if ($("#DMCSchemaFileDropDown").val() == '') {
-                $("#DMCSchemaFileDropDown").css('border-color', 'red');
-                return false;
-            }
-            else {
-                $("#DMCSchemaFileDropDown").css('border-color', '');
-            }
-
-            var dataModuleCode = {}
-            dataModuleCode.Id = $('#hdnDmcId').val();
-            dataModuleCode.DMC = "";
-            dataModuleCode.ProjectId = $("#DMCProjectDropDown").val();
-            dataModuleCode.ModelIdentification = $("#txtDMCModelIdentification").val();
-            dataModuleCode.SDC = $("#txtDMCSDC").val();
-            dataModuleCode.StandardNumberingSystem = $("#txtDMCSnsCode").val();
-            dataModuleCode.DC = $("#txtDC").val();
-            dataModuleCode.DCV = $("#txtDMCDCV").val();
-            dataModuleCode.InformationCodeId = $("#DMCInformationCodeDropDown").val();
-            dataModuleCode.ICV = $("#txtDMCICV").val();
-            dataModuleCode.LocationCodeId = $("#DMCLocationCodeDropDown").val();
-            dataModuleCode.TechName = $("#txtDMCTechName").val();
-            dataModuleCode.InfoName = $("#txtDMCInfoName").val();
-            dataModuleCode.IssueFileId = $("#DMCSchemaFileDropDown").val();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/CreateDMC",
-                data: { dataModuleCode: dataModuleCode },
-                dataType: "json",
-                success: function (data) {
-                    if (data == 'Duplicate') {
-                        $("#errorSnsMsg").html("Duplicate Record.");
-                    } else {
-                        $("#DMCModel").modal('hide');
-                        location.reload();
-                    }
-                }
-            });
-        });
-
-        $(".project_dmc_generate_button").click(function () {
-            var rowobj = $(this).closest("tr");
-            selectedProject = rowobj.find("td:eq(0)").text();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GenerateBrexXml",
-                data: { projectId: selectedProject },
-                dataType: "json",
-                success: function (result) {
-                    showAlert(result.status, result.message);
-                }
-            });
-        });
-        
-
-        $(".project_dmc_button").click(function () {
-
-            var rowobj = $(this).closest("tr");
-            selectedProject = rowobj.find("td:eq(0)").text();
-
-            $("#hdnDmcId").val('');
-            $("#DMCProjectDropDown").val(selectedProject);
-            $("#DMCProjectDropDown").trigger("change");
-
-            $("#txtDMCModelIdentification").val('');
-            $("#txtDMCSDC").val('');
-            $("#txtDMCSnsCode").val('');
-            $("#txtDMCDCV").val('A');
-            $("#txtDMCICV").val('A');
-            $("#DMCInformationCodeDropDown").val('');
-            $("#DMCLocationCodeDropDown").val();
-
-            $(".modelDMCTitle").html("Create DMC");
-            $("#btnDMCSave").html("Save");
-
-            $("#DMCModel").modal('show');
-        });
-
-        $(".project_sns_button").click(function () {
-
-            var rowobj = $(this).closest("tr");
-            selectedProject = rowobj.find("td:eq(0)").text();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetProjectSns",
-                data: { projectId: selectedProject },
-                dataType: "json",
-                success: function (result) {
-
-                    var sortableproj = new TreeSortable("#projectSnsTree");
-                    var contentproj = result.map(sortableproj.createBranch);
-                    $("#projectSnsTree").html(contentproj);
-                    sortableproj.run();
-
-                    $("#SnsParentDropDown option").remove();
-
-                    var slelectObj = $('#SnsParentDropDown');
-                    slelectObj.append('<option selected>Please Select Parent Node</option>');
-
-                    $.each(result, function (idx, obj) {
-                        slelectObj.append('<option value="' + obj.id + '">' + obj.title + '</option>');
-                    });
-                }
+                });
             });
 
-            $("#projectSnsModel").modal('show');
-        });
+            $("#btnDMCSave").click(function () {
 
-        $(".project_navigation_generate_button").click(function () {
-
-            var rowobj = $(this).closest("tr");
-            selectedProject = rowobj.find("td:eq(0)").text();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GetProjectNavigationTree",
-                data: { projectId: selectedProject },
-                dataType: "json",
-                success: function (result) {
-
-                    var jsonObj = BuildNavigationTree(result);
-
-                    //result.forEach(function (e) {
-
-                    //    if ($('input[name=dmctype]:checked').val() == "dmc") {
-                    //        jsonObj.push({ "name": e.dmc, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": e.children });
-                    //    }
-                    //    else {
-                    //        jsonObj.push({ "name": e.title, "dmcId": e.dmcId, "dmc": e.dmc, "title": e.title, "id": e.id, "children": e.children });
-                    //    }
-                    //});
-
-                    $('#projectNavigationTree').tree({
-                        data: jsonObj,
-                        autoOpen: true,
-                        dragAndDrop: true
-                    });
+                if ($('#DMCProjectDropDown').val() == '') {
+                    $('#DMCProjectDropDown').css('border-color', 'red');
+                    return false;
                 }
-            });
-
-            $("#projectNavigationModel").modal('show');
-        });
-
-        $('#tableDMC tbody').on('click', '.generate_DMC', function () {
-
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/GenerateDMCXml",
-                data: { dmcId: id },
-                dataType: "json",
-                success: function (data) {
-                    location.reload();
+                else {
+                    $('#DMCProjectDropDown').css('border-color', '');
                 }
-            });
-        });
 
-        $('#tableDMC tbody').on('click', '.view_dmc_xml', function () {
-
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-            location.href = 'Maintenance/ViewDMCXml?dmcId=' + id;
-        });
-
-        
-
-        $('#tableDMC tbody').on('click', '.delete_DMC', function () {
-
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/DeleteDMC",
-                data: { dmcId: id },
-                dataType: "json",
-                success: function (data) {
-                    location.reload();
+                if ($('#DMCSNSSetDropDown').val() == '') {
+                    $('#DMCSNSSetDropDown').css('border-color', 'red');
+                    return false;
                 }
-            });
+                else {
+                    $('#DMCSNSSetDropDown').css('border-color', '');
+                }
 
-        });
+                if ($('#txtDMCDCV').val() == '') {
+                    $('#txtDMCDCV').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#txtDMCDCV').css('border-color', '');
+                }
 
+                if ($('#txtDMCICV').val() == '') {
+                    $('#txtDMCICV').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#txtDMCICV').css('border-color', '');
+                }
 
+                if ($('#DMCInformationCodeDropDown').val() == '') {
+                    $('#DMCInformationCodeDropDown').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#DMCInformationCodeDropDown').css('border-color', '');
+                }
 
-        $('#tableProject tbody').on('click', '.edit_project', function () {
-            var rowobj = $(this).closest("tr");
+                if ($('#DMCLocationCodeDropDown').val() == '') {
+                    $('#DMCLocationCodeDropDown').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#DMCLocationCodeDropDown').css('border-color', '');
+                }
 
-            var id = rowobj.find("td:eq(0)").text();
-            var issueTypeId = rowobj.find("td:eq(1)").text();
-            var icnFormatId = rowobj.find("td:eq(2)").text();
-            var snsSetId = rowobj.find("td:eq(3)").text();
-            var informationCodeId = rowobj.find("td:eq(4)").text();
-            var sdc = rowobj.find("td:eq(5)").text();
-            var modelIdentification = rowobj.find("td:eq(6)").text();
-            var locationCodeId = rowobj.find("td:eq(7)").text();
-            var rpcId = rowobj.find("td:eq(8)").text();
-            var name = rowobj.find("td:eq(9)").text();
-            var projectCode = rowobj.find("td:eq(10)").text();
-            var title = rowobj.find("td:eq(11)").text();
+                if ($("#txtDMCTechName").val() == '') {
+                    $("#txtDMCTechName").css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $("#txtDMCTechName").css('border-color', '');
+                }
 
-            $("#hdnProjectId").val(id);
-            $("#txtProjectName").val(name);
-            $("#txtProjectDescription").val(title);
+                if ($("#txtDMCInfoName").val() == '') {
+                    $("#txtDMCInfoName").css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $("#txtDMCInfoName").css('border-color', '');
+                }
 
-            $("#IssueTypeDropDown").val(issueTypeId);
-            $("#ICNFormatDropDown").val(icnFormatId);
-            $("#SNSSetDropDown").val(snsSetId);
-            $("#SNSSetDropDown").prop('disabled', true);
-            $("#InformationCodeDropDown").val(informationCodeId);
+                if ($("#DMCSchemaFileDropDown").val() == '') {
+                    $("#DMCSchemaFileDropDown").css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $("#DMCSchemaFileDropDown").css('border-color', '');
+                }
 
-            $("#txtSystemDifferenceCode").val(sdc);
-            $("#txtModelIdentification").val(modelIdentification);
-
-            $("#LocationCodeDropDown").val(locationCodeId);
-            $("#RpcCodeDropDown").val(rpcId);
-            $("#RpcCodeDropDown").change();
-
-            $("#btnProjectSave").html("Update");
-            $(".modelProjectTitle").html("Edit Project");
-            $("#projectModel").modal('show');
-        });
-
-        var snsTable = $('#snsTable').DataTable();
-        $("#btnCreateSNS").click(function () {
-            $('#hdnSnsId').val('0');
-            $('#txtSnsCode').val('');
-            $('#txtSnsDescription').val('');
-            $("#SnsParentDropDown").val('');
-            $("#snsModel").modal('show');
-        });
-
-        $("#saveSns").click(function () {
-            if ($('#txtSnsCode').val() == '') {
-                $('#txtSnsCode').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtSnsCode').css('border-color', '');
-            }
-
-            if (selectedProject > 0) {
-
-                var projectSns = {}
-                projectSns.ProjectId = selectedProject;
-                projectSns.Snsid = $('#hdnSnsId').val();
-                projectSns.Code = $('#txtSnsCode').val();
-                projectSns.Description = $('#txtSnsDescription').val();
-                projectSns.ParentId = $('#SnsParentDropDown').val();
+                var dataModuleCode = {}
+                dataModuleCode.Id = $('#hdnDmcId').val();
+                dataModuleCode.DMC = "";
+                dataModuleCode.ProjectId = $("#DMCProjectDropDown").val();
+                dataModuleCode.ModelIdentification = $("#txtDMCModelIdentification").val();
+                dataModuleCode.SDC = $("#txtDMCSDC").val();
+                dataModuleCode.StandardNumberingSystem = $("#txtDMCSnsCode").val();
+                dataModuleCode.DC = $("#txtDC").val();
+                dataModuleCode.DCV = $("#txtDMCDCV").val();
+                dataModuleCode.InformationCodeId = $("#DMCInformationCodeDropDown").val();
+                dataModuleCode.ICV = $("#txtDMCICV").val();
+                dataModuleCode.LocationCodeId = $("#DMCLocationCodeDropDown").val();
+                dataModuleCode.TechName = $("#txtDMCTechName").val();
+                dataModuleCode.InfoName = $("#txtDMCInfoName").val();
+                dataModuleCode.IssueFileId = $("#DMCSchemaFileDropDown").val();
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/CreateProjectSns",
-                    data: { projectSns: projectSns },
+                    url: "Maintenance/CreateDMC",
+                    data: { dataModuleCode: dataModuleCode },
                     dataType: "json",
                     success: function (data) {
                         if (data == 'Duplicate') {
                             $("#errorSnsMsg").html("Duplicate Record.");
                         } else {
-                            $("#snsModel").modal('hide');
+                            $("#DMCModel").modal('hide');
                             location.reload();
                         }
                     }
                 });
+            });
 
-            }
-            else {
-
-                var sns = {}
-                sns.Id = $('#hdnSnsId').val();
-                sns.Code = $('#txtSnsCode').val();
-                sns.Description = $('#txtSnsDescription').val();
-                sns.ParentId = $('#SnsParentDropDown').val();
+            $(".project_dmc_generate_button").click(function () {
+                var rowobj = $(this).closest("tr");
+                selectedProject = rowobj.find("td:eq(0)").text();
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/CreateSns",
-                    data: { sns: sns },
+                    url: "Maintenance/GenerateBrexXml",
+                    data: { projectId: selectedProject },
+                    dataType: "json",
+                    success: function (result) {
+                        showAlert(result.status, result.message);
+                    }
+                });
+            });
+
+
+            $(".project_dmc_button").click(function () {
+
+                var rowobj = $(this).closest("tr");
+                selectedProject = rowobj.find("td:eq(0)").text();
+
+                $("#hdnDmcId").val('');
+                $("#DMCProjectDropDown").val(selectedProject);
+                $("#DMCProjectDropDown").trigger("change");
+
+                $("#txtDMCModelIdentification").val('');
+                $("#txtDMCSDC").val('');
+                $("#txtDMCSnsCode").val('');
+                $("#txtDMCDCV").val('A');
+                $("#txtDMCICV").val('A');
+                $("#DMCInformationCodeDropDown").val('');
+                $("#DMCLocationCodeDropDown").val();
+
+                $(".modelDMCTitle").html("Create DMC");
+                $("#btnDMCSave").html("Save");
+
+                $("#DMCModel").modal('show');
+            });
+
+            $(".project_sns_button").click(function () {
+
+                var rowobj = $(this).closest("tr");
+                selectedProject = rowobj.find("td:eq(0)").text();
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetProjectSns",
+                    data: { projectId: selectedProject },
+                    dataType: "json",
+                    success: function (result) {
+
+                        var sortableproj = new TreeSortable("#projectSnsTree");
+                        var contentproj = result.map(sortableproj.createBranch);
+                        $("#projectSnsTree").html(contentproj);
+                        sortableproj.run();
+
+                        $("#SnsParentDropDown option").remove();
+
+                        var slelectObj = $('#SnsParentDropDown');
+                        slelectObj.append('<option selected>Please Select Parent Node</option>');
+
+                        $.each(result, function (idx, obj) {
+                            slelectObj.append('<option value="' + obj.id + '">' + obj.title + '</option>');
+                        });
+                    }
+                });
+
+                $("#projectSnsModel").modal('show');
+            });
+
+            $(".project_navigation_generate_button").click(function () {
+
+                var rowobj = $(this).closest("tr");
+                selectedProject = rowobj.find("td:eq(0)").text();
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetDataModuleCodes",
+                    data: { projectId: selectedProject },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#projectNavigationTreeDmcDropDown option").remove();
+
+                        var slelectObj = $('#projectNavigationTreeDmcDropDown');
+                        slelectObj.append('<option selected>Select a DMC to add to navigation tree</option>');
+
+                        $.each(data, function (idx, obj) {
+                            slelectObj.append('<option dmc="' + obj.dmc + '" title="' + obj.infoName + " - " + obj.techName + '" value=' + obj.id + '>' + obj.dmc + '</option>');
+                        });
+                    }
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetProjectNavigationTree",
+                    data: { projectId: selectedProject },
+                    dataType: "json",
+                    success: function (result) {
+
+                        var jsonObj = BuildNavigationTree(result);
+
+                        $('#projectNavigationTree').tree({
+                            data: jsonObj,
+                            autoOpen: true,
+                            dragAndDrop: true,
+                            onCreateLi: function (node, $li) {
+                                // Append a link to the jqtree-element div.
+                                // The link has an url '#node-[id]' and a data property 'node-id'.
+                                $li.find('.jqtree-element').append(
+                                    ' <a href="#" class="edit editTitle" style="display: none;" data-node-id="' + node.id + '">&nbsp;<i class="fas fa-edit"></i></a>'
+                                );
+                            }
+                        });
+                    }
+                });
+
+                $("#projectNavigationModel").modal('show');
+            });
+
+            $('#tableDMC tbody').on('click', '.generate_DMC', function () {
+
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GenerateDMCXml",
+                    data: { dmcId: id },
+                    dataType: "json",
+                    success: function (data) {
+                        location.reload();
+                    }
+                });
+            });
+
+            $('#tableDMC tbody').on('click', '.view_dmc_xml', function () {
+
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+                location.href = 'Maintenance/ViewDMCXml?dmcId=' + id;
+            });
+
+
+
+            $('#tableDMC tbody').on('click', '.delete_DMC', function () {
+
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/DeleteDMC",
+                    data: { dmcId: id },
+                    dataType: "json",
+                    success: function (data) {
+                        location.reload();
+                    }
+                });
+
+            });
+
+
+
+            $('#tableProject tbody').on('click', '.edit_project', function () {
+                var rowobj = $(this).closest("tr");
+
+                var id = rowobj.find("td:eq(0)").text();
+                var issueTypeId = rowobj.find("td:eq(1)").text();
+                var icnFormatId = rowobj.find("td:eq(2)").text();
+                var snsSetId = rowobj.find("td:eq(3)").text();
+                var informationCodeId = rowobj.find("td:eq(4)").text();
+                var sdc = rowobj.find("td:eq(5)").text();
+                var modelIdentification = rowobj.find("td:eq(6)").text();
+                var locationCodeId = rowobj.find("td:eq(7)").text();
+                var rpcId = rowobj.find("td:eq(8)").text();
+                var name = rowobj.find("td:eq(9)").text();
+                var projectCode = rowobj.find("td:eq(10)").text();
+                var title = rowobj.find("td:eq(11)").text();
+
+                $("#hdnProjectId").val(id);
+                $("#txtProjectName").val(name);
+                $("#txtProjectDescription").val(title);
+
+                $("#IssueTypeDropDown").val(issueTypeId);
+                $("#ICNFormatDropDown").val(icnFormatId);
+                $("#SNSSetDropDown").val(snsSetId);
+                $("#SNSSetDropDown").prop('disabled', true);
+                $("#InformationCodeDropDown").val(informationCodeId);
+
+                $("#txtSystemDifferenceCode").val(sdc);
+                $("#txtModelIdentification").val(modelIdentification);
+
+                $("#LocationCodeDropDown").val(locationCodeId);
+                $("#RpcCodeDropDown").val(rpcId);
+                $("#RpcCodeDropDown").change();
+
+                $("#btnProjectSave").html("Update");
+                $(".modelProjectTitle").html("Edit Project");
+                $("#projectModel").modal('show');
+            });
+
+            var snsTable = $('#snsTable').DataTable();
+            $("#btnCreateSNS").click(function () {
+                $('#hdnSnsId').val('0');
+                $('#txtSnsCode').val('');
+                $('#txtSnsDescription').val('');
+                $("#SnsParentDropDown").val('');
+                $("#snsModel").modal('show');
+            });
+
+            $("#saveSns").click(function () {
+                if ($('#txtSnsCode').val() == '') {
+                    $('#txtSnsCode').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#txtSnsCode').css('border-color', '');
+                }
+
+                if (selectedProject > 0) {
+
+                    var projectSns = {}
+                    projectSns.ProjectId = selectedProject;
+                    projectSns.Snsid = $('#hdnSnsId').val();
+                    projectSns.Code = $('#txtSnsCode').val();
+                    projectSns.Description = $('#txtSnsDescription').val();
+                    projectSns.ParentId = $('#SnsParentDropDown').val();
+
+                    $.ajax({
+                        type: "POST",
+                        url: "Maintenance/CreateProjectSns",
+                        data: { projectSns: projectSns },
+                        dataType: "json",
+                        success: function (data) {
+                            if (data == 'Duplicate') {
+                                $("#errorSnsMsg").html("Duplicate Record.");
+                            } else {
+                                $("#snsModel").modal('hide');
+                                location.reload();
+                            }
+                        }
+                    });
+
+                }
+                else {
+
+                    var sns = {}
+                    sns.Id = $('#hdnSnsId').val();
+                    sns.Code = $('#txtSnsCode').val();
+                    sns.Description = $('#txtSnsDescription').val();
+                    sns.ParentId = $('#SnsParentDropDown').val();
+
+                    $.ajax({
+                        type: "POST",
+                        url: "Maintenance/CreateSns",
+                        data: { sns: sns },
+                        dataType: "json",
+                        success: function (data) {
+                            if (data == 'Duplicate') {
+                                $("#errorSnsMsg").html("Duplicate Record.");
+                            } else {
+                                $("#snsModel").modal('hide');
+                                location.reload();
+                            }
+                        }
+                    });
+                }
+            });
+
+            $("#btnCreateLocationCodeSet").click(function () {
+                $('#hdnlocSetId').val('0');
+                $('#txtLocSetDescription').val('');
+                $("#errorlOCSetMsg").html('');
+                $(".modelTitle").html("Create Location Code Set");
+                $("#SaveLocationCodeSet").html("Save");
+                $("#locatonCodeSetmdl").modal('show');
+            });
+
+            // Save Location Code Set
+            $("#SaveLocationCodeSet").click(function () {
+
+                if ($('#txtLocSetDescription').val().trim() == '') {
+
+                    $('#txtLocSetDescription').css('border-color', 'red');
+                    return false;
+                }
+                else {
+
+                    $('#txtLocSetDescription').css('border-color', '');
+                }
+
+                var locationCodeSet = {}
+                locationCodeSet.Id = $('#hdnlocSetId').val();
+                locationCodeSet.Description = $('#txtLocSetDescription').val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/CreateLocationCodeSet",
+                    data: {
+                        locationCodeSet: locationCodeSet
+                    },
                     dataType: "json",
                     success: function (data) {
                         if (data == 'Duplicate') {
-                            $("#errorSnsMsg").html("Duplicate Record.");
+                            $("#errorlOCSetMsg").html("Duplicate Record.");
                         } else {
-                            $("#snsModel").modal('hide');
+                            $("#locatonCodeSetmdl").modal('hide');
                             location.reload();
                         }
                     }
                 });
-            }
-        });
-
-        $("#btnCreateLocationCodeSet").click(function () {
-            $('#hdnlocSetId').val('0');
-            $('#txtLocSetDescription').val('');
-            $("#errorlOCSetMsg").html('');
-            $(".modelTitle").html("Create Location Code Set");
-            $("#SaveLocationCodeSet").html("Save");
-            $("#locatonCodeSetmdl").modal('show');
-        });
-
-        // Save Location Code Set
-        $("#SaveLocationCodeSet").click(function () {
-
-            if ($('#txtLocSetDescription').val().trim() == '') {
-
-                $('#txtLocSetDescription').css('border-color', 'red');
-                return false;
-            }
-            else {
-
-                $('#txtLocSetDescription').css('border-color', '');
-            }
-
-            var locationCodeSet = {}
-            locationCodeSet.Id = $('#hdnlocSetId').val();
-            locationCodeSet.Description = $('#txtLocSetDescription').val();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/CreateLocationCodeSet",
-                data: {
-                    locationCodeSet: locationCodeSet
-                },
-                dataType: "json",
-                success: function (data) {
-                    if (data == 'Duplicate') {
-                        $("#errorlOCSetMsg").html("Duplicate Record.");
-                    } else {
-                        $("#locatonCodeSetmdl").modal('hide');
-                        location.reload();
-                    }
-                }
             });
-        });
 
-        //Edit Location Code Set
-        $('#tableLocationCodeSet tbody').on('click', '.editLocationCodeSet', function () {
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-            var description = rowobj.find("td:eq(1)").text();
-            $("#txtLocSetDescription").val(description);
-            $("#hdnlocSetId").val(id);
-            $("#SaveLocationCodeSet").html("Update");
-            $(".modelTitle").html("Edit Locstion Code Set");
-            $("#locatonCodeSetmdl").modal('show');
-        });
+            //Edit Location Code Set
+            $('#tableLocationCodeSet tbody').on('click', '.editLocationCodeSet', function () {
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+                var description = rowobj.find("td:eq(1)").text();
+                $("#txtLocSetDescription").val(description);
+                $("#hdnlocSetId").val(id);
+                $("#SaveLocationCodeSet").html("Update");
+                $(".modelTitle").html("Edit Locstion Code Set");
+                $("#locatonCodeSetmdl").modal('show');
+            });
 
-        $("#btnCreateLocationCode").click(function () {
-            $('#hdnlocId').val('0');
-            $('#txtLocCode').val('');
-            $('#txtLocDescription').val('');
-            //$("#errorlOCMsg").html('');
-            $(".modelTitle").html("Create Location Code");
-            $("#SaveLocationCode").html("Save");
-            $("#locatonCodemdl").modal('show');
-        });
+            $("#btnCreateLocationCode").click(function () {
+                $('#hdnlocId').val('0');
+                $('#txtLocCode').val('');
+                $('#txtLocDescription').val('');
+                //$("#errorlOCMsg").html('');
+                $(".modelTitle").html("Create Location Code");
+                $("#SaveLocationCode").html("Save");
+                $("#locatonCodemdl").modal('show');
+            });
 
-        //Delete Location Code Set
-        $('#tableLocationCodeSet tbody').on('click', '.deleteLocationCodeSet', function () {
-            var Id = $(this).closest("tr").find("td:eq(0)").text();
-            $.confirmModal('Are you sure to delete this record?', function (el) {
+            //Delete Location Code Set
+            $('#tableLocationCodeSet tbody').on('click', '.deleteLocationCodeSet', function () {
+                var Id = $(this).closest("tr").find("td:eq(0)").text();
+                $.confirmModal('Are you sure to delete this record?', function (el) {
+                    $.ajax({
+                        type: "POST",
+                        url: "Maintenance/DeleteLocationCodeSet",
+                        data: { id: Id },
+                        dataType: "json",
+                        success: function (data) {
+                            location.reload();
+                        }
+                    });
+                });
+            });
+
+            // Save Location Code
+            $("#SaveLocationCode").click(function () {
+
+                if ($('#txtLocCode').val() == '') {
+
+                    $('#txtLocCode').css('border-color', 'red');
+                    isValid = false;
+                }
+                else {
+                    $('#txtLocCode').css('border-color', '');
+                }
+
+                if ($('#LocationCodeSetDropDown').val() == '') {
+
+                    $('#LocationCodeSetDropDown').css('border-color', 'red');
+                    isValid = false;
+                }
+                else {
+                    $('#LocationCodeSetDropDown').css('border-color', '');
+                }
+
+                if ($('#txtLocDescription').val().trim() == '') {
+
+                    $('#txtLocDescription').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#txtLocDescription').css('border-color', '');
+                }
+
+                var locationCode = {}
+                locationCode.Id = $('#hdnlocId').val();
+                locationCode.Description = $('#txtLocDescription').val();
+                locationCode.LocationCodeSetId = $('#LocationCodeSetDropDown').val();
+                locationCode.Code = $('#txtLocCode').val();
+
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/DeleteLocationCodeSet",
-                    data: { id: Id },
+                    url: "Maintenance/CreateLocationCode",
+                    data: { locationCode: locationCode },
                     dataType: "json",
                     success: function (data) {
-                        location.reload();
+                        if (data == 'Duplicate') {
+                            $("#errorlOCMsg").html("Duplicate Record.");
+                        } else {
+                            $("#locatonCodemdl").modal('hide');
+                            location.reload();
+                        }
                     }
                 });
             });
-        });
 
-        // Save Location Code
-        $("#SaveLocationCode").click(function () {
+            //Edit Location Code
+            $('#locationCodeTable tbody').on('click', '.locationEdit', function () {
 
-            if ($('#txtLocCode').val() == '') {
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+                var locationCodeSet = rowobj.find("td:eq(1)").text();
+                var code = rowobj.find("td:eq(2)").text();
+                var description = rowobj.find("td:eq(3)").text();
 
-                $('#txtLocCode').css('border-color', 'red');
-                isValid = false;
-            }
-            else {
-                $('#txtLocCode').css('border-color', '');
-            }
+                $("#txtLocDescription").val(description);
+                $("#hdnlocId").val(id);
+                $("#LocationCodeSetDropDown option:contains(" + locationCodeSet + ")").attr('selected', 'selected');
+                $("#txtLocCode").val(code);
 
-            if ($('#LocationCodeSetDropDown').val() == '') {
-
-                $('#LocationCodeSetDropDown').css('border-color', 'red');
-                isValid = false;
-            }
-            else {
-                $('#LocationCodeSetDropDown').css('border-color', '');
-            }
-
-            if ($('#txtLocDescription').val().trim() == '') {
-
-                $('#txtLocDescription').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtLocDescription').css('border-color', '');
-            }
-
-            var locationCode = {}
-            locationCode.Id = $('#hdnlocId').val();
-            locationCode.Description = $('#txtLocDescription').val();
-            locationCode.LocationCodeSetId = $('#LocationCodeSetDropDown').val();
-            locationCode.Code = $('#txtLocCode').val();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/CreateLocationCode",
-                data: { locationCode: locationCode },
-                dataType: "json",
-                success: function (data) {
-                    if (data == 'Duplicate') {
-                        $("#errorlOCMsg").html("Duplicate Record.");
-                    } else {
-                        $("#locatonCodemdl").modal('hide');
-                        location.reload();
-                    }
-                }
+                $("#SaveLocationCode").html("Update");
+                $(".modelTitle").html("Edit Locstion Code");
+                $("#locatonCodemdl").modal('show');
             });
-        });
 
-        //Edit Location Code
-        $('#locationCodeTable tbody').on('click', '.locationEdit', function () {
+            //Delete Location Code
+            $('#locationCodeTable tbody').on('click', '.locationDelete', function () {
+                var Id = $(this).closest("tr").find("td:eq(0)").text();
+                $.confirmModal('Are you sure to delete this record?', function (el) {
+                    $.ajax({
+                        type: "POST",
+                        url: "Maintenance/DeleteLocationCode",
+                        data: { id: Id },
+                        dataType: "json",
+                        success: function (data) {
+                            location.reload();
+                        }
+                    });
+                });
+            });
 
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-            var locationCodeSet = rowobj.find("td:eq(1)").text();
-            var code = rowobj.find("td:eq(2)").text();
-            var description = rowobj.find("td:eq(3)").text();
+            var resPartnerCodeTable = $('#resPartnerCodeTable').DataTable();
+            $("#CreateRPCCode").click(function () {
+                $('#hdnRPCId').val('0');
+                $('#txtRPCCode').val('');
+                $('#txtRpcCage').val('');
+                $('#txtOrginatorCage').val('');
+                $("#errorRPCMsg").html('');
+                $(".modelTitle").html("Create RPC");
+                $("#btnRPCSave").html("Save");
+                $("#rpcModel").modal('show');
+            });
 
-            $("#txtLocDescription").val(description);
-            $("#hdnlocId").val(id);
-            $("#LocationCodeSetDropDown option:contains(" + locationCodeSet + ")").attr('selected', 'selected');
-            $("#txtLocCode").val(code);
+            //Save RPC
+            $("#btnRPCSave").click(function () {
 
-            $("#SaveLocationCode").html("Update");
-            $(".modelTitle").html("Edit Locstion Code");
-            $("#locatonCodemdl").modal('show');
-        });
+                if ($('#txtRPCCode').val() == '') {
+                    $('#txtRPCCode').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#txtRPCCode').css('border-color', '');
+                }
 
-        //Delete Location Code
-        $('#locationCodeTable tbody').on('click', '.locationDelete', function () {
-            var Id = $(this).closest("tr").find("td:eq(0)").text();
-            $.confirmModal('Are you sure to delete this record?', function (el) {
+                var rpc = {}
+                rpc.Id = $('#hdnRPCId').val();
+                rpc.Code = $('#txtRPCCode').val();
+                rpc.Rpccage = $('#txtRpcCage').val();
+                rpc.OrginatorCage = $('#txtOrginatorCage').val();
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/DeleteLocationCode",
-                    data: { id: Id },
+                    url: "Maintenance/CreateRPC",
+                    data: { rpc: rpc },
                     dataType: "json",
                     success: function (data) {
-                        location.reload();
+                        if (data == 'Duplicate') {
+                            $("#errorRPCMsg").html("Duplicate Record.");
+                        } else {
+                            $("#rpcModel").modal('hide');
+                            location.reload();
+                        }
                     }
                 });
             });
-        });
 
-        var resPartnerCodeTable = $('#resPartnerCodeTable').DataTable();
-        $("#CreateRPCCode").click(function () {
-            $('#hdnRPCId').val('0');
-            $('#txtRPCCode').val('');
-            $('#txtRpcCage').val('');
-            $('#txtOrginatorCage').val('');
-            $("#errorRPCMsg").html('');
-            $(".modelTitle").html("Create RPC");
-            $("#btnRPCSave").html("Save");
-            $("#rpcModel").modal('show');
-        });
-
-        //Save RPC
-        $("#btnRPCSave").click(function () {
-
-            if ($('#txtRPCCode').val() == '') {
-                $('#txtRPCCode').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtRPCCode').css('border-color', '');
-            }
-
-            var rpc = {}
-            rpc.Id = $('#hdnRPCId').val();
-            rpc.Code = $('#txtRPCCode').val();
-            rpc.Rpccage = $('#txtRpcCage').val();
-            rpc.OrginatorCage = $('#txtOrginatorCage').val();
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/CreateRPC",
-                data: { rpc: rpc },
-                dataType: "json",
-                success: function (data) {
-                    if (data == 'Duplicate') {
-                        $("#errorRPCMsg").html("Duplicate Record.");
-                    } else {
-                        $("#rpcModel").modal('hide');
-                        location.reload();
-                    }
-                }
+            //Edit RPC
+            $('#resPartnerCodeTable tbody').on('click', '.editRPC', function () {
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+                var code = rowobj.find("td:eq(1)").text();
+                var RpcCage = rowobj.find("td:eq(2)").text();
+                var OrginatorCage = rowobj.find("td:eq(3)").text();
+                $("#txtRPCCode").val(code);
+                $("#txtRpcCage").val(RpcCage);
+                $("#txtOrginatorCage").val(OrginatorCage);
+                $("#hdnRPCId").val(id);
+                $("#btnRPCSave").html("Update");
+                $(".modelTitle").html("Edit RPC");
+                $("#rpcModel").modal('show');
             });
-        });
 
-        //Edit RPC
-        $('#resPartnerCodeTable tbody').on('click', '.editRPC', function () {
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-            var code = rowobj.find("td:eq(1)").text();
-            var RpcCage = rowobj.find("td:eq(2)").text();
-            var OrginatorCage = rowobj.find("td:eq(3)").text();
-            $("#txtRPCCode").val(code);
-            $("#txtRpcCage").val(RpcCage);
-            $("#txtOrginatorCage").val(OrginatorCage);
-            $("#hdnRPCId").val(id);
-            $("#btnRPCSave").html("Update");
-            $(".modelTitle").html("Edit RPC");
-            $("#rpcModel").modal('show');
-        });
+            //Delete RPC
+            $('#resPartnerCodeTable tbody').on('click', '.deleteRPC', function () {
+                var Id = $(this).closest("tr").find("td:eq(0)").text();
+                $.confirmModal('Are you sure to delete this record?', function (el) {
+                    $.ajax({
+                        type: "POST",
+                        url: "Maintenance/DeleteRPC",
+                        data: { id: Id },
+                        dataType: "json",
+                        success: function (data) {
+                            location.reload();
+                        }
+                    });
+                });
+            });
 
-        //Delete RPC
-        $('#resPartnerCodeTable tbody').on('click', '.deleteRPC', function () {
-            var Id = $(this).closest("tr").find("td:eq(0)").text();
-            $.confirmModal('Are you sure to delete this record?', function (el) {
+            //Data Module Type
+            var dataModuleTypeTable = $('#dataModuleTypeTable').DataTable();
+            $("#CreateDataModuleType").click(function () {
+                $('#hdnModuleId').val('0');
+                $('#txtDataTypeModule').val('');
+                $('#txtDataTypeFileName').val('');
+                $("#errorDMTMsg").html('');
+                $(".modelTitle").html("Create Data Module Type");
+                $("#btnDMTypeSave").html("Save");
+                $("#DataModuleTypeModel").modal('show');
+            });
+
+            // Save Data Module Type
+            $("#btnDMTypeSave").click(function () {
+                if ($('#txtDataTypeModule').val() == '') {
+                    $('#txtDataTypeModule').css('border-color', 'red');
+                    return false;
+                }
+                else {
+                    $('#txtDataTypeModule').css('border-color', '');
+                }
+
+                var dataModuleType = {}
+                dataModuleType.Id = $('#hdnModuleId').val();
+                dataModuleType.Name = $('#txtDataTypeModule').val();
+                dataModuleType.FileName = $('#txtDataTypeFileName').val();
+
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/DeleteRPC",
-                    data: { id: Id },
+                    url: "Maintenance/CreateDataTypeModule",
+                    data: { dataModuleType: dataModuleType },
                     dataType: "json",
                     success: function (data) {
-                        location.reload();
+                        if (data == 'Duplicate') {
+                            $("#errorDMTMsg").html("Duplicate Record.");
+                        } else {
+                            $("#DataModuleTypeModel").modal('hide');
+                            location.reload();
+                        }
                     }
                 });
             });
-        });
 
-        //Data Module Type
-        var dataModuleTypeTable = $('#dataModuleTypeTable').DataTable();
-        $("#CreateDataModuleType").click(function () {
-            $('#hdnModuleId').val('0');
-            $('#txtDataTypeModule').val('');
-            $('#txtDataTypeFileName').val('');
-            $("#errorDMTMsg").html('');
-            $(".modelTitle").html("Create Data Module Type");
-            $("#btnDMTypeSave").html("Save");
-            $("#DataModuleTypeModel").modal('show');
-        });
-
-        // Save Data Module Type
-        $("#btnDMTypeSave").click(function () {
-            if ($('#txtDataTypeModule').val() == '') {
-                $('#txtDataTypeModule').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtDataTypeModule').css('border-color', '');
-            }
-
-            var dataModuleType = {}
-            dataModuleType.Id = $('#hdnModuleId').val();
-            dataModuleType.Name = $('#txtDataTypeModule').val();
-            dataModuleType.FileName = $('#txtDataTypeFileName').val();
-
-            $.ajax({
-                type: "POST",
-                url: "Maintenance/CreateDataTypeModule",
-                data: { dataModuleType: dataModuleType },
-                dataType: "json",
-                success: function (data) {
-                    if (data == 'Duplicate') {
-                        $("#errorDMTMsg").html("Duplicate Record.");
-                    } else {
-                        $("#DataModuleTypeModel").modal('hide');
-                        location.reload();
-                    }
-                }
+            //edit Data Module Type
+            $('#dataModuleTypeTable tbody').on('click', '.editDataTypeModule', function () {
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+                var name = rowobj.find("td:eq(1)").text();
+                var filename = rowobj.find("td:eq(2)").text();
+                $("#txtDataTypeModule").val(name);
+                $("#txtDataTypeFileName").val(filename);
+                $("#hdnModuleId").val(id);
+                $("#btnDMTypeSave").html("Update");
+                $(".modelTitle").html("Edit Data Module Type");
+                $("#DataModuleTypeModel").modal('show');
             });
-        });
 
-        //edit Data Module Type
-        $('#dataModuleTypeTable tbody').on('click', '.editDataTypeModule', function () {
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-            var name = rowobj.find("td:eq(1)").text();
-            var filename = rowobj.find("td:eq(2)").text();
-            $("#txtDataTypeModule").val(name);
-            $("#txtDataTypeFileName").val(filename);
-            $("#hdnModuleId").val(id);
-            $("#btnDMTypeSave").html("Update");
-            $(".modelTitle").html("Edit Data Module Type");
-            $("#DataModuleTypeModel").modal('show');
-        });
-
-        //Delete Data Module Type
-        $('#dataModuleTypeTable tbody').on('click', '.deleteDataTypeModule', function () {
-            var Id = $(this).closest("tr").find("td:eq(0)").text();
-            $.confirmModal('Are you sure to delete this record?', function (el) {
-                $.ajax({
-                    type: "POST",
-                    url: "Maintenance/DeleteDataTypeModule",
-                    data: { id: Id },
-                    dataType: "json",
-                    success: function (data) {
-                        location.reload();
-                    }
+            //Delete Data Module Type
+            $('#dataModuleTypeTable tbody').on('click', '.deleteDataTypeModule', function () {
+                var Id = $(this).closest("tr").find("td:eq(0)").text();
+                $.confirmModal('Are you sure to delete this record?', function (el) {
+                    $.ajax({
+                        type: "POST",
+                        url: "Maintenance/DeleteDataTypeModule",
+                        data: { id: Id },
+                        dataType: "json",
+                        success: function (data) {
+                            location.reload();
+                        }
+                    });
                 });
             });
         });
