@@ -906,6 +906,13 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
+                        <div class="alertProjectNavigationModel" style="display:none;">
+                            <span id="alertMessageProjectNavigationModel">This alert box could indicate a successful or positive action.</span>
+                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
                         <div class="form-group">
                             <input type="radio" id="projectNavigationDMC" value="dmc" name="dmctype" checked /> DMC
                         </div>
@@ -974,6 +981,21 @@
             await delay();
             console.log(ui.item);
         });
+
+        function showAlertProjectNavigationModel(status, message) {
+            $('#alertMessageProjectNavigationModel').text(message);
+
+            if (status == true) {
+                $('.alertProjectNavigationModel').removeClass("alert-warning");
+                $('.alertProjectNavigationModel').addClass("alert-success");
+                $('.alertProjectNavigationModel').fadeIn().fadeOut(3000);
+            }
+            else {
+                $('.alertProjectNavigationModel').removeClass("alert-success");
+                $('.alertProjectNavigationModel').addClass("alert-warning");
+                $('.alertProjectNavigationModel').fadeIn().fadeOut(3000);
+            }
+        }
 
         function showAlert(status, message) {
             $('#alertMessage').text(message);
@@ -1140,7 +1162,6 @@
             $('#saveProjectNavigationTree').click(function () {
 
                 var navigationTreeData = $('#projectNavigationTree').tree('toJson');
-                $('html').addClass("wait");
 
                 $.ajax({
                     type: "POST",
@@ -1163,7 +1184,8 @@
                                 );
                             }
                         });
-                        $('html').removeClass("wait");
+
+                        showAlertProjectNavigationModel(true, "Navigation Saved Successfully!");
                     }
                 });
             });
