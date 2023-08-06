@@ -1041,6 +1041,16 @@
             refreshProjectNavigationTree(jsonObj);
         }
 
+        function handleStop(node, e) {
+
+            if ($('input[name=dmctype]:checked').val() == "dmc") {
+                $(".editTitle").hide();
+            }
+            else {
+                $(".editTitle").show();
+            }
+        }
+
         var responsiblePartnerCodes = [];
         $(document).ready(function () {
 
@@ -1127,16 +1137,6 @@
                 });
             });
 
-            $('#projectNavigationTree').on(
-                'tree.move',
-                function (event) {
-                    event.preventDefault();
-                    // do the move first, and _then_ POST back.
-                    event.move_info.do_move();
-                    $(".editTitle").show();
-                }
-            );
-
             $('#addDMCtoTree').click(function () {
 
                 var dmcId = parseInt($("#projectNavigationTreeDmcDropDown").val());
@@ -1176,6 +1176,7 @@
                             data: jsonObj,
                             autoOpen: true,
                             dragAndDrop: true,
+                            onDragStop: handleStop,
                             onCreateLi: function (node, $li) {
                                 // Append a link to the jqtree-element div.
                                 // The link has an url '#node-[id]' and a data property 'node-id'.
@@ -1776,6 +1777,7 @@
                             data: jsonObj,
                             autoOpen: true,
                             dragAndDrop: true,
+                            onDragStop: handleStop,
                             onCreateLi: function (node, $li) {
                                 // Append a link to the jqtree-element div.
                                 // The link has an url '#node-[id]' and a data property 'node-id'.
