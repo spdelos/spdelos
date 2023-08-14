@@ -603,6 +603,14 @@ namespace CSDBPortal.Business
             return navigationTrees;
         }
 
+        public List<BrexRule> GetBrexRules(int projectId)
+        {
+            using (ApplicationDbContext context = new())
+            {
+                return context.BrexRules.Where(b => b.ProjectId == projectId).ToList();
+            }
+        }
+
         public List<CustomProjectNavigation> GetProjectNavigationTree(int projectId)
         {
             List<CustomProjectNavigation> navigationTrees = new List<CustomProjectNavigation>();

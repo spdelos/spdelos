@@ -370,6 +370,7 @@
                                                 <a href="#" class="btn-sm btn-default project_sns_button">SNS</a>
                                                 <a href="#" class="btn-sm btn-primary project_dmc_button">DMC</a>
                                                 <a href="#" class="btn-sm btn-primary project_dmc_generate_button">Brex</a>
+                                                <a href="#" class="btn-sm btn-primary project_brex_rules_button">Brex Rules</a>
                                                 <a href="#" class="btn-sm btn-primary project_navigation_generate_button">Navigation</a>
                                             </td>
                                         </tr>
@@ -896,6 +897,45 @@
     </div>
 </div>
 
+<div class="modal fade" style=" -moz-border-radius:10px;" id="projectBrexRulesModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="margin-left: 10rem">
+        <div class="modal-content" style="width: 1200px;margin-top:100px; -moz-border-radius:10px;">
+            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+                <h4 class="modal-title modelprojectbrexrulemodel">Brex Rules</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="table-responsive info_table">
+                        <table class="table-bordered" id="tableBrexRules" width="100%">
+                            @*<thead class="thead text-center">
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Schema</th>
+                                    <th>Rule</th>
+                                    <th>Xml Tag</th>
+                                    <th>Sub Xml Tag</th>
+                                    <th>Constraint Type</th>
+                                    <th>Length</th>
+                                    <th>Range Value</th>
+                                    <th>Match Value</th>
+                                    <th>Attribute Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>*@
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveProjectBrexRules" class="btn btn-primary" value="Save">Save</button>
+                    <button type="button" class="btn btn-default modelCancelBrexRules" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" style=" -moz-border-radius:10px;" id="projectNavigationModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document" style="margin-left: 10rem">
         <div class="modal-content" style="width: 1200px;margin-top:100px; -moz-border-radius:10px;">
@@ -1294,6 +1334,7 @@
                 $("#projectModel").modal('hide');
                 $("#projectSnsModel").modal('hide');
                 $("#projectNavigationModel").modal('hide');
+                $("#projectBrexRulesModel").modal('hide');
                 selectedProject = 0;
             });
 
@@ -1316,6 +1357,7 @@
                 $("#projectModel").modal('hide');
                 $("#projectSnsModel").modal('hide');
                 $("#projectNavigationModel").modal('hide');
+                $("#projectBrexRulesModel").modal('hide');
                 selectedProject = 0;
             });
 
@@ -1326,6 +1368,11 @@
             $(".modelCancelProjectNavigationTree").click(function () {
                 $("#projectNavigationModel").modal('hide');
             });
+
+            $(".modelCancelBrexRules").click(function () {
+                $("#projectBrexRulesModel").modal('hide');
+            });
+            
 
             $(".modelCancelDMC").click(function () {
                 $("#DMCModel").modal('hide');
@@ -1741,6 +1788,49 @@
 
                 $("#projectSnsModel").modal('show');
             });
+
+            $(".project_brex_rules_button").click(function () {
+
+                var rowobj = $(this).closest("tr");
+                selectedProject = rowobj.find("td:eq(0)").text();
+
+                var projectBrexRulesTable = $('#tableBrexRules').DataTable({
+                    responsive: true,
+                    autoWidth: true,
+                    searching: true,
+                    columns: [
+                        { title: "Id" },
+                        { title: "Schema" },
+                        { title: "Rule" },
+                        { title: "Xml Tag" },
+                        { title: "Sub Xml Tag" },
+                        { title: "Constraint Type" },
+                        { title: "Length" },
+                        { title: "Range Value" },
+                        { title: "Match Value" },
+                        { title: "Attribute Name" },
+                        { title: "", "defaultContent": "<a href='#' class='edit'>&nbsp;<i class='fas fa-edit'></i></a>" },
+                    ]
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/GetBrexRules",
+                    data: { projectId: selectedProject },
+                    dataType: "json",
+                    success: function (data) {
+
+                        $.each(data, function (index, obj) {
+
+                            projectBrexRulesTable.row.add([obj.id, obj.group, obj.ruleName, obj.xmlTag,
+                            obj.subXmlTag, obj.type, obj.length, obj.rangeValue, obj.matchValue, obj.attributeName]).draw(false);
+                        });                        
+                    }
+                });
+
+                $("#projectBrexRulesModel").modal('show');
+            });
+                
 
             $(".project_navigation_generate_button").click(function () {
 

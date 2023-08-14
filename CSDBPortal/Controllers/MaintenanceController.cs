@@ -348,6 +348,11 @@ namespace CSDBPortal.Controllers
             }
         }
 
+        public JsonResult GetBrexRules(int projectId)
+        {
+            return Json(maintenancesManager.GetBrexRules(projectId));
+        }
+
         public JsonResult GetProjectNavigationTree(int projectId)
         {
             return Json(maintenancesManager.GetProjectNavigationTree(projectId));
@@ -744,8 +749,10 @@ namespace CSDBPortal.Controllers
                 ResponsiblePartnerCode rpc = applicationContext.ResponsiblePartnerCodes.Where(r => r.Id == project.RPCId).FirstOrDefault();
                 InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Id == dmc.InformationCodeId).FirstOrDefault();
                 LocationCode locationCode = applicationContext.LocationCodes.Where(l => l.Id == dmc.LocationCodeId).FirstOrDefault();
+                IssueTypeFile issueTypeFile = applicationContext.IssueTypeFiles.Where(i => i.Id == dmc.IssueFileId).FirstOrDefault();
 
                 string xmlContext = project.BrexTemplate;
+                //xmlContext = xmlContext.Replace("brex.xsd", issueTypeFile.Name);
 
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.LoadXml(xmlContext);
@@ -757,7 +764,13 @@ namespace CSDBPortal.Controllers
                 //xMan.AddNamespace("xlink", "http://www.w3.org/1999/xlink");
                 //xMan.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
-                XmlNode node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/creator", xMan);
+                XmlNode node = xmlDoc.SelectSingleNode("/dmodule", xMan);
+                if (node != null)
+                {
+                    node.Attributes["xsi:noNamespaceSchemaLocation"].Value = "http://www.s1000d.org/S1000D_4-2/xml_schema_flat/" + issueTypeFile.Name;
+                }
+
+                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/creator", xMan);
                 if (node != null)
                 {
                     node.InnerText = rpc.Rpccage;
