@@ -1094,7 +1094,7 @@
         var responsiblePartnerCodes = [];
         $(document).ready(function () {
 
-            $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+            $.fn.modal.Constructor.prototype._enforceFocus = function () { };
 
             $(document).on("click", ".add-child", function (e) {
 
@@ -1798,7 +1798,7 @@
                         $(this).html('<input class="editBrexRuleInput' + $(this)[0].className + '" value="' + content + '" />');
                     }
                     else if ($(this).hasClass("editableDropDownColumn")) {
-                        $(this).html("<select class='constraintTypeDropdown" + $(this)[0].className + "'><option value = 'Discrete'>Discrete</option><option value = 'Nesting'>Nesting</option><option value = 'Range'>Range</option><option value = 'Length'>Length</option></select>");
+                        $(this).html("<select class='constraintTypeDropdown" + $(this)[0].className + "'><option value = 'Discrete'>Discrete (comma seperated)</option><option value = 'Length'>Length</option><option value = 'Nesting'>Nesting</option><option value = 'Range'>Range</option></select>");
                         $("#constraintType").val(content);
                     }
                     else if ($(this).hasClass("editBrexRuleColumn")) {
@@ -1880,8 +1880,8 @@
                         { title: "Sub Xml Tag", className: "editableColumn brexRuleSubXmlTag" },
                         { title: "Constraint Type", className: "editableDropDownColumn brexRuleConstraintType" },
                         { title: "Length", className: "editableColumn brexRuleLength" },
-                        { title: "Range Value", className: "editableColumn brexRuleRangeValue" },
-                        { title: "Match Value", className: "editableColumn brexRuleMatchValue" },
+                        { title: "Range", className: "editableColumn brexRuleRangeValue" },
+                        { title: "Value", className: "editableColumn brexRuleMatchValue" },
                         { title: "Attribute Name", className: "editableColumn brexRuleAttributeName" },
                         { title: "Action", "defaultContent": "<a href='#' class='editBrexRule'>&nbsp;<i class='fas fa-edit'></i></a>", className: "editBrexRuleColumn" },
                     ]
