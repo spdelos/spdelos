@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualBasic.FileIO;
 using System.Data;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
@@ -348,6 +349,30 @@ namespace CSDBPortal.Controllers
             }
         }
 
+        public JsonResult SaveBrexRule(BrexRule brexRule)
+        {
+            using (ApplicationDbContext applicationContext = new())
+            {
+                var brexRuleFromDb = applicationContext.BrexRules.Where(b => b.Id == brexRule.Id).FirstOrDefault();
+                if (brexRuleFromDb != null)
+                {
+                    brexRuleFromDb.Group = brexRule.Group;
+                    brexRuleFromDb.RuleName = brexRule.RuleName;
+                    brexRuleFromDb.XmlTag = brexRule.XmlTag;
+                    brexRuleFromDb.SubXmlTag = brexRule.SubXmlTag;
+                    brexRuleFromDb.Type = brexRule.Type;
+                    brexRuleFromDb.Length = brexRule.Length;
+                    brexRuleFromDb.RangeValue = brexRule.RangeValue;
+                    brexRuleFromDb.MatchValue = brexRule.MatchValue;
+                    brexRuleFromDb.AttributeName = brexRule.AttributeName;
+                    brexRuleFromDb.UpdatedBy = User.Identity.Name;
+                    brexRuleFromDb.UpdatedOn = DateTime.UtcNow;
+                }
+
+                return Json(applicationContext.SaveChanges());
+            }
+        }
+
         public JsonResult GetBrexRules(int projectId)
         {
             return Json(maintenancesManager.GetBrexRules(projectId));
@@ -377,7 +402,7 @@ namespace CSDBPortal.Controllers
             return Json(maintenancesManager.GetProjectSns(projectId));
         }
 
-        public JsonResult GetDataModuleCodes(int projectId)
+        public JsonResult GetDataModuleCodes(string dmc, int projectId)
         {
             return Json(maintenancesManager.GetDataModuleCodes(projectId));
         }

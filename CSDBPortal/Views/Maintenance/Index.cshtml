@@ -909,18 +909,18 @@
                     <div class="table-responsive info_table">
                         <table class="table-bordered" id="tableBrexRules" width="100%">
                             @*<thead class="thead text-center">
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Schema</th>
-                                    <th>Rule</th>
-                                    <th>Xml Tag</th>
-                                    <th>Sub Xml Tag</th>
-                                    <th>Constraint Type</th>
-                                    <th>Length</th>
-                                    <th>Range Value</th>
-                                    <th>Match Value</th>
-                                    <th>Attribute Name</th>
-                                </tr>
+                            <tr>
+                            <th>Id</th>
+                            <th>Schema</th>
+                            <th>Rule</th>
+                            <th>Xml Tag</th>
+                            <th>Sub Xml Tag</th>
+                            <th>Constraint Type</th>
+                            <th>Length</th>
+                            <th>Range Value</th>
+                            <th>Match Value</th>
+                            <th>Attribute Name</th>
+                            </tr>
                             </thead>
                             <tbody>
                             </tbody>*@
@@ -948,7 +948,7 @@
                     <div class="col-md-6">
                         <div class="alertProjectNavigationModel" style="display:none;">
                             <span id="alertMessageProjectNavigationModel">This alert box could indicate a successful or positive action.</span>
-                         </div>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -1004,7 +1004,7 @@
             @:data.push(obj);
         }
 
-        var sortable = new TreeSortable("#tree");
+                var sortable = new TreeSortable("#tree");
         var content = data.map(sortable.createBranch);
         $("#tree").html(content);
         sortable.run();
@@ -1094,10 +1094,7 @@
         var responsiblePartnerCodes = [];
         $(document).ready(function () {
 
-            $(".jqtree-title").dblclick(function () {
-
-               alert('test');
-            });
+            $.fn.modal.Constructor.prototype._enforceFocus = function() {};
 
             $(document).on("click", ".add-child", function (e) {
 
@@ -1197,7 +1194,7 @@
                 var jsonObj = BuildNavigationTree(navigationTreeData);
                 refreshProjectNavigationTree(jsonObj);
             });
-            
+
 
             $('#saveProjectNavigationTree').click(function () {
 
@@ -1231,7 +1228,7 @@
                 });
             });
 
-            
+
             $('#projectNavigationTree').on('click', '.editTitle', function (e) {
                 var node = $(e.target).parent().siblings('.jqtree-title');
                 currentNodeText = node[0].innerText;
@@ -1372,7 +1369,7 @@
             $(".modelCancelBrexRules").click(function () {
                 $("#projectBrexRulesModel").modal('hide');
             });
-            
+
 
             $(".modelCancelDMC").click(function () {
                 $("#DMCModel").modal('hide');
@@ -1789,6 +1786,83 @@
                 $("#projectSnsModel").modal('show');
             });
 
+            $('#tableBrexRules').on('click', '.editBrexRule', function (e) {
+
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+
+                rowobj.find('td').each(function () {
+                    var content = $(this).html();
+
+                    if ($(this).hasClass("editableColumn")) {
+                        $(this).html('<input class="editBrexRuleInput' + $(this)[0].className + '" value="' + content + '" />');
+                    }
+                    else if ($(this).hasClass("editableDropDownColumn")) {
+                        $(this).html("<select class='constraintTypeDropdown" + $(this)[0].className + "'><option value = 'Discrete'>Discrete</option><option value = 'Nesting'>Nesting</option><option value = 'Range'>Range</option><option value = 'Length'>Length</option></select>");
+                        $("#constraintType").val(content);
+                    }
+                    else if ($(this).hasClass("editBrexRuleColumn")) {
+                        $(this).html("<a href='#' class='saveBrexRule'>&nbsp;<i class='fas fa-save'></i></a>");
+                    }
+                });
+            });
+
+            $('#tableBrexRules').on('click', '.saveBrexRule', function () {
+
+                var rowobj = $(this).closest("tr");
+
+                var id = rowobj.find("td:eq(0)").text();
+                var schema = rowobj.find(".brexRuleSchema")[1].value;
+                var rule = rowobj.find(".brexRuleRule")[1].value;
+                var xmlTag = rowobj.find(".brexRuleXmlTag")[1].value;
+                var subXmlTag = rowobj.find(".brexRuleSubXmlTag")[1].value;
+                var constraintType = rowobj.find(".brexRuleConstraintType")[1].value;
+                var length = rowobj.find(".brexRuleLength")[1].value;
+                var rangeValue = rowobj.find(".brexRuleRangeValue")[1].value;
+                var matchValue = rowobj.find(".brexRuleMatchValue")[1].value;
+                var attributeName = rowobj.find(".brexRuleAttributeName")[1].value;
+
+                var brexRule = {}
+                brexRule.Id = id;
+                brexRule.Group = schema;
+                brexRule.RuleName = rule;
+                brexRule.XmlTag = xmlTag;
+                brexRule.SubXmlTag = subXmlTag;
+                brexRule.Type = constraintType;
+                brexRule.Length = length;
+                brexRule.RangeValue = rangeValue;
+                brexRule.MatchValue = matchValue;
+                brexRule.AttributeName = attributeName;
+
+                $.ajax({
+                    type: "POST",
+                    url: "Maintenance/SaveBrexRule",
+                    data: { brexRule: brexRule },
+                    dataType: "json",
+                    success: function (data) {
+                    }
+                });
+
+
+                $('#tableBrexRules').find('.editBrexRuleInput').each(function () {
+                    var content = $(this).val();
+                    var tdObj = $(this).closest("td");
+                    tdObj.html(content);
+                });
+
+                $('#tableBrexRules').find('.constraintTypeDropdown').each(function () {
+                    var content = $(this).val();
+                    var tdObj = $(this).closest("td");
+                    tdObj.html(content);
+                });
+
+                $('#tableBrexRules').find('.saveBrexRule').each(function () {
+                    var tdObj = $(this).closest("td");
+                    tdObj.html("<a href='#' class='editBrexRule'>&nbsp;<i class='fas fa-edit'></i></a>");
+                    tdObj[0].className = "editBrexRuleColumn";
+                });
+            });
+
             $(".project_brex_rules_button").click(function () {
 
                 var rowobj = $(this).closest("tr");
@@ -1799,17 +1873,17 @@
                     autoWidth: true,
                     searching: true,
                     columns: [
-                        { title: "Id" },
-                        { title: "Schema" },
-                        { title: "Rule" },
-                        { title: "Xml Tag" },
-                        { title: "Sub Xml Tag" },
-                        { title: "Constraint Type" },
-                        { title: "Length" },
-                        { title: "Range Value" },
-                        { title: "Match Value" },
-                        { title: "Attribute Name" },
-                        { title: "", "defaultContent": "<a href='#' class='edit'>&nbsp;<i class='fas fa-edit'></i></a>" },
+                        { title: "Id", className: "brexRuleId" },
+                        { title: "Schema", className: "editableColumn brexRuleSchema" },
+                        { title: "Rule", className: "editableColumn brexRuleRule" },
+                        { title: "Xml Tag", className: "editableColumn brexRuleXmlTag" },
+                        { title: "Sub Xml Tag", className: "editableColumn brexRuleSubXmlTag" },
+                        { title: "Constraint Type", className: "editableDropDownColumn brexRuleConstraintType" },
+                        { title: "Length", className: "editableColumn brexRuleLength" },
+                        { title: "Range Value", className: "editableColumn brexRuleRangeValue" },
+                        { title: "Match Value", className: "editableColumn brexRuleMatchValue" },
+                        { title: "Attribute Name", className: "editableColumn brexRuleAttributeName" },
+                        { title: "Action", "defaultContent": "<a href='#' class='editBrexRule'>&nbsp;<i class='fas fa-edit'></i></a>", className: "editBrexRuleColumn" },
                     ]
                 });
 
@@ -1824,18 +1898,50 @@
 
                             projectBrexRulesTable.row.add([obj.id, obj.group, obj.ruleName, obj.xmlTag,
                             obj.subXmlTag, obj.type, obj.length, obj.rangeValue, obj.matchValue, obj.attributeName]).draw(false);
-                        });                        
+                        });
                     }
                 });
 
                 $("#projectBrexRulesModel").modal('show');
             });
-                
+
 
             $(".project_navigation_generate_button").click(function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
+
+                //$("#projectNavigationTreeDmcDropDown").select2({
+                //    ajax: {
+                //        url: "/Maintenance/GetDataModuleCodes",
+                //        dataType: "json",
+                //        type: "POST",
+                //        delay: 150,
+
+                //        data: function (params) {
+                //            return {
+                //                dmc: params.term, projectId: selectedProject
+                //            };
+                //        },
+                //        processResults: function (data) {
+                //            if (data.length > 0) {
+                //                var res = data.map(function (item) {
+                //                    //return { id: item.id, text: item.dmc, dmc: item.dmc, title: item.infoName + " - " + item.techName };
+                //                    return { id: item.id, text: item.dmc };
+                //                });
+                //                return {
+                //                    results: res
+                //                };
+                //            } else {
+                //                console.log("error");
+                //            }
+                //        },
+                //        cache: true
+                //    },
+                //    placeholder: 'Select a DMC to add to navigation tree',
+                //    minimumInputLength: 2
+                //});
+
 
                 $.ajax({
                     type: "POST",
@@ -1851,6 +1957,8 @@
                         $.each(data, function (idx, obj) {
                             slelectObj.append('<option dmc="' + obj.dmc + '" title="' + obj.infoName + " - " + obj.techName + '" value=' + obj.id + '>' + obj.dmc + '</option>');
                         });
+
+                        $("#projectNavigationTreeDmcDropDown").select2();
                     }
                 });
 
