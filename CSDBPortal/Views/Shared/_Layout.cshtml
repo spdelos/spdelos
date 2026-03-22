@@ -97,14 +97,6 @@
                             <i class="fa-solid fa-magnifying-glass"></i>
                             <input type="text" placeholder="Search…" />
                         </div>
-                        <div class="topbar-user-chip">
-                            <div class="topbar-avatar">
-                                @(Context.User.Identity.Name?.Length > 0
-                                    ? Context.User.Identity.Name.Substring(0, 1).ToUpper()
-                                    : "U")
-                            </div>
-                            <span class="topbar-username d-none d-md-inline">@Context.User.Identity.Name</span>
-                        </div>
                     </div>
                 </header>
 
