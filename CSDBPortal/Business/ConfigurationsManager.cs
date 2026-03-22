@@ -110,9 +110,9 @@ namespace CSDBPortal.Business
                     return configurationViewModel;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
         public int CheckDuplicateIssue(IssueNo issueNo)

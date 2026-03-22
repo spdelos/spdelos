@@ -38,9 +38,9 @@ namespace CSDBPortal.Business
                     return administrationViewModel;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 

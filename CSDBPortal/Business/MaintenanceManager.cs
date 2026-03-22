@@ -216,9 +216,9 @@ namespace CSDBPortal.Business
                     return maintenanceViewModel;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -717,9 +717,9 @@ namespace CSDBPortal.Business
                     return newProjectNavigations;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -769,9 +769,9 @@ namespace CSDBPortal.Business
                     return newStandardNumbers;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
