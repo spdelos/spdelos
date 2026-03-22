@@ -2,81 +2,55 @@
 @{
     ViewData["Title"] = "Configuration";
 }
-<style>
-    .table > thead > tr > td, .table-sm > thead > tr > th {
-        padding: 5px !important;
-        vertical-align: middle;
-    }
 
+<div class="page-body">
 
-    table > tbody > tr > td {
-        padding: 5px !important;
-        vertical-align: middle;
-    }
+    <!-- ── Vertical Tab Nav ── -->
+    <nav class="vtab-nav" id="pills-tab" role="tablist">
+        <div class="vtab-nav-title">Configuration</div>
 
-    .table > tbody > tr {
-        padding: 5px !important;
-        vertical-align: middle;
-    }
+        @{ bool cfgFirst = true; }
 
-    table > tbody > tr {
-        padding: 5px !important;
-        vertical-align: middle;
-    }
+        @if (User.HasClaim("Permission", Features.IssuAdministration))
+        {
+            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-1"
+               data-bs-toggle="tab" href="#pills-1" role="tab">
+                <span class="vi-icon"><i class="fa-solid fa-tag"></i></span>
+                <span class="vi-label">Issue Numbers</span>
+            </a>
+            @{ cfgFirst = false; }
+        }
+        @if (User.HasClaim("Permission", Features.InfoCodeSetAdministration))
+        {
+            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-5"
+               data-bs-toggle="tab" href="#pills-5" role="tab">
+                <span class="vi-icon"><i class="fa-solid fa-layer-group"></i></span>
+                <span class="vi-label">Info Code Sets</span>
+            </a>
+            @{ cfgFirst = false; }
+        }
+        @if (User.HasClaim("Permission", Features.InfoCodeAdministration))
+        {
+            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-3"
+               data-bs-toggle="tab" href="#pills-3" role="tab">
+                <span class="vi-icon"><i class="fa-solid fa-code"></i></span>
+                <span class="vi-label">Info Codes</span>
+            </a>
+            @{ cfgFirst = false; }
+        }
+        @if (User.HasClaim("Permission", Features.IcnFormatAdministration))
+        {
+            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-4"
+               data-bs-toggle="tab" href="#pills-4" role="tab">
+                <span class="vi-icon"><i class="fa-solid fa-puzzle-piece"></i></span>
+                <span class="vi-label">ICN Formats</span>
+            </a>
+            @{ cfgFirst = false; }
+        }
+    </nav>
 
-    .table > tbody > tr > td {
-        padding: 5px !important;
-        vertical-align: middle;
-    }
-</style>
-
-<div class="row">
-    <!-- tab-content -->
-    <div class="col-12">
-        <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
-            @if (User.HasClaim("Permission", Features.IssuAdministration))
-            {
-                <li class="nav-item item-one" role="presentation">
-                    <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
-                        <img src="./dist/img/Icons/Configuration/Issues.png" alt="Issues icon">
-                        <span class="ml-2">Issues </span>
-                    </a>
-                </li>
-            }
-            @*<li class="nav-item" role="presentation">
-                <a class="nav-link" id="pills-tab-2" data-toggle="pill" href="#pills-2">
-                    <img src="./dist/img/Icons/Configuration/Designation.png" alt="Designation icon">
-                    <span class="ml-2"> Designation</span>
-                </a>
-            </li>*@
-            @if (User.HasClaim("Permission", Features.InfoCodeSetAdministration))
-            {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-5" data-toggle="pill" href="#pills-5">
-                        <img src="./dist/img/Icons/Configuration/Info Code.png" alt="Info Code icon">
-                        <span class="ml-2">Info Code Set</span>
-                    </a>
-                </li>
-            }
-            @if (User.HasClaim("Permission", Features.InfoCodeAdministration))
-            {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-3">
-                        <img src="./dist/img/Icons/Configuration/Info Code.png" alt="Info Code icon">
-                        <span class="ml-2">Info Code</span>
-                    </a>
-                </li>
-            }
-            @if (User.HasClaim("Permission", Features.IcnFormatAdministration))
-            {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-4">
-                        <img src="./dist/img/Icons/Configuration/ICN Format.png" alt="ICN Format icon">
-                        <span class="ml-2"> ICN Format</span>
-                    </a>
-                </li>
-            }
-        </ul>
+    <!-- ── Tab Content ── -->
+    <div class="vtab-content">
         <div class="tab-content" id="pills-tabContent">
             @if (User.HasClaim("Permission", Features.IssuAdministration))
             {
@@ -91,7 +65,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card" style="padding:15px">
+                    <div class="card" >
                         <div class="table-responsive">
                             <table id="issueTable" class="table table-bordered">
                                 <thead class="thead text-center">
@@ -134,7 +108,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:15px">
+                <div class="card" >
                     <div class="table-responsive">
                         <table class="table table-bordered" id="desigTable" width="100%">
                             <thead class="thead">
@@ -176,7 +150,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card" style="padding:15px">
+                    <div class="card" >
                         <div class="table-responsive info_table">
                             <table class="table table-bordered" id="tableInfoCode" width="100%">
                                 <thead class="thead text-center">
@@ -227,7 +201,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card" style="padding:15px">
+                    <div class="card" >
                         <div class="table-responsive info_table">
                             <table class="table table-bordered" id="tableInfoCodeSet" width="100%">
                                 <thead class="thead text-center">
@@ -271,7 +245,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card" style="padding:15px">
+                    <div class="card" >
                         <div class="table-responsive">
                             <table class="table icn table-bordered" id="tableICNFormat" width="100%">
                                 <thead class="thead">
@@ -308,13 +282,14 @@
             }
         </div>
     </div>
-    <!-- /. tab-content -->
+    <!-- /. vtab-content -->
 </div>
+<!-- /. page-body -->
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="Configurationmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 350px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelIssueNoTitle"></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -363,8 +338,8 @@
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="desigmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 350px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelDeprtTitle">Create Designation</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -395,8 +370,8 @@
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="nCodemdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 650px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelInfoCodeTitle">Create Information Code</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -452,8 +427,8 @@
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="nCodeSetmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 650px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelInfoCodeSetTitle">Create Information Code Set</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -491,8 +466,8 @@
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="icnmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 700px;margin-top:100px; -moz-border-radius:10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelicnTitle">Create ICN Format</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -611,15 +586,17 @@
             }
         });
 
-        $('a[data-toggle="pill"]').on('show.bs.tab', function(e) {
-            localStorage.setItem('activeTab', $(e.target).attr('href'));
+        // Persist active tab (Bootstrap 5)
+        document.querySelectorAll('#pills-tab [data-bs-toggle="tab"]').forEach(function (el) {
+            el.addEventListener('shown.bs.tab', function (e) {
+                localStorage.setItem('activeCfgTab', e.target.getAttribute('href'));
+            });
         });
-
-        var activeTab = localStorage.getItem('activeTab');
-        if(activeTab){
-
-            $('#pills-tab a[href="' + activeTab + '"]').tab('show');
-        }
+        var activeCfgTab = localStorage.getItem('activeCfgTab');
+        var cfgTrigger = activeCfgTab
+            ? document.querySelector('#pills-tab [href="' + activeCfgTab + '"]')
+            : document.querySelector('#pills-tab [data-bs-toggle="tab"]');
+        if (cfgTrigger) bootstrap.Tab.getOrCreateInstance(cfgTrigger).show();
 
         $('.3numbersonly').keypress(function (e) {
 

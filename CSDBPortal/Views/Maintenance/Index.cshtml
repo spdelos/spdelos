@@ -3,93 +3,91 @@
     ViewData["Title"] = "Maintenance";
 }
 
-<style>
-    .ml-1 {
-        font-size: 12px;
-        padding: 2px;
-    }
-</style>
-
-<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
-<link href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css" />
-<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-
-<div class="alert" style="display:none;position: absolute">
+<div class="alert" style="display:none" id="mainAlert">
     <span id="alertMessage">This alert box could indicate a successful or positive action.</span>
 </div>
 
-<div class="row">
-    <!-- tab-content -->
-    <div class="col-12">
-        <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
+<div class="maint-shell">
+
+    <!-- ── Secondary Navigation Panel ── -->
+    <aside class="maint-panel">
+        <div class="maint-panel-header">
+            <div class="maint-panel-title">Maintenance</div>
+            <div class="maint-panel-sub">Project data &amp; structures</div>
+        </div>
+
+        <nav class="maint-panel-nav" id="pills-tab" role="tablist">
+
+            @{ bool maintFirst = true; }
+
             @if (User.HasClaim("Permission", Features.LocationCodeSetAdministration))
             {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link active" id="pills-tab-6" data-toggle="pill" href="#pills-6">
-                        <img src="./dist/img/Icons/Maintenance/Location Code.png" alt="Location Code icon">
-                        <span class="ml-1">Location Code Set</span>
-                    </a>
-                </li>
+                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-6"
+                   data-bs-toggle="tab" href="#pills-6" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-map-pin"></i></span>
+                    <span>Location Code Sets</span>
+                </a>
+                @{ maintFirst = false; }
             }
             @if (User.HasClaim("Permission", Features.LocationCodeAdministration))
             {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-1" data-toggle="pill" href="#pills-1">
-                        <img src="./dist/img/Icons/Maintenance/Location Code.png" alt="Location Code icon">
-                        <span class="ml-1">Location Code</span>
-                    </a>
-                </li>
+                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-1"
+                   data-bs-toggle="tab" href="#pills-1" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-location-dot"></i></span>
+                    <span>Location Codes</span>
+                </a>
+                @{ maintFirst = false; }
             }
             @if (User.HasClaim("Permission", Features.RPCAdministration))
             {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-2" data-toggle="pill" href="#pills-2">
-                        <img src="./dist/img/Icons/Maintenance/Responsible Partner Code.png"
-                             alt="Responsible Partner Code icon">
-                        <span class="ml-1"> Responsible Partner Code(RPC)</span>
-                    </a>
-                </li>
+                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-2"
+                   data-bs-toggle="tab" href="#pills-2" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-building"></i></span>
+                    <span>RPC</span>
+                </a>
+                @{ maintFirst = false; }
             }
             @if (User.HasClaim("Permission", Features.DataModuleTypeAdministration))
             {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-3">
-                        <img src="./dist/img/Icons/Maintenance/Data Module Type.png"
-                             alt="Data Module Type icon">
-                        <span class="ml-1">Data Module Type</span>
-                    </a>
-                </li>
+                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-3"
+                   data-bs-toggle="tab" href="#pills-3" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-layer-group"></i></span>
+                    <span>Data Module Types</span>
+                </a>
+                @{ maintFirst = false; }
             }
             @if (User.HasClaim("Permission", Features.SNSAdministration))
             {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-4">
-                        <img src="./dist/img/Icons/Maintenance/Standard Numbering System.png"
-                             alt="Standard Numbering System icon">
-                        <span class="ml-1"> Standard Numbering System(SNS)</span>
-                    </a>
-                </li>
+                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-4"
+                   data-bs-toggle="tab" href="#pills-4" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-sitemap"></i></span>
+                    <span>SNS</span>
+                </a>
+                @{ maintFirst = false; }
             }
             @if (User.HasClaim("Permission", Features.ProjectAdministration))
             {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-5" data-toggle="pill" href="#pills-5">
-                        <img src="./dist/img/Icons/Maintenance/Project.png" alt="Project icon">
-                        <span class="ml-1"> Project</span>
-                    </a>
-                </li>
+                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-5"
+                   data-bs-toggle="tab" href="#pills-5" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-folder-open"></i></span>
+                    <span>Projects</span>
+                </a>
+                @{ maintFirst = false; }
             }
             @if (User.HasClaim("Permission", Features.DMCAdministration))
             {
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-7" data-toggle="pill" href="#pills-7">
-                        <img src="./dist/img/Icons/Maintenance/Project.png" alt="Project icon">
-                        <span class="ml-1">DMC</span>
-                    </a>
-                </li>
+                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-7"
+                   data-bs-toggle="tab" href="#pills-7" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-file-code"></i></span>
+                    <span>DMC</span>
+                </a>
+                @{ maintFirst = false; }
             }
-        </ul>
+        </nav>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <div class="maint-content">
         <div class="tab-content" id="pills-tabContent">
             @if (User.HasClaim("Permission", Features.LocationCodeSetAdministration))
             {
@@ -451,14 +449,15 @@
             }
         </div>
     </div>
-    <!-- /. tab-content -->
+    <!-- /. maint-content -->
 </div>
+<!-- /. maint-shell -->
 
 @*  Location Code Set*@
-<div class="modal fade" style=" -moz-border-radius:10px;" id="locatonCodeSetmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="locatonCodeSetmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelTitle">Create Location Code Set</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -487,10 +486,10 @@
 </div>
 
 @*  Location Code*@
-<div class="modal fade" style=" -moz-border-radius:10px;" id="locatonCodemdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="locatonCodemdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelTitle">Create Location Code</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -538,10 +537,10 @@
 </div>
 
 @* SNS *@
-<div class="modal fade" style=" -moz-border-radius:10px;z-index:4000;" id="snsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="snsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelSnsTitle">Create Standard Number System</h4>
                 <button type="button" class="btn-close-sns" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -587,10 +586,10 @@
 </div>
 
 @* RPC*@
-<div class="modal fade" style=" -moz-border-radius:10px;" id="rpcModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="rpcModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelDeprtTitle">Create RPC</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -632,10 +631,10 @@
 </div>
 
 @* Project *@
-<div class="modal fade" style=" -moz-border-radius:10px;" id="projectModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="projectModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelProjectTitle">Create Project</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -731,10 +730,10 @@
 </div>
 
 @* DMC *@
-<div class="modal fade" style=" -moz-border-radius:10px;z-index:4000;" id="DMCModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="DMCModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelDMCTitle">Create DMC</h4>
                 <button type="button" class="btn-close-dmc" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -839,10 +838,10 @@
 
 
 @* Data Module Type*@
-<div class="modal fade" style=" -moz-border-radius:10px;" id="DataModuleTypeModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="DataModuleTypeModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 550px;margin-top:100px; -moz-border-radius:10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelicnTitle">Create RPC</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -879,10 +878,10 @@
     </div>
 </div>
 
-<div class="modal fade" style=" -moz-border-radius:10px;" id="projectSnsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="projectSnsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 700px;margin-top:100px; -moz-border-radius:10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelprojectSns">Project Standard Numbering System</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -897,10 +896,10 @@
     </div>
 </div>
 
-<div class="modal fade" style=" -moz-border-radius:10px;" id="projectBrexRulesModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="projectBrexRulesModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document" style="margin-left: 10rem">
-        <div class="modal-content" style="width: 1200px;margin-top:100px; -moz-border-radius:10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelprojectbrexrulemodel">Brex Rules</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -936,10 +935,10 @@
     </div>
 </div>
 
-<div class="modal fade" style=" -moz-border-radius:10px;" id="projectNavigationModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade"  id="projectNavigationModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document" style="margin-left: 10rem">
-        <div class="modal-content" style="width: 1200px;margin-top:100px; -moz-border-radius:10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content" >
+            <div class="modal-header btn" >
                 <h4 class="modal-title modelprojectSns">Project Navigation</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
@@ -1094,7 +1093,18 @@
         var responsiblePartnerCodes = [];
         $(document).ready(function () {
 
-            $.fn.modal.Constructor.prototype._enforceFocus = function () { };
+            // Activate first (or stored) tab on page load
+            var activeMaintTab = localStorage.getItem('activeMaintTab');
+            var maintTrigger = activeMaintTab
+                ? document.querySelector('#pills-tab [href="' + activeMaintTab + '"]')
+                : document.querySelector('#pills-tab [data-bs-toggle="tab"]');
+            if (maintTrigger) bootstrap.Tab.getOrCreateInstance(maintTrigger).show();
+
+            document.querySelectorAll('#pills-tab [data-bs-toggle="tab"]').forEach(function (el) {
+                el.addEventListener('shown.bs.tab', function (e) {
+                    localStorage.setItem('activeMaintTab', e.target.getAttribute('href'));
+                });
+            });
 
             $(document).on("click", ".add-child", function (e) {
 

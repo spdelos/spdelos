@@ -29,6 +29,68 @@
     </div>
 </div>
 
+<!-- Dashboard grid: Quick Access + Activity -->
+<div class="dashboard-grid mb-4">
+
+    <!-- Quick Access -->
+    <div class="ui-card">
+        <div class="ui-card-header">
+            <span class="ui-card-title"><i class="fa-solid fa-bolt" style="color:#d97706"></i> Quick Access</span>
+        </div>
+        <div class="ui-card-body">
+            <div class="quick-grid">
+                <a href="ICN" class="quick-item">
+                    <i class="fa-solid fa-hashtag" style="color:#2563eb"></i>
+                    <span>Generate ICN</span>
+                </a>
+                <a href="Maintenance" class="quick-item">
+                    <i class="fa-solid fa-file-circle-plus" style="color:#16a34a"></i>
+                    <span>Maintenance</span>
+                </a>
+                <a href="Configuration" class="quick-item">
+                    <i class="fa-solid fa-sliders" style="color:#7c3aed"></i>
+                    <span>Configuration</span>
+                </a>
+                <a href="Maintenance" class="quick-item">
+                    <i class="fa-solid fa-code" style="color:#d97706"></i>
+                    <span>BREX Rules</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="ui-card">
+        <div class="ui-card-header">
+            <span class="ui-card-title"><i class="fa-solid fa-clock-rotate-left" style="color:#7c3aed"></i> Recent Activity</span>
+        </div>
+        <div class="ui-card-body" style="padding-top:8px;padding-bottom:8px">
+            <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div>
+                    <div class="activity-text">User management updated</div>
+                    <div class="activity-time">Just now</div>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-dot blue"></div>
+                <div>
+                    <div class="activity-text">New ICN numbers generated</div>
+                    <div class="activity-time">1 hour ago</div>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-dot amber"></div>
+                <div>
+                    <div class="activity-text">Configuration settings saved</div>
+                    <div class="activity-time">3 hours ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 @if (User.HasClaim("Permission", Features.UserAndRoleAdministration))
 {
     <!-- Tab navigation -->
