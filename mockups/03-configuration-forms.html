@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSDB Portal — Mockup 3: Configuration & Forms</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --primary-light: #2563a8;
+    --accent: #e8a020;
+    --bg: #f0f2f5;
+    --border: #e5e7eb;
+    --text-muted: #6b7280;
+    --sidebar-bg: #0f2540;
+    --sidebar-text: #c8d6e5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  /* ICON SIDEBAR */
+  .sidebar {
+    width: 56px; background: var(--sidebar-bg);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 0; gap: 4px; flex-shrink: 0;
+  }
+  .sidebar .brand {
+    width: 36px; height: 36px; background: var(--accent);
+    border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; color: white; font-weight: 700; font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .sb-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sidebar-text); font-size: 16px; cursor: pointer;
+    transition: background 0.15s, color 0.15s; position: relative;
+  }
+  .sb-icon:hover { background: rgba(255,255,255,0.1); color: white; }
+  .sb-icon.active { background: var(--primary-light); color: white; }
+  .sb-divider { width: 28px; height: 1px; background: rgba(255,255,255,0.1); margin: 6px 0; }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    height: 56px; background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0;
+  }
+  .topbar-title { font-size: 15px; font-weight: 700; color: #111827; flex: 1; }
+  .search-box { position: relative; }
+  .search-box input {
+    width: 220px; padding: 7px 12px 7px 32px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-size: 12.5px; outline: none; background: var(--bg);
+    transition: all 0.15s;
+  }
+  .search-box input:focus { border-color: var(--primary-light); background: white; }
+  .search-box i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
+
+  /* PAGE BODY */
+  .page-body { flex: 1; display: flex; overflow: hidden; }
+
+  /* VERTICAL TABS */
+  .vtab-nav {
+    width: 200px; flex-shrink: 0;
+    background: white; border-right: 1px solid var(--border);
+    padding: 16px 0; display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .vtab-nav-title {
+    padding: 0 16px 12px;
+    font-size: 11px; font-weight: 700;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .vtab-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; cursor: pointer;
+    color: #374151; transition: background 0.12s;
+    position: relative; border-left: 3px solid transparent;
+  }
+  .vtab-item:hover { background: #f3f4f6; }
+  .vtab-item.active {
+    background: #eff6ff; color: var(--primary-light);
+    font-weight: 600; border-left-color: var(--primary-light);
+  }
+  .vtab-item .vi-icon { font-size: 14px; width: 18px; text-align: center; }
+  .vtab-item .vi-label { flex: 1; font-size: 13px; }
+  .vtab-item .vi-badge {
+    font-size: 10px; font-weight: 700;
+    background: #e5e7eb; color: #6b7280;
+    padding: 1px 6px; border-radius: 10px;
+  }
+  .vtab-item.active .vi-badge { background: #bfdbfe; color: var(--primary-light); }
+  .vtab-divider { height: 1px; background: var(--border); margin: 8px 16px; }
+
+  /* TAB CONTENT */
+  .vtab-content { flex: 1; overflow-y: auto; padding: 24px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* PAGE HEADER */
+  .content-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .content-title { font-size: 18px; font-weight: 700; color: #111827; }
+  .content-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; }
+  .btn-new {
+    background: var(--primary-light); color: white;
+    border: none; padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn-new:hover { background: var(--primary); }
+
+  /* CARD TABLE */
+  .card-table {
+    background: white; border-radius: 12px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .card-table-toolbar {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; background: #fafafa;
+  }
+  table.t { width: 100%; border-collapse: collapse; }
+  table.t th {
+    padding: 10px 14px; font-size: 11px; font-weight: 700;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.05em; border-bottom: 1px solid var(--border);
+    text-align: left; background: #f9fafb;
+  }
+  table.t td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151; vertical-align: middle;
+  }
+  table.t tr:last-child td { border-bottom: none; }
+  table.t tr:hover td { background: #f9fafb; }
+  table.t .row-actions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; }
+  table.t tr:hover .row-actions { opacity: 1; }
+  .act-btn {
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 1px solid var(--border); background: white;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 12px; transition: all 0.12s;
+  }
+  .act-btn.edit { color: var(--primary-light); }
+  .act-btn.edit:hover { background: #eff6ff; border-color: var(--primary-light); }
+  .act-btn.del { color: #dc2626; }
+  .act-btn.del:hover { background: #fef2f2; border-color: #dc2626; }
+
+  code.pill {
+    background: #eff6ff; color: #2563eb;
+    padding: 2px 7px; border-radius: 4px;
+    font-size: 12px; font-weight: 700; font-family: monospace;
+  }
+  .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-blue { background: #eff6ff; color: #2563eb; }
+  .badge-green { background: #f0fdf4; color: #16a34a; }
+  .badge-amber { background: #fffbeb; color: #92400e; }
+  .badge-gray { background: #f3f4f6; color: #6b7280; }
+
+  /* ICN FORMAT BUILDER */
+  .icn-builder {
+    background: white; border-radius: 12px;
+    border: 1px solid var(--border); overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .icn-builder-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    background: #fafafa; display: flex; align-items: center; justify-content: space-between;
+  }
+  .icn-builder-title { font-size: 13px; font-weight: 700; color: #111827; }
+  .icn-preview {
+    padding: 16px 18px; border-bottom: 1px solid var(--border);
+    background: #0f2540; display: flex; align-items: center; gap: 0;
+    flex-wrap: wrap;
+  }
+  .icn-seg {
+    display: flex; flex-direction: column; align-items: center;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    padding: 0 12px;
+    cursor: pointer; transition: background 0.12s;
+  }
+  .icn-seg:first-child { padding-left: 0; }
+  .icn-seg:last-child { border-right: none; }
+  .icn-seg:hover { background: rgba(255,255,255,0.05); border-radius: 4px; }
+  .icn-seg.selected { background: rgba(37,99,168,0.4); border-radius: 4px; }
+  .icn-seg-value { font-family: monospace; font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em; }
+  .icn-seg-label { font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+  .icn-sep { color: rgba(255,255,255,0.3); font-size: 18px; align-self: center; padding: 0 2px; }
+
+  .icn-fields { padding: 16px 18px; }
+  .icn-field-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 8px;
+    border: 1px solid var(--border); margin-bottom: 8px;
+    background: white; cursor: grab;
+    transition: box-shadow 0.12s;
+  }
+  .icn-field-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .icn-field-row.active-seg { border-color: var(--primary-light); background: #eff6ff; }
+  .drag-handle { color: #d1d5db; cursor: grab; font-size: 12px; }
+  .field-name { font-weight: 600; color: #111827; flex: 1; }
+  .field-type { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+  .field-len { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #374151; }
+  .field-len input {
+    width: 48px; padding: 4px 8px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 12px; text-align: center; outline: none;
+  }
+  .field-len input:focus { border-color: var(--primary-light); }
+
+  /* MODAL */
+  .modal-backdrop-custom {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 600;
+  }
+  .modal-card {
+    background: white; border-radius: 14px;
+    width: 520px; max-height: 90vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  .modal-card-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .modal-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: #eff6ff; display: flex; align-items: center;
+    justify-content: center; color: var(--primary-light); font-size: 16px;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; color: #111827; flex: 1; }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border); background: white;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-muted); font-size: 14px;
+  }
+  .modal-body { flex: 1; overflow-y: auto; padding: 24px; }
+  .modal-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+
+  /* FORM STYLES */
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px; display: block; }
+  .form-label .req { color: #dc2626; }
+  .form-input {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-size: 13px; outline: none; color: #111827;
+    transition: border 0.15s, box-shadow 0.15s;
+  }
+  .form-input:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(37,99,168,0.1); }
+  .form-select {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: 8px;
+    font-size: 13px; outline: none; color: #111827; background: white;
+  }
+  .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-divider { height: 1px; background: var(--border); margin: 6px 0 18px; }
+
+  /* INLINE ALERT */
+  .inline-info {
+    padding: 12px 14px; background: #eff6ff;
+    border: 1px solid #bfdbfe; border-radius: 8px;
+    font-size: 12px; color: #1e40af; display: flex; gap: 10px;
+    align-items: flex-start; margin-bottom: 18px;
+  }
+
+  /* FILE UPLOAD */
+  .file-drop {
+    border: 2px dashed var(--border); border-radius: 10px;
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: #fafafa;
+  }
+  .file-drop:hover { border-color: var(--primary-light); background: #eff6ff; }
+  .file-drop i { font-size: 28px; color: #d1d5db; margin-bottom: 8px; }
+  .file-drop .fd-label { font-size: 13px; color: #374151; font-weight: 600; }
+  .file-drop .fd-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* BTN */
+  .btn-save { background: var(--primary-light); color: white; border: none; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-cancel { background: white; color: #374151; border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .btn-outline { background: white; color: #374151; border: 1px solid var(--border); padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn-outline:hover { background: var(--bg); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<!-- Icon Sidebar -->
+<aside class="sidebar">
+  <div class="brand">CS</div>
+  <div class="sb-icon"><i class="fa-solid fa-chart-pie"></i></div>
+  <div class="sb-icon active"><i class="fa-solid fa-sliders"></i></div>
+  <div class="sb-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+  <div class="sb-icon"><i class="fa-solid fa-hashtag"></i></div>
+  <div class="sb-divider"></div>
+  <div class="sb-icon"><i class="fa-solid fa-shield-halved"></i></div>
+  <div class="sb-icon"><i class="fa-solid fa-gear"></i></div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+
+  <div class="topbar">
+    <div class="topbar-title">Configuration</div>
+    <div style="flex:1;"></div>
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search configuration…">
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Vertical Tab Nav -->
+    <nav class="vtab-nav">
+      <div class="vtab-nav-title">Configuration</div>
+
+      <div class="vtab-item active" onclick="switchVTab(this,'issue')">
+        <span class="vi-icon"><i class="fa-solid fa-tag"></i></span>
+        <span class="vi-label">Issue Numbers</span>
+        <span class="vi-badge">8</span>
+      </div>
+      <div class="vtab-item" onclick="switchVTab(this,'infoset')">
+        <span class="vi-icon"><i class="fa-solid fa-layer-group"></i></span>
+        <span class="vi-label">Info Code Sets</span>
+        <span class="vi-badge">5</span>
+      </div>
+      <div class="vtab-item" onclick="switchVTab(this,'infocode')">
+        <span class="vi-icon"><i class="fa-solid fa-code"></i></span>
+        <span class="vi-label">Info Codes</span>
+        <span class="vi-badge">42</span>
+      </div>
+      <div class="vtab-item" onclick="switchVTab(this,'icnformat')">
+        <span class="vi-icon"><i class="fa-solid fa-puzzle-piece"></i></span>
+        <span class="vi-label">ICN Formats</span>
+        <span class="vi-badge">3</span>
+      </div>
+      <div class="vtab-divider"></div>
+      <div class="vtab-item" onclick="switchVTab(this,'designation')">
+        <span class="vi-icon"><i class="fa-solid fa-id-badge"></i></span>
+        <span class="vi-label">Designations</span>
+        <span class="vi-badge">12</span>
+      </div>
+    </nav>
+
+    <!-- Tab Content -->
+    <div class="vtab-content">
+
+      <!-- ISSUE NUMBERS TAB -->
+      <div class="tab-pane active" id="tab-issue">
+        <div class="content-header">
+          <div>
+            <div class="content-title">Issue Numbers</div>
+            <div class="content-sub">Define S1000D issue versions for your projects. Each issue can have associated BREX templates.</div>
+          </div>
+          <button class="btn-new" onclick="showModal('issue')">
+            <i class="fa-solid fa-plus"></i> New Issue
+          </button>
+        </div>
+
+        <div class="card-table">
+          <div class="card-table-toolbar">
+            <span style="font-size:12px;color:var(--text-muted);">8 issues total</span>
+            <div style="flex:1;"></div>
+            <button class="btn-outline"><i class="fa-solid fa-filter"></i> Filter</button>
+          </div>
+          <table class="t">
+            <thead>
+              <tr>
+                <th>Issue Name / Label</th>
+                <th>BREX Template</th>
+                <th>Attached Files</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th style="width:80px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Issue 4.0</strong></td>
+                <td><span class="badge badge-green"><i class="fa-solid fa-check" style="font-size:9px;"></i>&nbsp;DMC-MH60-A-00-00-00-00A-022A-D.xml</span></td>
+                <td><span class="badge badge-blue">3 files</span></td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td>2024-06-01</td>
+                <td><div class="row-actions"><button class="act-btn edit" onclick="showModal('issue')"><i class="fa-solid fa-pen"></i></button><button class="act-btn del"><i class="fa-solid fa-trash"></i></button></div></td>
+              </tr>
+              <tr>
+                <td><strong>Issue 5.0</strong></td>
+                <td><span class="badge badge-blue"><i class="fa-solid fa-file-code" style="font-size:9px;"></i>&nbsp;brex-template-5.xml</span></td>
+                <td><span class="badge badge-blue">1 file</span></td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td>2025-01-10</td>
+                <td><div class="row-actions"><button class="act-btn edit" onclick="showModal('issue')"><i class="fa-solid fa-pen"></i></button><button class="act-btn del"><i class="fa-solid fa-trash"></i></button></div></td>
+              </tr>
+              <tr>
+                <td><strong>Issue 2.3</strong></td>
+                <td><span class="badge badge-gray"><i class="fa-solid fa-xmark" style="font-size:9px;"></i>&nbsp;None</span></td>
+                <td><span class="badge badge-gray">0 files</span></td>
+                <td><span class="badge badge-amber">Inactive</span></td>
+                <td>2022-09-14</td>
+                <td><div class="row-actions"><button class="act-btn edit" onclick="showModal('issue')"><i class="fa-solid fa-pen"></i></button><button class="act-btn del"><i class="fa-solid fa-trash"></i></button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ICN FORMAT TAB -->
+      <div class="tab-pane" id="tab-icnformat">
+        <div class="content-header">
+          <div>
+            <div class="content-title">ICN Formats</div>
+            <div class="content-sub">Define the segment structure for ICN number generation. Drag to reorder segments.</div>
+          </div>
+          <button class="btn-new"><i class="fa-solid fa-plus"></i> New Format</button>
+        </div>
+
+        <!-- Format Selector -->
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <button style="padding:8px 16px;border-radius:8px;border:2px solid var(--primary-light);background:#eff6ff;color:var(--primary-light);font-weight:700;font-size:13px;cursor:pointer;">
+            ICN-STD-01
+          </button>
+          <button style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:white;color:#374151;font-size:13px;cursor:pointer;">
+            ICN-ELEC-02
+          </button>
+          <button style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:white;color:#374151;font-size:13px;cursor:pointer;">
+            + Add Format
+          </button>
+        </div>
+
+        <!-- ICN Builder Card -->
+        <div class="icn-builder">
+          <div class="icn-builder-header">
+            <span class="icn-builder-title">ICN-STD-01 — Format Builder</span>
+            <span style="font-size:12px;color:var(--text-muted);">Click a segment to configure it</span>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="icn-preview">
+            <div class="icn-seg" onclick="selectSeg(0)">
+              <span class="icn-seg-value">GH</span>
+              <span class="icn-seg-label">Originator</span>
+            </div>
+            <span class="icn-sep">-</span>
+            <div class="icn-seg selected" onclick="selectSeg(1)">
+              <span class="icn-seg-value">A</span>
+              <span class="icn-seg-label">Model</span>
+            </div>
+            <span class="icn-sep">-</span>
+            <div class="icn-seg" onclick="selectSeg(2)">
+              <span class="icn-seg-value">00001</span>
+              <span class="icn-seg-label">Seq No.</span>
+            </div>
+            <span class="icn-sep">-</span>
+            <div class="icn-seg" onclick="selectSeg(3)">
+              <span class="icn-seg-value">AA</span>
+              <span class="icn-seg-label">Var Code</span>
+            </div>
+            <span class="icn-sep">-</span>
+            <div class="icn-seg" onclick="selectSeg(4)">
+              <span class="icn-seg-value">004</span>
+              <span class="icn-seg-label">Issue No.</span>
+            </div>
+          </div>
+
+          <div class="icn-fields">
+            <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;">
+              <!-- Field list -->
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Segments (drag to reorder)</div>
+                <div class="icn-field-row">
+                  <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+                  <span class="field-name">Originator Code <span class="field-type">(text)</span></span>
+                  <div class="field-len"><span>Len:</span><input type="number" value="2"></div>
+                  <button class="act-btn del"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="icn-field-row active-seg">
+                  <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+                  <span class="field-name">Model Identification <span class="field-type">(text)</span></span>
+                  <div class="field-len"><span>Len:</span><input type="number" value="1"></div>
+                  <button class="act-btn del"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="icn-field-row">
+                  <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+                  <span class="field-name">Sequence Number <span class="field-type">(auto)</span></span>
+                  <div class="field-len"><span>Len:</span><input type="number" value="5"></div>
+                  <button class="act-btn del"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="icn-field-row">
+                  <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+                  <span class="field-name">Variation Code <span class="field-type">(auto)</span></span>
+                  <div class="field-len"><span>Len:</span><input type="number" value="2"></div>
+                  <button class="act-btn del"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="icn-field-row">
+                  <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+                  <span class="field-name">Issue Number <span class="field-type">(auto)</span></span>
+                  <div class="field-len"><span>Len:</span><input type="number" value="3"></div>
+                  <button class="act-btn del"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <button style="margin-top:8px;width:100%;padding:8px;border:1px dashed var(--border);border-radius:8px;background:none;cursor:pointer;font-size:12px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;gap:6px;">
+                  <i class="fa-solid fa-plus"></i> Add Field
+                </button>
+              </div>
+
+              <!-- Active field config -->
+              <div style="background:#f9fafb;border:1px solid var(--border);border-radius:10px;padding:16px;">
+                <div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                  <i class="fa-solid fa-pen-to-square" style="color:var(--primary-light);"></i>
+                  Configure: Model Identification
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Field Label</label>
+                  <input class="form-input" value="Model Identification" style="font-size:12px;padding:7px 10px;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Source Field</label>
+                  <select class="form-select" style="font-size:12px;padding:7px 10px;">
+                    <option>ModelIdentification</option>
+                    <option>SDC</option>
+                    <option>SeqNo</option>
+                    <option>VarCode</option>
+                    <option>IssueNo</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Separator after this field</label>
+                  <select class="form-select" style="font-size:12px;padding:7px 10px;">
+                    <option selected>- (hyphen)</option>
+                    <option>_ (underscore)</option>
+                    <option>. (dot)</option>
+                    <option>none</option>
+                  </select>
+                </div>
+                <div style="margin-bottom:0;" class="form-group">
+                  <label class="form-label">Display Order</label>
+                  <input class="form-input" type="number" value="2" style="font-size:12px;padding:7px 10px;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OTHER TABS (hidden) -->
+      <div class="tab-pane" id="tab-infoset"><p style="color:var(--text-muted);padding:20px;">Info Code Sets tab — click an option in the nav to view</p></div>
+      <div class="tab-pane" id="tab-infocode"><p style="color:var(--text-muted);padding:20px;">Info Codes tab</p></div>
+      <div class="tab-pane" id="tab-designation"><p style="color:var(--text-muted);padding:20px;">Designations tab</p></div>
+
+    </div><!-- /vtab-content -->
+  </div><!-- /page-body -->
+</div><!-- /main -->
+
+<!-- ═══ MODAL: New / Edit Issue ═══ -->
+<div class="modal-backdrop-custom" id="modal" style="display:none;" onclick="if(event.target===this)hideModal()">
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <div class="modal-icon"><i class="fa-solid fa-tag"></i></div>
+      <div class="modal-title">Create Issue Number</div>
+      <button class="modal-close" onclick="hideModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <div class="inline-info">
+        <i class="fa-solid fa-circle-info" style="margin-top:1px;flex-shrink:0;"></i>
+        <span>The issue number and its BREX template define the S1000D version applicable to projects that reference this issue.</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Issue Name <span class="req">*</span></label>
+          <input class="form-input" type="text" placeholder="e.g. Issue 4.0">
+          <div class="form-hint">Used as display label across projects</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select">
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-divider"></div>
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:14px;">BREX Template &amp; Files</div>
+
+      <div class="form-group">
+        <label class="form-label">BREX Template (XML)</label>
+        <div class="file-drop" onclick="this.querySelector('input').click()">
+          <input type="file" accept=".xml" style="display:none;">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <div class="fd-label">Drop BREX XML here, or click to browse</div>
+          <div class="fd-hint">Accepts .xml files only · Max 10 MB</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Additional Issue Files</label>
+        <div class="file-drop" onclick="this.querySelector('input').click()">
+          <input type="file" multiple style="display:none;">
+          <i class="fa-solid fa-paperclip"></i>
+          <div class="fd-label">Attach supporting files</div>
+          <div class="fd-hint">Multiple files allowed · PDF, XML, SGML</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="hideModal()">Cancel</button>
+      <button class="btn-save"><i class="fa-solid fa-floppy-disk"></i>&nbsp; Save Issue</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const tabMap = {
+    'issue': 'tab-issue',
+    'infoset': 'tab-infoset',
+    'infocode': 'tab-infocode',
+    'icnformat': 'tab-icnformat',
+    'designation': 'tab-designation',
+  };
+
+  function switchVTab(el, key) {
+    document.querySelectorAll('.vtab-item').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    const pane = document.getElementById(tabMap[key]);
+    if (pane) pane.classList.add('active');
+  }
+
+  function showModal(type) {
+    document.getElementById('modal').style.display = 'flex';
+  }
+  function hideModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  function selectSeg(idx) {
+    document.querySelectorAll('.icn-seg').forEach((s,i) => {
+      s.classList.toggle('selected', i === idx);
+    });
+    document.querySelectorAll('.icn-field-row').forEach((r,i) => {
+      r.classList.toggle('active-seg', i === idx);
+    });
+  }
+</script>
+</body>
+</html>

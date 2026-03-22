@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSDB Portal — Mockup 1: Modern Sidebar + Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root {
+    --sidebar-width: 240px;
+    --sidebar-collapsed: 64px;
+    --primary: #1a3a5c;
+    --primary-light: #2563a8;
+    --accent: #e8a020;
+    --bg: #f0f2f5;
+    --card-bg: #ffffff;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --sidebar-bg: #0f2540;
+    --sidebar-text: #c8d6e5;
+    --sidebar-active: #2563a8;
+    --sidebar-hover: #1a3a5c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.25s ease;
+    flex-shrink: 0;
+    overflow: hidden;
+    z-index: 100;
+  }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+
+  .sidebar-brand {
+    padding: 18px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    min-height: 64px;
+  }
+  .sidebar-brand .brand-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .sidebar-brand .brand-text {
+    color: white; font-weight: 700; font-size: 15px;
+    white-space: nowrap; overflow: hidden;
+  }
+  .sidebar-brand .brand-text span { color: var(--accent); }
+
+  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .nav-section-label {
+    padding: 8px 16px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .sidebar.collapsed .nav-section-label { opacity: 0; }
+
+  .nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    border-radius: 0;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+    position: relative;
+  }
+  .nav-item a:hover { background: var(--sidebar-hover); color: white; }
+  .nav-item a.active {
+    background: var(--sidebar-active);
+    color: white;
+  }
+  .nav-item a.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+  }
+  .nav-item a .nav-icon {
+    width: 20px; text-align: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .nav-item a .nav-label { flex: 1; white-space: nowrap; overflow: hidden; }
+  .nav-item a .badge-pill {
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .badge-pill { display: none; }
+
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px; border-radius: 8px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .user-card:hover { background: rgba(255,255,255,0.05); }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary-light);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 12px;
+    flex-shrink: 0;
+  }
+  .user-info .user-name { color: white; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .user-info .user-role { color: var(--sidebar-text); font-size: 11px; white-space: nowrap; }
+  .sidebar.collapsed .user-info { display: none; }
+
+  /* ── MAIN ── */
+  .main-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .topbar {
+    height: 64px;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .toggle-btn {
+    background: none; border: none;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #374151;
+    transition: background 0.15s;
+  }
+  .toggle-btn:hover { background: var(--bg); }
+
+  .breadcrumb-wrap { flex: 1; }
+  .breadcrumb { margin: 0; padding: 0; background: none; font-size: 13px; }
+  .breadcrumb-item a { color: var(--text-muted); text-decoration: none; }
+  .breadcrumb-item.active { color: #111827; font-weight: 600; }
+
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border: none; background: none;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #374151; font-size: 15px;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .icon-btn:hover { background: var(--bg); }
+  .icon-btn .dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--danger); border: 2px solid white;
+  }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-title { font-size: 22px; font-weight: 700; color: #111827; }
+  .page-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── STAT CARDS ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 16px;
+    transition: box-shadow 0.2s;
+  }
+  .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .stat-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .stat-icon.blue { background: #eff6ff; color: #2563eb; }
+  .stat-icon.green { background: #f0fdf4; color: #16a34a; }
+  .stat-icon.amber { background: #fffbeb; color: #d97706; }
+  .stat-icon.purple { background: #f5f3ff; color: #7c3aed; }
+  .stat-value { font-size: 28px; font-weight: 700; color: #111827; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+  .stat-delta { font-size: 11px; margin-top: 6px; font-weight: 600; }
+  .stat-delta.up { color: var(--success); }
+  .stat-delta.down { color: var(--danger); }
+
+  /* ── CONTENT GRID ── */
+  .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+  /* ── CARD ── */
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 14px; font-weight: 700; color: #111827; }
+  .card-body { padding: 20px; }
+  .card-action {
+    font-size: 12px; color: var(--primary-light);
+    text-decoration: none; font-weight: 600;
+  }
+  .card-action:hover { text-decoration: underline; }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left; padding: 10px 12px;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    background: #f9fafb;
+  }
+  .data-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #f9fafb; }
+
+  .badge-status {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-status.active { background: #dcfce7; color: #15803d; }
+  .badge-status.draft { background: #fef9c3; color: #854d0e; }
+  .badge-status.archived { background: #f3f4f6; color: #6b7280; }
+  .badge-status::before { content: '●'; font-size: 8px; }
+
+  /* ── ACTIVITY FEED ── */
+  .activity-item {
+    display: flex; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+  .activity-dot.blue { background: #2563eb; }
+  .activity-dot.green { background: #16a34a; }
+  .activity-dot.amber { background: #d97706; }
+  .activity-text { font-size: 12px; color: #374151; line-height: 1.5; }
+  .activity-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── QUICK ACCESS ── */
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quick-item {
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    text-align: center;
+    transition: all 0.15s;
+    color: #374151;
+  }
+  .quick-item:hover {
+    border-color: var(--primary-light);
+    background: #eff6ff;
+    color: var(--primary-light);
+    box-shadow: 0 2px 8px rgba(37,99,168,0.1);
+  }
+  .quick-item i { font-size: 20px; }
+  .quick-item span { font-size: 11px; font-weight: 600; }
+
+  /* ── BTN ── */
+  .btn-primary-custom {
+    background: var(--primary-light);
+    color: white; border: none;
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; display: inline-flex;
+    align-items: center; gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-primary-custom:hover { background: var(--primary); }
+
+  /* ── SEARCH ── */
+  .search-wrap { position: relative; }
+  .search-wrap input {
+    width: 240px;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    background: var(--bg);
+    transition: border 0.15s, background 0.15s;
+  }
+  .search-wrap input:focus { border-color: var(--primary-light); background: white; }
+  .search-wrap i {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted); font-size: 13px;
+    pointer-events: none;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+  /* ── TOOLTIP ── */
+  [data-tooltip] { position: relative; }
+  [data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute; left: 100%; top: 50%;
+    transform: translateY(-50%);
+    background: #111827; color: white;
+    font-size: 11px; padding: 4px 8px;
+    border-radius: 6px; white-space: nowrap;
+    margin-left: 8px; z-index: 200;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">CS</div>
+    <div class="brand-text">CSDB <span>Portal</span></div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <div class="nav-item">
+      <a href="#" class="active">
+        <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+    </div>
+
+    <div class="nav-section-label">Modules</div>
+    <div class="nav-item">
+      <a href="#">
+        <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+        <span class="nav-label">Configuration</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="#">
+        <span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+        <span class="nav-label">Maintenance</span>
+        <span class="badge-pill">3</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="#">
+        <span class="nav-icon"><i class="fa-solid fa-hashtag"></i></span>
+        <span class="nav-label">ICN Numbers</span>
+      </a>
+    </div>
+
+    <div class="nav-section-label">System</div>
+    <div class="nav-item">
+      <a href="#">
+        <span class="nav-icon"><i class="fa-solid fa-shield-halved"></i></span>
+        <span class="nav-label">Administration</span>
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="#">
+        <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
+        <span class="nav-label">Settings</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">JD</div>
+      <div class="user-info">
+        <div class="user-name">John Doe</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main-wrap">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="toggle-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <nav class="breadcrumb-wrap" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">CSDB Portal</a></li>
+        <li class="breadcrumb-item active">Dashboard</li>
+      </ol>
+    </nav>
+
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search projects, DMC…">
+      </div>
+      <button class="icon-btn" title="Notifications">
+        <i class="fa-regular fa-bell"></i>
+        <span class="dot"></span>
+      </button>
+      <button class="icon-btn" title="Help">
+        <i class="fa-regular fa-circle-question"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Overview of your S1000D documentation workspace</div>
+      </div>
+      <button class="btn-primary-custom">
+        <i class="fa-solid fa-plus"></i> New Project
+      </button>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fa-solid fa-folder-open"></i></div>
+        <div>
+          <div class="stat-value">24</div>
+          <div class="stat-label">Active Projects</div>
+          <div class="stat-delta up"><i class="fa-solid fa-arrow-up"></i> 3 this month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa-solid fa-file-code"></i></div>
+        <div>
+          <div class="stat-value">1,284</div>
+          <div class="stat-label">Data Module Codes</div>
+          <div class="stat-delta up"><i class="fa-solid fa-arrow-up"></i> 47 this week</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="fa-solid fa-hashtag"></i></div>
+        <div>
+          <div class="stat-value">6,720</div>
+          <div class="stat-label">ICN Numbers Generated</div>
+          <div class="stat-delta up"><i class="fa-solid fa-arrow-up"></i> 120 today</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple"><i class="fa-solid fa-users"></i></div>
+        <div>
+          <div class="stat-value">12</div>
+          <div class="stat-label">Active Users</div>
+          <div class="stat-delta down"><i class="fa-solid fa-arrow-down"></i> 2 inactive</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+
+      <!-- Recent Projects Table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title"><i class="fa-solid fa-folder-open" style="color:#2563eb;margin-right:8px;"></i>Recent Projects</span>
+          <a href="#" class="card-action">View all →</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Issue No.</th>
+                <th>DMC Count</th>
+                <th>Status</th>
+                <th>Last Modified</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>AW169 Maintenance</strong><br><span style="font-size:11px;color:#6b7280;">AW169-001</span></td>
+                <td>4.0</td>
+                <td><span style="font-weight:600;">342</span></td>
+                <td><span class="badge-status active">Active</span></td>
+                <td>2026-03-21</td>
+              </tr>
+              <tr>
+                <td><strong>H215 Overhaul Manual</strong><br><span style="font-size:11px;color:#6b7280;">H215-003</span></td>
+                <td>2.1</td>
+                <td><span style="font-weight:600;">218</span></td>
+                <td><span class="badge-status active">Active</span></td>
+                <td>2026-03-20</td>
+              </tr>
+              <tr>
+                <td><strong>EC135 AMM</strong><br><span style="font-size:11px;color:#6b7280;">EC135-007</span></td>
+                <td>5.0</td>
+                <td><span style="font-weight:600;">456</span></td>
+                <td><span class="badge-status draft">In Review</span></td>
+                <td>2026-03-18</td>
+              </tr>
+              <tr>
+                <td><strong>AS350 Parts Catalog</strong><br><span style="font-size:11px;color:#6b7280;">AS350-002</span></td>
+                <td>1.0</td>
+                <td><span style="font-weight:600;">89</span></td>
+                <td><span class="badge-status archived">Archived</span></td>
+                <td>2026-02-14</td>
+              </tr>
+              <tr>
+                <td><strong>EC725 Cougar AMM</strong><br><span style="font-size:11px;color:#6b7280;">EC725-005</span></td>
+                <td>3.2</td>
+                <td><span style="font-weight:600;">612</span></td>
+                <td><span class="badge-status active">Active</span></td>
+                <td>2026-03-19</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Quick Access -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-bolt" style="color:#d97706;margin-right:8px;"></i>Quick Access</span>
+          </div>
+          <div class="card-body">
+            <div class="quick-grid">
+              <a href="#" class="quick-item">
+                <i class="fa-solid fa-hashtag" style="color:#2563eb;"></i>
+                <span>Generate ICN</span>
+              </a>
+              <a href="#" class="quick-item">
+                <i class="fa-solid fa-file-circle-plus" style="color:#16a34a;"></i>
+                <span>New DMC</span>
+              </a>
+              <a href="#" class="quick-item">
+                <i class="fa-solid fa-sitemap" style="color:#7c3aed;"></i>
+                <span>Nav Tree</span>
+              </a>
+              <a href="#" class="quick-item">
+                <i class="fa-solid fa-code" style="color:#d97706;"></i>
+                <span>BREX Rules</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-clock-rotate-left" style="color:#7c3aed;margin-right:8px;"></i>Recent Activity</span>
+            <a href="#" class="card-action">All →</a>
+          </div>
+          <div class="card-body" style="padding-top:8px;padding-bottom:8px;">
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div>
+                <div class="activity-text"><strong>jsmith</strong> created DMC <code style="font-size:11px;background:#f3f4f6;padding:1px 4px;border-radius:3px;">AW169-A-00-00-00-00A-040A-D</code></div>
+                <div class="activity-time">12 minutes ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot blue"></div>
+              <div>
+                <div class="activity-text"><strong>agarcia</strong> generated 50 ICN numbers for <strong>AW169</strong></div>
+                <div class="activity-time">1 hour ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot amber"></div>
+              <div>
+                <div class="activity-text"><strong>admin</strong> updated BREX rules for <strong>H215 Overhaul Manual</strong></div>
+                <div class="activity-time">3 hours ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div>
+                <div class="activity-text"><strong>mjones</strong> uploaded XML for DMC batch (12 files)</div>
+                <div class="activity-time">Yesterday</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /content-grid -->
+
+  </main>
+</div><!-- /main-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
