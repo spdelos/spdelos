@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — CSDB Portal" : "CSDB Portal")</title>
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — CSDB" : "CSDB")</title>
 
     <!-- Icons -->
     <link rel="stylesheet" href="~/dist/fontawesome/css/all.css">
@@ -29,8 +29,8 @@
             <!-- ═══════ SIDEBAR ═══════ -->
             <aside class="app-sidebar" id="appSidebar">
                 <div class="sidebar-brand">
-                    <div class="sidebar-brand-icon">CS</div>
-                    <span class="sidebar-brand-text">CSDB <strong>Portal</strong></span>
+                    <img src="~/dist/img/navietm-logo.png" alt="NavIETM" class="sidebar-brand-logo" />
+                    <span class="sidebar-brand-text">CSDB</span>
                 </div>
 
                 <nav class="sidebar-nav">
@@ -87,7 +87,7 @@
                     </button>
 
                     <nav class="topbar-breadcrumb">
-                        <span class="breadcrumb-root">CSDB Portal</span>
+                        <span class="breadcrumb-root">CSDB</span>
                         <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
                         <span class="breadcrumb-current">@ViewData["Title"]</span>
                     </nav>
@@ -108,7 +108,7 @@
                 <!-- Footer -->
                 <footer class="app-footer">
                     <span>Support: 1-800-258-IETM</span>
-                    <span class="ms-auto">NavIETM® CSDB Portal</span>
+                    <span class="ms-auto">NavIETM® CSDB</span>
                 </footer>
             </div>
 

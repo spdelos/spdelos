@@ -93,19 +93,11 @@ a:hover { text-decoration: none !important; }
     flex-shrink: 0;
 }
 
-.sidebar-brand-icon {
-    width: 32px;
-    height: 32px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 800;
-    font-size: 13px;
+.sidebar-brand-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
     flex-shrink: 0;
-    letter-spacing: -0.5px;
 }
 
 .sidebar-brand-text {
