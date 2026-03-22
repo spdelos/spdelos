@@ -26,7 +26,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication();
-builder.Services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+builder.Services.AddMvc();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
