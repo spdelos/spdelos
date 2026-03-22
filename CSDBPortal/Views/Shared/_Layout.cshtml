@@ -86,9 +86,17 @@
                         <i class="fa-solid fa-bars"></i>
                     </button>
 
-                    <div class="topbar-title">@ViewData["Title"]</div>
+                    <nav class="topbar-breadcrumb">
+                        <span class="breadcrumb-root">CSDB Portal</span>
+                        <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                        <span class="breadcrumb-current">@ViewData["Title"]</span>
+                    </nav>
 
-                    <div class="topbar-right">
+                    <div class="topbar-actions">
+                        <div class="topbar-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" placeholder="Search…" />
+                        </div>
                         <div class="topbar-user-chip">
                             <div class="topbar-avatar">
                                 @(Context.User.Identity.Name?.Length > 0
@@ -122,6 +130,30 @@
     <script src="~/dist/js/jquery.min.js"></script>
     <script src="~/dist/js/jquery-ui.min.js"></script>
     <script src="~/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bootstrap 5 jQuery compatibility shim (modal + tab) -->
+    <script>
+    (function ($) {
+        if (!$ || !window.bootstrap) return;
+        // $.fn.modal — allows legacy $().modal('show'/'hide') calls
+        $.fn.modal = function (action) {
+            return this.each(function () {
+                var m = bootstrap.Modal.getOrCreateInstance(this);
+                if (action === 'show')    m.show();
+                else if (action === 'hide')    m.hide();
+                else if (action === 'toggle')  m.toggle();
+                else if (action === 'dispose') m.dispose();
+            });
+        };
+        // $.fn.tab — allows legacy $().tab('show') calls
+        $.fn.tab = function (action) {
+            return this.each(function () {
+                if (action === 'show') bootstrap.Tab.getOrCreateInstance(this).show();
+            });
+        };
+    })(window.jQuery);
+    </script>
+
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="~/js/jquery.confirmModal.js"></script>
     <script src="~/js/treeSortable.js"></script>
