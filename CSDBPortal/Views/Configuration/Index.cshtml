@@ -142,10 +142,10 @@
                 </div>
             </div>*@
             <!-- /. tab-2 end -->
-            @if (User.HasClaim("Permission", Features.InfoCodeSetAdministration))
+            @if (User.HasClaim("Permission", Features.InfoCodeAdministration))
             {
                 <!-- tab-3 start -->
-                <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
+                <div class="tab-pane fade @(infoCodeFirst ? "show active" : "")" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">
@@ -193,10 +193,10 @@
                 </div>
                 <!-- /. tab-3 end -->
             }
-            @if (User.HasClaim("Permission", Features.InfoCodeAdministration))
+            @if (User.HasClaim("Permission", Features.InfoCodeSetAdministration))
             {
                 <!-- tab-5 start -->
-                <div class="tab-pane fade" id="pills-5" role="tabpanel" aria-labelledby="pills-tab-5">
+                <div class="tab-pane fade @(infoCodeSetFirst ? "show active" : "")" id="pills-5" role="tabpanel" aria-labelledby="pills-tab-5">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">
