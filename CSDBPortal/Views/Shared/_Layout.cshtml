@@ -1,194 +1,123 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="icon" href="">
-    <!-- Required meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="description" content="" />
-    <meta name="author" content="" />
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — CSDB Portal" : "CSDB Portal")</title>
 
-    <title>Administration</title>
-
-    <!-- Font Awesome Icons -->
+    <!-- Icons -->
     <link rel="stylesheet" href="~/dist/fontawesome/css/all.css">
-    <!-- Theme style -->
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/dist/css/bootstrap.min.css">
-    <!-- main -->
+    <!-- App styles -->
     <link rel="stylesheet" href="~/dist/css/style.css">
+    <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <!-- Tree / Select2 -->
     <link href="~/css/treeSortable.css" rel="stylesheet" />
     <link href="~/css/jqtree.css" rel="stylesheet" />
     <link href="~/lib/select2/css/select2.min.css" rel="stylesheet" />
-
-    <style>
-        .table > thead > tr > td, .table-sm > thead > tr > th {
-            padding: 5px !important;
-            vertical-align: middle;
-        }
-
-
-        .table > tbody > tr > td {
-            padding: 5px !important;
-            vertical-align: middle;
-        }
-
-        .table > tbody > tr > td {
-            padding: 5px !important;
-            vertical-align: middle;
-        }
-    </style>
 </head>
 
-<body class="hold-transition sidebar-mini">
-    <div class="wrapper">
-        <!-- Navbar -->
-        <header>
-            <nav class="main-header navbar navbar-expand navbar-white navbar-light fixed-top">
-                <div class="bg-blur2"></div>
-                <div class="bg-blur"></div>
-                <div class="container">
-                    <!-- Brand Logo -->
-                    <a class="navbar-brand" href="#">
-                        <img src="~/dist/img/logo-1.png" alt="Logo" class="brand-image1">
-                        <img src="~/dist/img/logo-2.png" alt="Logo" class="brand-image">
+<body>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="app-shell">
+
+            <!-- ═══════ SIDEBAR ═══════ -->
+            <aside class="app-sidebar" id="appSidebar">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-icon">CS</div>
+                    <span class="sidebar-brand-text">CSDB <strong>Portal</strong></span>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <div class="sidebar-section-label">Modules</div>
+
+                    <a href="Administration" class="sidebar-nav-link mylink" id="adminlink">
+                        <span class="sidebar-nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+                        <span class="sidebar-nav-label">Administration</span>
                     </a>
+                    <a href="Configuration" class="sidebar-nav-link mylink" id="configlink">
+                        <span class="sidebar-nav-icon"><i class="fa-solid fa-sliders"></i></span>
+                        <span class="sidebar-nav-label">Configuration</span>
+                    </a>
+                    <a href="Maintenance" class="sidebar-nav-link mylink" id="mainlink">
+                        <span class="sidebar-nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                        <span class="sidebar-nav-label">Maintenance</span>
+                    </a>
+                    <a href="ICN" class="sidebar-nav-link mylink" id="icnlink">
+                        <span class="sidebar-nav-icon"><i class="fa-solid fa-hashtag"></i></span>
+                        <span class="sidebar-nav-label">ICN Numbers</span>
+                    </a>
+                </nav>
 
-                    <!-- Right navbar links -->
-                    <!-- Notifications Dropdown Menu -->
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <ul class="navbar-nav ml-auto">
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                                    <img class="mr-1" src="dist/img/Ellipse 1.png" alt="">
-                                    @Context.User.Identity.Name
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a href="#" class="dropdown-item">
-                                        <i class="fas fa-user mr-2"></i> Admin
-                                    </a>
-                                    <a href="#" class="dropdown-item">
-                                        <i class="fas fa-envelope mr-2"></i> Gmail
-                                    </a>
-                                    <a href="#" class="dropdown-item">
-                                        <i class="fas fa-cog mr-2"></i> Settings
-                                    </a>
-                                    <a href="#" class="dropdown-item">
-                                        <i class="fas fa-question-circle mr-2"></i> Help
-                                    </a>
-                                    <div class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt mr-2"></i>
-                                        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })" method="post">
-                                            <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    }
-                    else
-                    {
-                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                            <ul class="navbar-nav ml-auto">
-                                <li class="nav-item active">
-                                    <a class="btn log-in_button" asp-area="Identity" asp-page="/Account/Login">Log In</a>
-                                    <a class="btn sign-up_button" asp-area="Identity" asp-page="/Account/Register">Sign Up</a>
-                                </li>
-                            </ul>
+                <div class="sidebar-footer">
+                    <div class="sidebar-user">
+                        <div class="sidebar-user-avatar">
+                            @(Context.User.Identity.Name?.Length > 0
+                                ? Context.User.Identity.Name.Substring(0, 1).ToUpper()
+                                : "U")
                         </div>
-                    }
-
-                </div>
-            </nav>
-        </header>
-        <!-- /.navbar -->
-        @if (User.Identity.IsAuthenticated)
-        {
-            <!-- Main Sidebar Container -->
-            <aside class="main-sidebar">
-                <!-- Sidebar -->
-            <div class="sidebar">
-                    <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                            <li class="nav-item">
-                                <a href="Administration" class="nav-link active mylink" id="adminlink">
-                                    <p>Administration</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="Configuration" class="nav-link mylink" id="configlink">
-                                    <p>
-                                        Configuration
-                                    </p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="Maintenance" class="nav-link mylink" id="mainlink">
-                                    <p>
-                                        Maintenance
-                                    </p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="ICN" class="nav-link mylink" id="icnlink">
-                                    <p>
-                                        ICN
-                                    </p>
-                                </a>
-                            </li>
-                            <!-- logout area -->
-                        <div class="logout-area">
-                                <div class="logout-area_content">
-                                    <div class="card text-center">
-                                        <img src="dist/img/logo-3.png" class="card-img-top" alt="Profile image">
-                                        <div class="card-body">
-                                            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })" method="post">
-                                                <button type="submit" class="nav-link btn btn-link text-dark">Log Out</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- /.logout area -->
-                    </ul>
-                    </nav>
-                    <!-- /.sidebar-menu -->
-            </div>
-                <!-- /.sidebar -->
-        </aside>
-
-            <div class="content-wrapper">
-                <div class="content main-content">
-                    @RenderBody()
-                </div>
-            </div>
-        }
-        else
-        {
-            @RenderBody()
-        }
-
-
-        <!-- /.content -->
-        <!-- /.content-wrapper -->
-        <!-- Main Footer -->
-        <footer class="main-footer fixed-bottom">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Support: 1- 800 -258 - IETM </a>
-                            </li>
-                        </ul>
+                        <div class="sidebar-user-info">
+                            <div class="sidebar-user-name">@Context.User.Identity.Name</div>
+                            <form asp-area="Identity"
+                                  asp-page="/Account/Logout"
+                                  asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })"
+                                  method="post"
+                                  style="display:inline">
+                                <button type="submit" class="sidebar-logout-btn">Sign out</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+            </aside>
+
+            <!-- ═══════ MAIN AREA ═══════ -->
+            <div class="app-main">
+
+                <!-- Top Bar -->
+                <header class="app-topbar">
+                    <button class="sidebar-toggle" id="sidebarToggle"
+                            onclick="document.getElementById('appSidebar').classList.toggle('collapsed')"
+                            title="Toggle sidebar">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <div class="topbar-title">@ViewData["Title"]</div>
+
+                    <div class="topbar-right">
+                        <div class="topbar-user-chip">
+                            <div class="topbar-avatar">
+                                @(Context.User.Identity.Name?.Length > 0
+                                    ? Context.User.Identity.Name.Substring(0, 1).ToUpper()
+                                    : "U")
+                            </div>
+                            <span class="topbar-username d-none d-md-inline">@Context.User.Identity.Name</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <main class="app-content">
+                    @RenderBody()
+                </main>
+
+                <!-- Footer -->
+                <footer class="app-footer">
+                    <span>Support: 1-800-258-IETM</span>
+                    <span class="ms-auto">NavIETM® CSDB Portal</span>
+                </footer>
             </div>
-        </footer>
-    </div>
+
+        </div>
+    }
+    else
+    {
+        @RenderBody()
+    }
 
     <script src="~/dist/js/jquery.min.js"></script>
     <script src="~/dist/js/jquery-ui.min.js"></script>
@@ -201,17 +130,6 @@
     <script type="text/javascript" src="~/js/jquery.inline-edit.js"></script>
     <script type="text/javascript" src="~/lib/select2/js/select2.min.js"></script>
 
-    @* <script type="text/javascript">
-        $('ul li a.mylink').click(function(){
-        $("#adminlink").removeClass("active");
-        $("#configlink").removeClass("active");
-        $("#mainlink").removeClass("active");
-        $("#icnlink").removeClass("active");
-        $(this).addClass("active");
-        });
-        </script>*@
-    @*   <script src="~/js/site.js" asp-append-version="true"></script>*@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

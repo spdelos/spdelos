@@ -1,282 +1,214 @@
-﻿@using CSDBPortal.ViewModels
+@using CSDBPortal.ViewModels
 @model AdministrationViewModel
 @{
     ViewData["Title"] = "Administration";
 }
 
-<div class="row">
-    <div class="col-lg-7">
-        <div class="card bg-transparent">
-            <div class="card-body" style="margin: 20px">
-                <h5 class="card-title">Hello, @Context.User.Identity.Name </h5>
-                <p class="card-text pt-2">The NavIETM® CSDB for Server enables organizations to create, manage and publish maintenance and operational content </p>
-
-            </div>
+<!-- Stat Cards -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fa-solid fa-folder-open"></i></div>
+        <div>
+            <div class="stat-value">@Model.ProjectCompleted</div>
+            <div class="stat-label">Projects Completed</div>
         </div>
     </div>
-    <!-- /.col-6 -->
-    <div class="col">
-        <div class="counter-box card">
-            <div class="card-body">
-                <img src="./dist/img/Icons/Administration/Project.png" alt="Project icon">
-                <h2 class="counter">@Model.ProjectCompleted</h2>
-                <h5 class="card-title">
-                    Projects
-                    Completed
-                </h5>
-            </div>
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="fa-solid fa-users"></i></div>
+        <div>
+            <div class="stat-value">@Model.UserCount</div>
+            <div class="stat-label">Total Users</div>
         </div>
     </div>
-    <div class="col">
-        <div class="counter-box card">
-            <div class="card-body">
-                <img src="./dist/img/Icons/Administration/User.png" alt="User icon">
-                <h2 class="counter">@Model.UserCount</h2>
-                <h5 class="card-title">
-                    Users
-                </h5>
-            </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fa-solid fa-user-check"></i></div>
+        <div>
+            <div class="stat-value">@Model.ActiveUsers</div>
+            <div class="stat-label">Active Users</div>
         </div>
     </div>
-    <div class="col">
-        <div class="counter-box card">
-            <div class="card-body">
-                <img src="./dist/img/Icons/Administration/Active-User.png" alt="Active-User icon">
-                <h2 class="counter">@Model.ActiveUsers</h2>
-                <h5 class="card-title">
-                    Active
-                    Users
-                </h5>
-            </div>
-        </div>
-    </div>
-    <!-- /.col-6 -->
-    <!-- tab-content -->
-    <div class="col-12">
-        
-        <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
-            @if (User.HasClaim("Permission", Features.UserAndRoleAdministration))
-            {
-                <li class="nav-item item-one" role="presentation">
-                    <a class="nav-link active" id="pills-tab-1" data-toggle="pill" href="#pills-1">
-                        <img src="./dist/img/Icons/Administration/Windows.png" alt="windows icon">
-                        <span class="ml-2">Users </span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-3" data-toggle="pill" href="#pills-2">
-                        <img src="./dist/img/Icons/Administration/Add-roles.png" alt="Add-roles icon">
-
-                        <span class="ml-2">Roles</span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-4" data-toggle="pill" href="#pills-3">
-                        <img src="./dist/img/Icons/Administration/Encrypt.png" alt="encrypt icon">
-                        <span class="ml-2"> Encrypt</span>
-                    </a>
-                </li>
-            }
-        </ul>
-        <!-- tab-content -->
-        <div class="tab-content" id="pills-tabContent">
-            @if (User.HasClaim("Permission", Features.UserAndRoleAdministration))
-            {
-                <!-- tab-1 start -->
-                <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
-                    <div class="actions mb-3">
-                        <div class="row">
-                            <div class="col-12 text-right">
-                                <a href="#" class="btn" id="btnCreateUser">
-                                    <i class="fas fa-plus"></i> Create New
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card" style="padding:15px">
-                        <div class="table-responsive">
-                            <table id="userTable" class="table table-bordered">
-                                <thead class="thead text-center">
-                                    <tr>
-                                        <th style="display:none">Id</th>
-                                        <th>User Name</th>
-                                        <th>Email</th>
-                                        <th>Phone Number</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var m in Model.Users)
-                                    {
-                                        <tr>
-                                            <td style="display:none">@m.Id</td>
-                                            <td>@m.UserName</td>
-                                            <td>@m.Email</td>
-                                            <td>@m.PhoneNumber</td>
-                                            <td>
-                                                <a class="btn edit_button editUser"> Edit </a>
-                                                <a class="btn deleteBtn deleteUser"> Delete </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <!-- /. tab-1 end -->
-                <!-- tab-2 start -->
-                <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
-                    <div class="actions mb-3">
-                        <div class="row">
-                            <div class="col-12 text-right">
-                                <a href="#" class="btn" id="btnCreateRole">
-                                    <i class="fas fa-plus"></i> Create New
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card" style="padding:15px">
-                        <div class="table-responsive">
-                            <table id="roleTable" class="table table-bordered">
-                                <thead class="thead text-center">
-                                    <tr>
-                                        <th style="display:none">Id</th>
-                                        <th>Name</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var m in Model.Roles)
-                                    {
-                                        <tr>
-                                            <td style="display:none">@m.Id</td>
-                                            <td>@m.Name</td>
-                                            <td>
-                                                <a class="btn edit_button eidtRole"> Edit </a>
-                                                <a class="btn deleteRole"> Delete </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <!-- /. tab-2 end -->
-                <!-- tab-3 start -->
-                <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
-                    test 456
-                </div>
-                <!-- /. tab-3 end -->
-            }
-        </div>
-    </div>
-    <!-- /. tab-content -->
 </div>
 
-<div class="modal fade" style=" -moz-border-radius:10px;" id="rolemdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+@if (User.HasClaim("Permission", Features.UserAndRoleAdministration))
+{
+    <!-- Tab navigation -->
+    <ul class="nav nav-pills tab-header mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item item-one" role="presentation">
+            <a class="nav-link active" id="pills-tab-1" data-bs-toggle="pill" href="#pills-1">
+                <i class="fa-solid fa-user-gear"></i>
+                <span>Users</span>
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="pills-tab-3" data-bs-toggle="pill" href="#pills-2">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Roles</span>
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="pills-tab-4" data-bs-toggle="pill" href="#pills-3">
+                <i class="fa-solid fa-lock"></i>
+                <span>Encrypt</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+
+        <!-- Users tab -->
+        <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+            <div class="actions mb-3 text-end">
+                <a href="#" class="btn" id="btnCreateUser">
+                    <i class="fas fa-plus"></i> Create User
+                </a>
+            </div>
+            <div class="card" style="padding:0">
+                <div class="table-responsive">
+                    <table id="userTable" class="table table-bordered mb-0">
+                        <thead class="thead text-center">
+                            <tr>
+                                <th style="display:none">Id</th>
+                                <th>User Name</th>
+                                <th>Email</th>
+                                <th>Phone Number</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model.Users)
+                            {
+                                <tr>
+                                    <td style="display:none">@m.Id</td>
+                                    <td><strong>@m.UserName</strong></td>
+                                    <td>@m.Email</td>
+                                    <td>@m.PhoneNumber</td>
+                                    <td>
+                                        <a class="btn edit_button editUser"><i class="fa-solid fa-pen"></i> Edit</a>
+                                        <a class="btn deleteBtn deleteUser"><i class="fa-solid fa-trash"></i> Delete</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Roles tab -->
+        <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
+            <div class="actions mb-3 text-end">
+                <a href="#" class="btn" id="btnCreateRole">
+                    <i class="fas fa-plus"></i> Create Role
+                </a>
+            </div>
+            <div class="card" style="padding:0">
+                <div class="table-responsive">
+                    <table id="roleTable" class="table table-bordered mb-0">
+                        <thead class="thead text-center">
+                            <tr>
+                                <th style="display:none">Id</th>
+                                <th>Role Name</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model.Roles)
+                            {
+                                <tr>
+                                    <td style="display:none">@m.Id</td>
+                                    <td><strong>@m.Name</strong></td>
+                                    <td>
+                                        <a class="btn edit_button eidtRole"><i class="fa-solid fa-pen"></i> Edit</a>
+                                        <a class="btn deleteBtn deleteRole"><i class="fa-solid fa-trash"></i> Delete</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encrypt tab -->
+        <div class="tab-pane fade" id="pills-3" role="tabpanel" aria-labelledby="pills-tab-3">
+            <div class="ui-card">
+                <div class="ui-card-header">
+                    <span class="ui-card-title"><i class="fa-solid fa-lock"></i> Encrypt</span>
+                </div>
+                <div class="ui-card-body">
+                    <p class="text-muted mb-0">Encryption utilities coming soon.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+<!-- ══ Role Modal ══ -->
+<div class="modal fade" id="rolemdl" data-backdrop="true" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 500px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h4 class="modal-title modelRoleTitle">Create Role</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="row">
-                            <label id="errorRoleMsg" style="color:red"></label>
-                            <div class="col-md-12">
-                                <input class="form-control" type="hidden" id="hdnRoleId" />
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">Role Name</label><span style="color: red;">*</span>
-                                    <input class="form-control" type="text" id="txtRoleName" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">Features</label>
-                                    @Html.ListBox("FeatureListBox", new SelectList(Model.Features), new { @class="form-control" })
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="btnRoleSave" class="btn btn-primary" value="Save">Save</button>
-                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
+                <label id="errorRoleMsg" style="color:var(--danger);font-size:12px;"></label>
+                <input class="form-control" type="hidden" id="hdnRoleId" />
+                <div class="form-group mb-3">
+                    <label class="form-label">Role Name <span style="color:var(--danger)">*</span></label>
+                    <input class="form-control" type="text" id="txtRoleName" placeholder="Enter role name" />
                 </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Features</label>
+                    @Html.ListBox("FeatureListBox", new SelectList(Model.Features), new { @class = "form-control" })
+                    <div class="form-text text-muted" style="font-size:11px;">Hold Ctrl / Cmd to select multiple.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                <button id="btnRoleSave" class="btn btn-primary">Save Role</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" style=" -moz-border-radius:10px;" id="usermdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<!-- ══ User Modal ══ -->
+<div class="modal fade" id="usermdl" data-backdrop="true" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content" style="width: 500px;margin-top:100px; -moz-border-radius::10px;">
-            <div class="modal-header btn" style="background:#8CA1FB; color:#fff">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h4 class="modal-title modelUserTitle">Create User</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="row">
-                            <label id="errorUserMsg" style="color:red"></label>
-                            <div class="col-md-12">
-                                <input class="form-control" type="hidden" id="hdnUserId" />
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">User Name</label><span style="color: red;">*</span>
-                                    <input class="form-control" type="text" id="txtUserName" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <label id="errorUserMsg" style="color:red"></label>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label" id="lblPassword">Password</label><span id="spnStar" style="color: red;">*</span>
-                                    <input class="form-control" type="password" id="txtPassword" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <label id="errorUserMsg" style="color:red"></label>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">Email</label><span style="color: red;">*</span>
-                                    <input class="form-control" type="text" id="txtEmail" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">Phone Number</label>
-                                    <input class="form-control" type="text" id="txtPhoneNumber" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">Roles</label>
-                                    @Html.ListBox("RolesListBox", new SelectList(Model.Roles, "Id","Name"), new { @class="form-control" })
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <div class="modal-footer">
-                            <button id="btnUserSave" class="btn btn-primary" value="Save">Save</button>
-                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
+                <label id="errorUserMsg" style="color:var(--danger);font-size:12px;"></label>
+                <input class="form-control" type="hidden" id="hdnUserId" />
+                <div class="form-group mb-3">
+                    <label class="form-label">User Name <span style="color:var(--danger)">*</span></label>
+                    <input class="form-control" type="text" id="txtUserName" placeholder="Enter username" />
                 </div>
+                <div class="form-group mb-3" id="passwordGroup">
+                    <label class="form-label" id="lblPassword">Password <span id="spnStar" style="color:var(--danger)">*</span></label>
+                    <input class="form-control" type="password" id="txtPassword" placeholder="Enter password" />
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Email <span style="color:var(--danger)">*</span></label>
+                    <input class="form-control" type="text" id="txtEmail" placeholder="user@example.com" />
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input class="form-control" type="text" id="txtPhoneNumber" placeholder="Optional" />
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Roles</label>
+                    @Html.ListBox("RolesListBox", new SelectList(Model.Roles, "Id", "Name"), new { @class = "form-control" })
+                    <div class="form-text text-muted" style="font-size:11px;">Hold Ctrl / Cmd to select multiple.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
+                <button id="btnUserSave" class="btn btn-primary">Save User</button>
             </div>
         </div>
     </div>
@@ -284,20 +216,22 @@
 
 @section Scripts {
     <script src="~/js/jquery.confirmModal.js"></script>
-
     <script type="text/javascript">
 
-        $(document).ready(function() {
+        $(document).ready(function () {
 
-            $('a[data-toggle="pill"]').on('show.bs.tab', function(e) {
-                localStorage.setItem('activeTab', $(e.target).attr('href'));
-            });
-
-            var activeTab = localStorage.getItem('activeTab');
+            // Persist active tab across page loads
+            var activeTab = localStorage.getItem('activeAdminTab');
             if (activeTab) {
-
-                $('#pills-tab a[href="' + activeTab + '"]').tab('show');
+                var tabEl = document.querySelector('#pills-tab a[href="' + activeTab + '"]');
+                if (tabEl) { bootstrap.Tab.getOrCreateInstance(tabEl).show(); }
             }
+
+            document.querySelectorAll('#pills-tab a[data-bs-toggle="pill"]').forEach(function (el) {
+                el.addEventListener('shown.bs.tab', function (e) {
+                    localStorage.setItem('activeAdminTab', e.target.getAttribute('href'));
+                });
+            });
         });
 
         $("#adminlink").addClass("active");
@@ -305,40 +239,36 @@
         $("#mainlink").removeClass("active");
         $("#icnlink").removeClass("active");
 
-        $(".btn-close").click(function() {
+        $(".btn-close, .modelCancel").click(function () {
             $("#rolemdl").modal('hide');
             $("#usermdl").modal('hide');
         });
 
-        $(".modelCancel").click(function() {
-            $("#rolemdl").modal('hide');
-            $("#usermdl").modal('hide');
-        });
-
-        $("#btnCreateRole").click(function() {
+        // ── Roles ──
+        $("#btnCreateRole").click(function () {
             $('#hdnRoleId').val('0');
             $('#txtRoleName').val('');
-            $("#btnRoleSave").html("Save");
+            $("#btnRoleSave").html("Save Role");
             $(".modelRoleTitle").html("Create Role");
             $("#errorRoleMsg").html('');
-            $("#rolemdl").modal('show');
+            var modal = new bootstrap.Modal(document.getElementById('rolemdl'));
+            modal.show();
         });
 
-        $("#btnRoleSave").click(function() {
+        $("#btnRoleSave").click(function () {
             if ($('#txtRoleName').val() == '') {
-                $('#txtRoleName').css('border-color', 'red');
+                $('#txtRoleName').css('border-color', 'var(--danger)');
                 return false;
-            }
-            else {
+            } else {
                 $('#txtRoleName').css('border-color', '');
             }
 
-            var role = {}
+            var role = {};
             role.Id = $('#hdnRoleId').val();
             role.Name = $('#txtRoleName').val();
 
             var features = [];
-            $('#FeatureListBox > option:selected').each(function() {
+            $('#FeatureListBox > option:selected').each(function () {
                 features.push($(this).text());
             });
 
@@ -347,28 +277,26 @@
                 url: "Administration/CreateRole",
                 data: { role: role, features: features },
                 dataType: "json",
-                success: function(data) {
+                success: function (data) {
                     if (data == 'Duplicate') {
-                        $("#errorRoleMsg").html("Duplicate Record.");
-                        $("#rolemdl").modal('show')
+                        $("#errorRoleMsg").html("Duplicate record.");
+                        bootstrap.Modal.getInstance(document.getElementById('rolemdl')).show();
                     } else {
-                        $("#rolemdl").modal('hide');
+                        bootstrap.Modal.getInstance(document.getElementById('rolemdl')).hide();
                         location.reload();
                     }
                 }
             });
         });
 
-        $('#roleTable tbody').on('click', '.eidtRole', function() {
-
+        $('#roleTable tbody').on('click', '.eidtRole', function () {
             var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
+            var id   = rowobj.find("td:eq(0)").text();
             var name = rowobj.find("td:eq(1)").text();
 
             $("#txtRoleName").val(name);
             $("#hdnRoleId").val(id);
-
-            $("#btnRoleSave").html("Update");
+            $("#btnRoleSave").html("Update Role");
             $(".modelRoleTitle").html("Edit Role");
 
             $.ajax({
@@ -376,180 +304,155 @@
                 url: "Administration/GetFeature",
                 data: { roleId: id },
                 dataType: "json",
-                success: function(result) {
-
-                    $('#FeatureListBox > option:selected').each(function() {
+                success: function (result) {
+                    $('#FeatureListBox > option:selected').each(function () {
                         $(this).removeAttr("selected");
                     });
-
-                    result.forEach(function(e) {
+                    result.forEach(function (e) {
                         $("#FeatureListBox option:contains(" + e + ")").attr('selected', 'selected');
                     });
                 }
             });
 
-            $("#rolemdl").modal('show');
+            var modal = new bootstrap.Modal(document.getElementById('rolemdl'));
+            modal.show();
         });
 
-        $('#roleTable tbody').on('click', '.deleteRole', function() {
+        $('#roleTable tbody').on('click', '.deleteRole', function () {
             var Id = $(this).closest("tr").find("td:eq(0)").text();
-            $.confirmModal('Are you sure to delete this record?', function(el) {
+            $.confirmModal('Are you sure you want to delete this role?', function (el) {
                 $.ajax({
                     type: "POST",
                     url: "Administration/DeleteRole",
                     data: { id: Id },
                     dataType: "json",
-                    success: function(data) {
-                        location.reload();
-                    }
+                    success: function () { location.reload(); }
                 });
             });
         });
 
-        $("#btnCreateUser").click(function() {
+        // ── Users ──
+        $("#btnCreateUser").click(function () {
             $('#hdnUserId').val('0');
             $('#txtUserName').val('');
             $('#txtPassword').val('');
             $('#txtEmail').val('');
             $('#txtPhoneNumber').val('');
-            $("#btnUserSave").html("Save");
+            $('#txtPassword').show();
+            $('#lblPassword').show();
+            $('#spnStar').show();
+            $("#btnUserSave").html("Save User");
             $(".modelUserTitle").html("Create User");
             $("#errorUserMsg").html('');
-            $("#usermdl").modal('show');
+            var modal = new bootstrap.Modal(document.getElementById('usermdl'));
+            modal.show();
         });
 
-        $('#userTable tbody').on('click', '.editUser', function() {
-
-            var rowobj = $(this).closest("tr");
-            var id = rowobj.find("td:eq(0)").text();
-            var userName = rowobj.find("td:eq(1)").text();
-            var email = rowobj.find("td:eq(2)").text();
+        $('#userTable tbody').on('click', '.editUser', function () {
+            var rowobj     = $(this).closest("tr");
+            var id          = rowobj.find("td:eq(0)").text();
+            var userName    = rowobj.find("td:eq(1)").text();
+            var email       = rowobj.find("td:eq(2)").text();
             var phoneNumber = rowobj.find("td:eq(3)").text();
 
             $('#hdnUserId').val(id);
             $('#txtUserName').val(userName);
-            $('#txtPassword').val('UpdatedPassword');
-            $('#txtPassword').hide();
+            $('#txtPassword').val('UpdatedPassword').hide();
             $('#lblPassword').hide();
             $('#spnStar').hide();
             $('#txtEmail').val(email);
             $('#txtPhoneNumber').val(phoneNumber);
-
-            $("#btnUserSave").html("Update");
+            $("#btnUserSave").html("Update User");
             $(".modelUserTitle").html("Edit User");
-            $("#usermdl").modal('show');
 
             $.ajax({
                 type: "POST",
                 url: "Administration/GetRoles",
                 data: { userId: id },
                 dataType: "json",
-                success: function(result) {
-
-                    $('#RolesListBox > option:selected').each(function() {
+                success: function (result) {
+                    $('#RolesListBox > option:selected').each(function () {
                         $(this).removeAttr("selected");
                     });
-
-                    result.forEach(function(e) {
+                    result.forEach(function (e) {
                         $("#RolesListBox option:contains(" + e + ")").attr('selected', 'selected');
                     });
                 }
             });
+
+            var modal = new bootstrap.Modal(document.getElementById('usermdl'));
+            modal.show();
         });
 
-        $("#btnUserSave").click(function() {
-
+        $("#btnUserSave").click(function () {
             if ($('#txtUserName').val() == '') {
-                $('#txtUserName').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtUserName').css('border-color', '');
-            }
+                $('#txtUserName').css('border-color', 'var(--danger)'); return false;
+            } else { $('#txtUserName').css('border-color', ''); }
 
-            if ($('#txtPassword').val() == '') {
-                $('#txtPassword').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtPassword').css('border-color', '');
-            }
+            if ($('#txtPassword').is(':visible') && $('#txtPassword').val() == '') {
+                $('#txtPassword').css('border-color', 'var(--danger)'); return false;
+            } else { $('#txtPassword').css('border-color', ''); }
 
             if ($('#txtEmail').val() == '') {
-                $('#txtEmail').css('border-color', 'red');
-                return false;
-            }
-            else {
-                $('#txtEmail').css('border-color', '');
-            }
+                $('#txtEmail').css('border-color', 'var(--danger)'); return false;
+            } else { $('#txtEmail').css('border-color', ''); }
 
-            var user = {}
-
+            var user   = {};
             var update = false;
             if ($('#hdnUserId').val() != "0") {
                 user.Id = $('#hdnUserId').val();
-                update = true;
+                update  = true;
             }
 
-            user.UserName = $('#txtUserName').val();
-            user.Email = $('#txtEmail').val();
+            user.UserName    = $('#txtUserName').val();
+            user.Email       = $('#txtEmail').val();
             user.PhoneNumber = $('#txtPhoneNumber').val();
 
             var roles = [];
-            $('#RolesListBox > option:selected').each(function() {
+            $('#RolesListBox > option:selected').each(function () {
                 roles.push($(this).text());
             });
 
             $.ajax({
                 type: "POST",
                 url: "Administration/CreateUser",
-                data: { user: user, roles : roles, update : update },
-                headers: {
-                    "Authorization": "Basic " + btoa($('#txtUserName').val() + ":" + $('#txtPassword').val())
-                },
+                data: { user: user, roles: roles, update: update },
+                headers: { "Authorization": "Basic " + btoa($('#txtUserName').val() + ":" + $('#txtPassword').val()) },
                 dataType: "json",
-                success: function(result) {
-
+                success: function (result) {
                     if (result.succeeded == false) {
-
-                        var errorMessage = "<ul>";
-                        result.errors.forEach(function(e) {
-                            errorMessage = errorMessage + "<li>" + e.code + " : " + e.description + "</li>";
+                        var msg = "<ul style='padding-left:18px;margin:0'>";
+                        result.errors.forEach(function (e) {
+                            msg += "<li>" + e.code + ": " + e.description + "</li>";
                         });
-                        errorMessage = errorMessage + "</ul>";
-
-                        $("#errorUserMsg").html(errorMessage);
-                        $("#usermdl").modal('show');
-
+                        msg += "</ul>";
+                        $("#errorUserMsg").html(msg);
+                        bootstrap.Modal.getInstance(document.getElementById('usermdl')).show();
                     } else {
-                        $("#usermdl").modal('hide');
+                        bootstrap.Modal.getInstance(document.getElementById('usermdl')).hide();
                         location.reload();
                     }
                 }
             });
         });
 
-        $('#userTable tbody').on('click', '.deleteUser', function() {
+        $('#userTable tbody').on('click', '.deleteUser', function () {
             var Id = $(this).closest("tr").find("td:eq(0)").text();
-            $.confirmModal('Are you sure to delete this record?', function(el) {
+            $.confirmModal('Are you sure you want to delete this user?', function (el) {
                 $.ajax({
                     type: "POST",
                     url: "Administration/DeleteUser",
                     data: { id: Id },
                     dataType: "json",
-                    success: function(result) {
-
+                    success: function (result) {
                         if (result.succeeded == false) {
-
-                            var errorMessage = "<ul>";
-                            result.errors.forEach(function(e) {
-                                errorMessage = errorMessage + "<li>" + e.code + " : " + e.description + "</li>";
+                            var msg = "<ul style='padding-left:18px;margin:0'>";
+                            result.errors.forEach(function (e) {
+                                msg += "<li>" + e.code + ": " + e.description + "</li>";
                             });
-                            errorMessage = errorMessage + "</ul>";
-
-                            $("#errorUserMsg").html(errorMessage);
-                            $("#usermdl").modal('show');
-
+                            msg += "</ul>";
+                            $("#errorUserMsg").html(msg);
+                            bootstrap.Modal.getInstance(document.getElementById('usermdl')).show();
                         } else {
                             location.reload();
                         }
@@ -557,7 +460,6 @@
                 });
             });
         });
-
 
     </script>
 }
