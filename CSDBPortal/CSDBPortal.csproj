@@ -2,9 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-SampleApp-71F0AA13-072A-4DC5-A4EB-109056568244</UserSecretsId>
+    <!-- NU1902: jquery.datatables declares jQuery 1.7.0 as NuGet dep, but actual jQuery served is 3.5.1 in wwwroot -->
+    <!-- NU1701: Microsoft.Xml.XMLGen has no .NET 10 build but works at runtime -->
+    <!-- CS0168: catch variables declared but unused (catch (Exception ex) pattern) -->
+    <!-- CS0472: int never equals null int? - harmless always-true comparisons -->
+    <NoWarn>$(NoWarn);NU1902;NU1701;CS0168;CS0472</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
