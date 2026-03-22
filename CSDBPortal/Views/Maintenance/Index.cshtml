@@ -1,6 +1,23 @@
 ﻿@model CSDBPortal.ViewModels.MaintenanceViewModel
 @{
     ViewData["Title"] = "Maintenance";
+
+    bool hasLocCodeSet = User.HasClaim("Permission", Features.LocationCodeSetAdministration);
+    bool hasLocCode    = User.HasClaim("Permission", Features.LocationCodeAdministration);
+    bool hasRPC        = User.HasClaim("Permission", Features.RPCAdministration);
+    bool hasDMType     = User.HasClaim("Permission", Features.DataModuleTypeAdministration);
+    bool hasSNS        = User.HasClaim("Permission", Features.SNSAdministration);
+    bool hasProject    = User.HasClaim("Permission", Features.ProjectAdministration);
+    bool hasDMC        = User.HasClaim("Permission", Features.DMCAdministration);
+
+    bool _m = true;
+    bool locCodeSetFirst = _m && hasLocCodeSet; if (hasLocCodeSet) _m = false;
+    bool locCodeFirst    = _m && hasLocCode;    if (hasLocCode)    _m = false;
+    bool rpcFirst        = _m && hasRPC;        if (hasRPC)        _m = false;
+    bool dmTypeFirst     = _m && hasDMType;     if (hasDMType)     _m = false;
+    bool snsFirst        = _m && hasSNS;        if (hasSNS)        _m = false;
+    bool projectFirst    = _m && hasProject;    if (hasProject)    _m = false;
+    bool dmcFirst        = _m && hasDMC;
 }
 
 <div class="alert" style="display:none" id="mainAlert">
@@ -18,70 +35,61 @@
 
         <nav class="maint-panel-nav" id="pills-tab" role="tablist">
 
-            @{ bool maintFirst = true; }
-
-            @if (User.HasClaim("Permission", Features.LocationCodeSetAdministration))
+            @if (hasLocCodeSet)
             {
-                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-6"
+                <a class="maint-nav-item @(locCodeSetFirst ? "active" : "")" id="pills-tab-6"
                    data-bs-toggle="tab" href="#pills-6" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-map-pin"></i></span>
                     <span>Location Code Sets</span>
                 </a>
-                @{ maintFirst = false; }
             }
-            @if (User.HasClaim("Permission", Features.LocationCodeAdministration))
+            @if (hasLocCode)
             {
-                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-1"
+                <a class="maint-nav-item @(locCodeFirst ? "active" : "")" id="pills-tab-1"
                    data-bs-toggle="tab" href="#pills-1" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-location-dot"></i></span>
                     <span>Location Codes</span>
                 </a>
-                @{ maintFirst = false; }
             }
-            @if (User.HasClaim("Permission", Features.RPCAdministration))
+            @if (hasRPC)
             {
-                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-2"
+                <a class="maint-nav-item @(rpcFirst ? "active" : "")" id="pills-tab-2"
                    data-bs-toggle="tab" href="#pills-2" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-building"></i></span>
                     <span>RPC</span>
                 </a>
-                @{ maintFirst = false; }
             }
-            @if (User.HasClaim("Permission", Features.DataModuleTypeAdministration))
+            @if (hasDMType)
             {
-                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-3"
+                <a class="maint-nav-item @(dmTypeFirst ? "active" : "")" id="pills-tab-3"
                    data-bs-toggle="tab" href="#pills-3" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-layer-group"></i></span>
                     <span>Data Module Types</span>
                 </a>
-                @{ maintFirst = false; }
             }
-            @if (User.HasClaim("Permission", Features.SNSAdministration))
+            @if (hasSNS)
             {
-                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-4"
+                <a class="maint-nav-item @(snsFirst ? "active" : "")" id="pills-tab-4"
                    data-bs-toggle="tab" href="#pills-4" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-sitemap"></i></span>
                     <span>SNS</span>
                 </a>
-                @{ maintFirst = false; }
             }
-            @if (User.HasClaim("Permission", Features.ProjectAdministration))
+            @if (hasProject)
             {
-                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-5"
+                <a class="maint-nav-item @(projectFirst ? "active" : "")" id="pills-tab-5"
                    data-bs-toggle="tab" href="#pills-5" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-folder-open"></i></span>
                     <span>Projects</span>
                 </a>
-                @{ maintFirst = false; }
             }
-            @if (User.HasClaim("Permission", Features.DMCAdministration))
+            @if (hasDMC)
             {
-                <a class="maint-nav-item @(maintFirst ? "active" : "")" id="pills-tab-7"
+                <a class="maint-nav-item @(dmcFirst ? "active" : "")" id="pills-tab-7"
                    data-bs-toggle="tab" href="#pills-7" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-file-code"></i></span>
                     <span>DMC</span>
                 </a>
-                @{ maintFirst = false; }
             }
         </nav>
     </aside>
@@ -92,7 +100,7 @@
             @if (User.HasClaim("Permission", Features.LocationCodeSetAdministration))
             {
                 <!-- tab-1 start -->
-                <div class="tab-pane fade show" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                <div class="tab-pane fade @(locCodeFirst ? "show active" : "")" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">
@@ -138,7 +146,7 @@
             @if (User.HasClaim("Permission", Features.LocationCodeAdministration))
             {
                 <!-- tab-6 start -->
-                <div class="tab-pane fade show active" id="pills-6" role="tabpanel" aria-labelledby="pills-tab-6">
+                <div class="tab-pane fade @(locCodeSetFirst ? "show active" : "")" id="pills-6" role="tabpanel" aria-labelledby="pills-tab-6">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">

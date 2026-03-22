@@ -1,6 +1,17 @@
 ﻿@model CSDBPortal.ViewModels.ConfigurationViewModel
 @{
     ViewData["Title"] = "Configuration";
+
+    bool hasIssu        = User.HasClaim("Permission", Features.IssuAdministration);
+    bool hasInfoCodeSet = User.HasClaim("Permission", Features.InfoCodeSetAdministration);
+    bool hasInfoCode    = User.HasClaim("Permission", Features.InfoCodeAdministration);
+    bool hasIcnFormat   = User.HasClaim("Permission", Features.IcnFormatAdministration);
+
+    bool _c = true;
+    bool issuFirst        = _c && hasIssu;        if (hasIssu)        _c = false;
+    bool infoCodeSetFirst = _c && hasInfoCodeSet;  if (hasInfoCodeSet) _c = false;
+    bool infoCodeFirst    = _c && hasInfoCode;     if (hasInfoCode)    _c = false;
+    bool icnFormatFirst   = _c && hasIcnFormat;
 }
 
 <div class="page-body">
@@ -9,43 +20,37 @@
     <nav class="vtab-nav" id="pills-tab" role="tablist">
         <div class="vtab-nav-title">Configuration</div>
 
-        @{ bool cfgFirst = true; }
-
-        @if (User.HasClaim("Permission", Features.IssuAdministration))
+        @if (hasIssu)
         {
-            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-1"
+            <a class="vtab-item @(issuFirst ? "active" : "")" id="pills-tab-1"
                data-bs-toggle="tab" href="#pills-1" role="tab">
                 <span class="vi-icon"><i class="fa-solid fa-tag"></i></span>
                 <span class="vi-label">Issue Numbers</span>
             </a>
-            @{ cfgFirst = false; }
         }
-        @if (User.HasClaim("Permission", Features.InfoCodeSetAdministration))
+        @if (hasInfoCodeSet)
         {
-            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-5"
+            <a class="vtab-item @(infoCodeSetFirst ? "active" : "")" id="pills-tab-5"
                data-bs-toggle="tab" href="#pills-5" role="tab">
                 <span class="vi-icon"><i class="fa-solid fa-layer-group"></i></span>
                 <span class="vi-label">Info Code Sets</span>
             </a>
-            @{ cfgFirst = false; }
         }
-        @if (User.HasClaim("Permission", Features.InfoCodeAdministration))
+        @if (hasInfoCode)
         {
-            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-3"
+            <a class="vtab-item @(infoCodeFirst ? "active" : "")" id="pills-tab-3"
                data-bs-toggle="tab" href="#pills-3" role="tab">
                 <span class="vi-icon"><i class="fa-solid fa-code"></i></span>
                 <span class="vi-label">Info Codes</span>
             </a>
-            @{ cfgFirst = false; }
         }
-        @if (User.HasClaim("Permission", Features.IcnFormatAdministration))
+        @if (hasIcnFormat)
         {
-            <a class="vtab-item @(cfgFirst ? "active" : "")" id="pills-tab-4"
+            <a class="vtab-item @(icnFormatFirst ? "active" : "")" id="pills-tab-4"
                data-bs-toggle="tab" href="#pills-4" role="tab">
                 <span class="vi-icon"><i class="fa-solid fa-puzzle-piece"></i></span>
                 <span class="vi-label">ICN Formats</span>
             </a>
-            @{ cfgFirst = false; }
         }
     </nav>
 
@@ -55,7 +60,7 @@
             @if (User.HasClaim("Permission", Features.IssuAdministration))
             {
                 <!-- tab-1 start -->
-                <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                <div class="tab-pane fade @(issuFirst ? "show active" : "")" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">
