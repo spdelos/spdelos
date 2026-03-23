@@ -13,8 +13,8 @@
         public static string SNSAdministration = "SNS Administration";
         public static string ProjectAdministration = "Project Administration";
         public static string DMCAdministration = "DMC Administration";
-        public static string GenerateICNNumber = "Generate ICN Number";
-        public static string ViewICNNumber = "View ICN Number";
+        public static string GenerateICNNumber = "Generate ICN";
+        public static string ViewICNNumber = "View ICN";
         public static string UserAndRoleAdministration = "User and Role Administration";
     }
 }
