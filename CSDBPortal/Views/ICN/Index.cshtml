@@ -178,9 +178,14 @@
     $("#configlink").removeClass("active");
     $("#mainlink").removeClass("active");
     $("#icnlink").addClass("active");
-    var ICNNumberTable = $('#viewICNNumberTable').DataTable();
 
     $(document).ready(function () {
+
+        // Activate first available tab
+        var firstTab = document.querySelector('#pills-tab .nav-link');
+        if (firstTab) bootstrap.Tab.getOrCreateInstance(firstTab).show();
+
+        var ICNNumberTable = $('#viewICNNumberTable').DataTable();
 
         $("#VarCodeList").hide();
         $("#SequenceNumberList").hide();

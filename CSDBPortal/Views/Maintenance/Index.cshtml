@@ -775,9 +775,8 @@
 
             // Activate first (or stored) tab on page load
             var activeMaintTab = localStorage.getItem('activeMaintTab');
-            var maintTrigger = activeMaintTab
-                ? document.querySelector('#pills-tab [href="' + activeMaintTab + '"]')
-                : document.querySelector('#pills-tab [data-bs-toggle="tab"]');
+            var maintTrigger = (activeMaintTab && document.querySelector('#pills-tab [href="' + activeMaintTab + '"]'))
+                || document.querySelector('#pills-tab [data-bs-toggle="tab"]');
             if (maintTrigger) bootstrap.Tab.getOrCreateInstance(maintTrigger).show();
 
             document.querySelectorAll('#pills-tab [data-bs-toggle="tab"]').forEach(function (el) {
