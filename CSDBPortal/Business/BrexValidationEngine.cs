@@ -109,7 +109,7 @@ namespace CSDBPortal.Business
                     "LENGTH"   => CheckLength(value, rule.Length, target, Label(rule)),
                     "RANGE"    => CheckRange(value, rule.RangeValue, target, Label(rule)),
                     "NESTING"  => CheckNesting(node, rule.SubXmlTag, Label(rule)),
-                    _          => (true, string.Empty)
+                    _          => (Passed: true, Message: string.Empty)
                 };
 
                 if (!result.Passed) return result;
