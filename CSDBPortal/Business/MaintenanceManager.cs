@@ -440,6 +440,7 @@ namespace CSDBPortal.Business
         {
             return await _db.DataModuleCodes
                 .Where(d => d.ProjectId == projectId && d.IsBrexXml == false && d.IsDeleted == false)
+                .Select(d => new DataModuleCode { Id = d.Id, DMC = d.DMC, InfoName = d.InfoName, TechName = d.TechName })
                 .ToListAsync();
         }
 

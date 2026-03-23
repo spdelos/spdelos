@@ -316,7 +316,10 @@ namespace CSDBPortal.Controllers
             => Json(await _maintenanceManager.GetProjectSnsAsync(projectId));
 
         public async Task<JsonResult> GetDataModuleCodes(string dmc, int projectId)
-            => Json(await _maintenanceManager.GetDataModuleCodesAsync(projectId));
+        {
+            var codes = await _maintenanceManager.GetDataModuleCodesAsync(projectId);
+            return Json(codes.Select(c => new { id = c.Id, dmc = c.DMC, infoName = c.InfoName, techName = c.TechName }));
+        }
 
         public async Task<JsonResult> GetLocationCodes(int projectId)
             => Json(await _maintenanceManager.GetLocationCodesAsync(projectId));

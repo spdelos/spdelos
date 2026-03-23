@@ -1963,7 +1963,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetDataModuleCodes",
+                    url: "/Maintenance/GetDataModuleCodes",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (data) {
@@ -1979,12 +1979,15 @@
                         });
 
                         $dmc.select2();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('GetDataModuleCodes failed:', status, error, xhr.responseText);
                     }
                 });
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetProjectNavigationTree",
+                    url: "/Maintenance/GetProjectNavigationTree",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (result) {
