@@ -935,7 +935,10 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="saveProjectBrexRules" class="btn btn-primary" value="Save">Save</button>
+                    @if (User.IsInRole("Administrator")) // TODO: replace with specific role(s)
+                    {
+                        <button id="saveProjectBrexRules" class="btn btn-primary" value="Save">Save</button>
+                    }
                     <button type="button" class="btn btn-default modelCancelBrexRules" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -1003,6 +1006,8 @@
         var selectedProject = 0;
         var selectedSNS;
         var currentNodeText;
+        // TODO: replace "Administrator" with the specific role(s) authorised to edit Brex Rules
+        var canEditBrexRules = @Json.Serialize(User.IsInRole("Administrator"));
 
         var data = [];
         @foreach (var d in Model.StandardNumberingSystems)
@@ -1886,37 +1891,47 @@
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
 
+                if ($.fn.DataTable.isDataTable('#tableBrexRules')) {
+                    $('#tableBrexRules').DataTable().clear().destroy();
+                }
+
+                var brexColumns = [
+                    { title: "Id", className: "brexRuleId" },
+                    { title: "Schema", className: "editableColumn brexRuleSchema" },
+                    { title: "Rule", className: "editableColumn brexRuleRule" },
+                    { title: "Xml Tag", className: "editableColumn brexRuleXmlTag" },
+                    { title: "Sub Xml Tag", className: "editableColumn brexRuleSubXmlTag" },
+                    { title: "Constraint Type", className: "editableDropDownColumn brexRuleConstraintType" },
+                    { title: "Length", className: "editableColumn brexRuleLength" },
+                    { title: "Range", className: "editableColumn brexRuleRangeValue" },
+                    { title: "Value", className: "editableColumn brexRuleMatchValue" },
+                    { title: "Attribute Name", className: "editableColumn brexRuleAttributeName" },
+                ];
+                if (canEditBrexRules) {
+                    brexColumns.push({ title: "Action", defaultContent: "<a href='#' class='editBrexRule'>&nbsp;<i class='fas fa-edit'></i></a>", className: "editBrexRuleColumn" });
+                }
+
                 var projectBrexRulesTable = $('#tableBrexRules').DataTable({
                     responsive: true,
                     autoWidth: true,
                     searching: true,
-                    columns: [
-                        { title: "Id", className: "brexRuleId" },
-                        { title: "Schema", className: "editableColumn brexRuleSchema" },
-                        { title: "Rule", className: "editableColumn brexRuleRule" },
-                        { title: "Xml Tag", className: "editableColumn brexRuleXmlTag" },
-                        { title: "Sub Xml Tag", className: "editableColumn brexRuleSubXmlTag" },
-                        { title: "Constraint Type", className: "editableDropDownColumn brexRuleConstraintType" },
-                        { title: "Length", className: "editableColumn brexRuleLength" },
-                        { title: "Range", className: "editableColumn brexRuleRangeValue" },
-                        { title: "Value", className: "editableColumn brexRuleMatchValue" },
-                        { title: "Attribute Name", className: "editableColumn brexRuleAttributeName" },
-                        { title: "Action", "defaultContent": "<a href='#' class='editBrexRule'>&nbsp;<i class='fas fa-edit'></i></a>", className: "editBrexRuleColumn" },
-                    ]
+                    columns: brexColumns
                 });
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetBrexRules",
+                    url: "/Maintenance/GetBrexRules",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (data) {
-
-                        $.each(data, function (index, obj) {
-
-                            projectBrexRulesTable.row.add([obj.id, obj.group, obj.ruleName, obj.xmlTag,
-                            obj.subXmlTag, obj.type, obj.length, obj.rangeValue, obj.matchValue, obj.attributeName]).draw(false);
+                        var rows = data.map(function (obj) {
+                            return [obj.id, obj.group, obj.ruleName, obj.xmlTag,
+                                obj.subXmlTag, obj.type, obj.length, obj.rangeValue, obj.matchValue, obj.attributeName];
                         });
+                        projectBrexRulesTable.rows.add(rows).draw();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('GetBrexRules failed:', status, error, xhr.responseText);
                     }
                 });
 
