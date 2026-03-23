@@ -1978,7 +1978,7 @@
                             $dmc.append('<option dmc="' + obj.dmc + '" title="' + obj.infoName + " - " + obj.techName + '" value=' + obj.id + '>' + obj.dmc + '</option>');
                         });
 
-                        $dmc.select2();
+                        $dmc.select2({ dropdownParent: $('#projectNavigationModel') });
                     },
                     error: function (xhr, status, error) {
                         console.error('GetDataModuleCodes failed:', status, error, xhr.responseText);
