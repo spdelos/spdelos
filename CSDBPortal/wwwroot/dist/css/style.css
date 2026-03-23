@@ -221,7 +221,7 @@ a:hover { text-decoration: none !important; }
     gap: 10px;
     padding: 8px;
     border-radius: 8px;
-    cursor: default;
+    cursor: pointer;
     transition: background var(--transition);
 }
 
@@ -266,6 +266,13 @@ a:hover { text-decoration: none !important; }
 .sidebar-logout-btn:hover { color: var(--accent); }
 
 .app-sidebar.collapsed .sidebar-user-info { display: none; }
+
+.sidebar-user-dropdown {
+    min-width: 180px;
+    margin-bottom: 4px;
+}
+
+.sidebar-user.dropdown::after { display: none; }
 
 /* ════════════════════════════════════════════
    APP MAIN
