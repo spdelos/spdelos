@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CSDBPortal.Data;
 using CSDBPortal.Business;
+using CSDBPortal.Services;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,20 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     .AddDefaultUI()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddSingleton<ActiveSessionTracker>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnValidatePrincipal = context =>
+    {
+        var tracker = context.HttpContext.RequestServices.GetRequiredService<ActiveSessionTracker>();
+        var userId = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userId != null)
+            tracker.Touch(userId);
+        return Task.CompletedTask;
+    };
+});
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication();

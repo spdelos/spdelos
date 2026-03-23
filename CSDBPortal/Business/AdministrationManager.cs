@@ -1,4 +1,5 @@
 using CSDBPortal.Data;
+using CSDBPortal.Services;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,12 @@ namespace CSDBPortal.Business
     public class AdministrationManager
     {
         private readonly ApplicationDbContext _db;
+        private readonly ActiveSessionTracker _sessionTracker;
 
-        public AdministrationManager(ApplicationDbContext db)
+        public AdministrationManager(ApplicationDbContext db, ActiveSessionTracker sessionTracker)
         {
             _db = db;
+            _sessionTracker = sessionTracker;
         }
 
         public async Task<AdministrationViewModel> GetAdministrationDetailInfoAsync()
@@ -24,7 +27,7 @@ namespace CSDBPortal.Business
                 administrationViewModel.Users = await _db.Users.ToListAsync();
                 administrationViewModel.Roles = await _db.Roles.ToListAsync();
                 administrationViewModel.UserCount = administrationViewModel.Users.Count;
-                administrationViewModel.ActiveUsers = administrationViewModel.Users.Count;
+                administrationViewModel.ActiveUsers = _sessionTracker.GetActiveCount();
 
                 administrationViewModel.Features = new List<string>();
                 var fields = typeof(Features).GetFields(BindingFlags.Public | BindingFlags.Static);

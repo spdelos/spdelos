@@ -1,3 +1,4 @@
+using CSDBPortal.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,10 +9,12 @@ namespace CSDBPortal.Controllers
     public class AccountController : BaseController
     {
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly ActiveSessionTracker _sessionTracker;
 
-        public AccountController(SignInManager<IdentityUser> signInManager)
+        public AccountController(SignInManager<IdentityUser> signInManager, ActiveSessionTracker sessionTracker)
         {
             _signInManager = signInManager;
+            _sessionTracker = sessionTracker;
         }
 
         public IActionResult Index() => RedirectToAction("Identity", "Login");
@@ -32,6 +35,9 @@ namespace CSDBPortal.Controllers
         [HttpGet]
         public async Task<IActionResult> LogoutAsync()
         {
+            var userId = _signInManager.UserManager.GetUserId(User);
+            if (userId != null)
+                _sessionTracker.Remove(userId);
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index");
         }
