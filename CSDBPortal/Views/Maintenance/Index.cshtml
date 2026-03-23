@@ -1967,16 +1967,18 @@
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (data) {
-                        $("#projectNavigationTreeDmcDropDown option").remove();
-
-                        var slelectObj = $('#projectNavigationTreeDmcDropDown');
-                        slelectObj.append('<option selected>Select a DMC to add to navigation tree</option>');
+                        var $dmc = $('#projectNavigationTreeDmcDropDown');
+                        if ($dmc.hasClass('select2-hidden-accessible')) {
+                            $dmc.select2('destroy');
+                        }
+                        $dmc.empty();
+                        $dmc.append('<option selected>Select a DMC to add to navigation tree</option>');
 
                         $.each(data, function (idx, obj) {
-                            slelectObj.append('<option dmc="' + obj.dmc + '" title="' + obj.infoName + " - " + obj.techName + '" value=' + obj.id + '>' + obj.dmc + '</option>');
+                            $dmc.append('<option dmc="' + obj.dmc + '" title="' + obj.infoName + " - " + obj.techName + '" value=' + obj.id + '>' + obj.dmc + '</option>');
                         });
 
-                        $("#projectNavigationTreeDmcDropDown").select2();
+                        $dmc.select2();
                     }
                 });
 
