@@ -154,5 +154,31 @@
     <script type="text/javascript" src="~/lib/select2/js/select2.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+    // Make all Bootstrap modals draggable (by header) and resizable
+    $(document).on('shown.bs.modal', '.modal', function () {
+        var $modal   = $(this);
+        var $dialog  = $modal.find('.modal-dialog');
+        if ($dialog.hasClass('ui-draggable')) return;
+
+        // Switch from flex-centred to absolute so jQuery UI can position it
+        var initTop  = Math.max(30, ($modal.outerHeight() - $dialog.outerHeight()) / 2);
+        var initLeft = Math.max(0,  ($modal.outerWidth()  - $dialog.outerWidth())  / 2);
+        $dialog.css({ position: 'absolute', margin: 0, top: initTop, left: initLeft });
+
+        $dialog.draggable({
+            handle:      '.modal-header',
+            containment: $modal,
+            cursor:      'move'
+        });
+
+        $dialog.find('.modal-content').resizable({
+            minHeight: 200,
+            minWidth:  300,
+            handles:   'se, s, e'
+        });
+    });
+    </script>
 </body>
 </html>

@@ -685,6 +685,24 @@ a:hover { text-decoration: none !important; }
     border-radius: 14px 14px 0 0 !important;
     padding: 16px 20px !important;
     border-bottom: none !important;
+    cursor: move;
+    user-select: none;
+}
+
+.modal-content.ui-resizable {
+    overflow: visible;
+}
+
+.modal-content .ui-resizable-handle {
+    background: transparent;
+}
+
+.modal-content .ui-resizable-se {
+    width: 16px;
+    height: 16px;
+    right: 2px;
+    bottom: 2px;
+    cursor: se-resize;
 }
 
 .modal-header .btn-close {
