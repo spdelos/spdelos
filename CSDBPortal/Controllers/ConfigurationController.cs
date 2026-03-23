@@ -1,153 +1,135 @@
-﻿using CSDBPortal.Business;
+using CSDBPortal.Business;
 using CSDBPortal.Data;
 using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Data.SqlTypes;
 using System.Text;
-using System.Xml;
 
 namespace CSDBPortal.Controllers
 {
     public class ConfigurationController : BaseController
     {
-        BaseManager _baseManager = new();
-        ConfigurationsManager _configurationsManager = new();
+        private readonly ApplicationDbContext _db;
+        private readonly BaseManager _baseManager;
+        private readonly ConfigurationsManager _configurationsManager;
 
-        //[Authorize]
-        public IActionResult Index()
+        public ConfigurationController(ApplicationDbContext db, BaseManager baseManager, ConfigurationsManager configurationsManager)
+        {
+            _db = db;
+            _baseManager = baseManager;
+            _configurationsManager = configurationsManager;
+        }
+
+        public async Task<IActionResult> Index()
         {
             try
-            {               
-                return View(_configurationsManager.GetConfigurationDetailInfo());
-            }
-            catch (Exception ex)
             {
-                //todo
+                return View(await _configurationsManager.GetConfigurationDetailInfoAsync());
             }
-            // todo; need to redirect error page or message
+            catch { }
             return View();
         }
 
         #region 'IssueNo'
         [HttpPost]
-        public IActionResult CreateIssueNo()
+        public async Task<IActionResult> CreateIssueNo()
         {
             try
             {
-                using (ApplicationDbContext applicationDbContext = new ApplicationDbContext())
+                int issueNoId = Convert.ToInt32(Request.Form["hdnId"]);
+                IssueNo issueNo;
+                if (issueNoId <= 0)
                 {
-                    int issueNoId = Convert.ToInt32(Request.Form["hdnId"]);
-                    IssueNo issueNo;
-                    if (issueNoId <= 0)
+                    issueNo = new IssueNo();
+                    issueNo.IssueTypeFiles = new List<IssueTypeFile>();
+                    issueNo.CreatedBy = User.Identity.Name;
+                    issueNo.CreateOn = DateTime.UtcNow;
+                }
+                else
+                {
+                    issueNo = await _db.IssueNos.Include(i => i.IssueTypeFiles).FirstOrDefaultAsync(i => i.Id == issueNoId);
+                }
+
+                issueNo.Name = Request.Form["txtIssueNo"];
+
+                foreach (IFormFile file in Request.Form.Files)
+                {
+                    var fileContent = new StringBuilder();
+                    using (var reader = new StreamReader(file.OpenReadStream()))
                     {
-                        issueNo = new IssueNo();
-                        issueNo.IssueTypeFiles = new List<IssueTypeFile>();
-                        issueNo.CreatedBy = User.Identity.Name;
-                        issueNo.CreateOn = DateTime.UtcNow;
+                        while (reader.Peek() >= 0)
+                            fileContent.AppendLine(await reader.ReadLineAsync());
+                    }
+
+                    string extension = Path.GetExtension(file.FileName);
+                    if (!string.IsNullOrEmpty(extension) && extension.ToLower() == ".xml")
+                    {
+                        issueNo.BrexTemplate = fileContent.ToString();
                     }
                     else
                     {
-                        issueNo = applicationDbContext.IssueNos.Include(i => i.IssueTypeFiles).Where(i => i.Id == issueNoId).FirstOrDefault();
-                    }
-                    
-                    issueNo.Name = Request.Form["txtIssueNo"];
-                    
-                    foreach (IFormFile file in Request.Form.Files)
-                    {
-                        var fileContent = new StringBuilder();
-                        using (var reader = new StreamReader(file.OpenReadStream()))
+                        issueNo.IssueTypeFiles.Add(new IssueTypeFile
                         {
-                            while (reader.Peek() >= 0)
-                                fileContent.AppendLine(reader.ReadLine());
-                        }
-
-                        string extension = Path.GetExtension(file.FileName);
-                        if (!string.IsNullOrEmpty(extension) && extension.ToLower().CompareTo(".xml") == 0)
-                        {
-                            issueNo.BrexTemplate = fileContent.ToString();
-                        }
-                        else
-                        {
-                            IssueTypeFile issueTypeFile = new IssueTypeFile();
-                            issueTypeFile.Name = file.FileName;
-                            issueTypeFile.CreatedBy = User.Identity.Name;
-                            issueTypeFile.CreateOn = DateTime.UtcNow;
-                            issueTypeFile.Data = fileContent.ToString();
-                            issueNo.IssueTypeFiles.Add(issueTypeFile);
-                        }
+                            Name = file.FileName, CreatedBy = User.Identity.Name,
+                            CreateOn = DateTime.UtcNow, Data = fileContent.ToString()
+                        });
                     }
-
-                    if (issueNoId <= 0)
-                    {
-                        applicationDbContext.IssueNos.Add(issueNo);
-                    }
-
-                    applicationDbContext.SaveChanges();
-
-                    return RedirectToAction("Index", "Configuration");
                 }
+
+                if (issueNoId <= 0)
+                    _db.IssueNos.Add(issueNo);
+
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Index", "Configuration");
             }
-            catch (Exception e)
+            catch
             {
                 return View("failed");
             }
         }
-               
-        public JsonResult DeleteIssueNo(int id)
+
+        public async Task<JsonResult> DeleteIssueNo(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-              var issueNo =  applicationContext.IssueNos.Where(i => i.Id ==id).FirstOrDefault();
-                if(issueNo != null)
-                issueNo.IsDelete = true;
-              return Json(_baseManager.CreateOrUpdateRecord(issueNo, "Logical"));
-            }
+            var issueNo = await _db.IssueNos.FirstOrDefaultAsync(i => i.Id == id);
+            if (issueNo != null) issueNo.IsDelete = true;
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(issueNo, "Logical"));
         }
         #endregion
 
         #region 'Designation'
-        public JsonResult CreateDesigination(Designation designation)
+        public async Task<JsonResult> CreateDesigination(Designation designation)
         {
-            string mode = string.Empty;
-            if(designation.Id > 0)
+            string mode;
+            if (designation.Id > 0)
             {
                 mode = "Edit";
-
             }
             else
             {
-                var recordCount = _configurationsManager.CheckDuplicateDesination(designation);
-                if (recordCount > 0)
-                {
+                if (await _configurationsManager.CheckDuplicateDesinationAsync(designation) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
             }
-            return Json(_baseManager.CreateOrUpdateRecord(designation, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(designation, mode));
         }
-        public JsonResult DeleteDesignation(int id)
+
+        public async Task<JsonResult> DeleteDesignation(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var designation = applicationContext.Designations.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(designation, ""));
-            }
+            var designation = await _db.Designations.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(designation, ""));
         }
         #endregion
 
         #region 'Info Code Set'
-        public JsonResult CreateInfoCodeSet(InformationCodeSet informationCodeSet)
+        public async Task<JsonResult> CreateInfoCodeSet(InformationCodeSet informationCodeSet)
         {
-            string mode = string.Empty;
-
+            string mode;
             if (informationCodeSet.Id > 0)
             {
                 informationCodeSet.UpdatedBy = User.Identity.Name;
                 informationCodeSet.UpdatedOn = DateTime.UtcNow;
                 mode = "Edit";
-
             }
             else
             {
@@ -155,165 +137,124 @@ namespace CSDBPortal.Controllers
                 informationCodeSet.UpdatedBy = User.Identity.Name;
                 informationCodeSet.CreatedOn = DateTime.UtcNow;
                 informationCodeSet.UpdatedOn = DateTime.UtcNow;
-                var recordCount = _configurationsManager.CheckDuplicateInfoCodeSet(informationCodeSet);
-                if (recordCount > 0)
-                {
+                if (await _configurationsManager.CheckDuplicateInfoCodeSetAsync(informationCodeSet) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
             }
-
-            return Json(_baseManager.CreateOrUpdateRecord(informationCodeSet, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(informationCodeSet, mode));
         }
 
-        public JsonResult DeleteInfoCodeSet(int id)
+        public async Task<JsonResult> DeleteInfoCodeSet(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var informationCodeSet = applicationContext.InformationCodeSets.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(informationCodeSet, ""));
-            }
+            var informationCodeSet = await _db.InformationCodeSets.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(informationCodeSet, ""));
         }
         #endregion
 
         #region 'Info Code'
-        public ActionResult LoadDataModuleType()
+        public async Task<ActionResult> LoadDataModuleType()
         {
-            using ApplicationDbContext applicationContext = new();
-            var dbModuleType = applicationContext.DataModuleTypes.ToList();
+            var dbModuleType = await _db.DataModuleTypes.ToListAsync();
             return Json(dbModuleType);
         }
-        public JsonResult CreateInfoCode(InformationCode informationCode)
-        {         
-            string mode = string.Empty;
+
+        public async Task<JsonResult> CreateInfoCode(InformationCode informationCode)
+        {
+            string mode;
             if (informationCode.Id > 0)
             {
                 informationCode.UpdatedBy = User.Identity.Name;
                 informationCode.UpdatedOn = DateTime.UtcNow;
                 mode = "Edit";
-
             }
             else
             {
-                //need to update login user email
                 informationCode.CreatedBy = User.Identity.Name;
                 informationCode.UpdatedBy = User.Identity.Name;
                 informationCode.CreatedOn = DateTime.UtcNow;
                 informationCode.UpdatedOn = DateTime.UtcNow;
-                var recordCount = _configurationsManager.CheckDuplicateInfoCode(informationCode);
-                if (recordCount > 0)
-                {
+                if (await _configurationsManager.CheckDuplicateInfoCodeAsync(informationCode) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
             }
-
-            return Json(_baseManager.CreateOrUpdateRecord(informationCode, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(informationCode, mode));
         }
-     
-        public JsonResult DeleteInfoCode(int id)
+
+        public async Task<JsonResult> DeleteInfoCode(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var informationCode = applicationContext.InformationCodes.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(informationCode, ""));
-            }
+            var informationCode = await _db.InformationCodes.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(informationCode, ""));
         }
         #endregion
 
         #region 'ICN Format'
-        public JsonResult CreateICNFormat(Icnformat icnformat)
+        public async Task<JsonResult> CreateICNFormat(Icnformat icnformat)
         {
-            //Fetch all the fields from Database
-            List<ICNFormatField> icnFormatFieldsFromDB;
-            using (ApplicationDbContext applicationContext = new())
-            {
-                icnFormatFieldsFromDB = applicationContext.ICNFormatFields.Where(icf => icf.ICNFormatId == icnformat.Id).ToList();
+            var icnFormatFieldsFromDB = await _db.ICNFormatFields
+                .Where(icf => icf.ICNFormatId == icnformat.Id).ToListAsync();
 
+            if (icnformat.Fields != null)
+            {
                 foreach (ICNFormatField icnFormatField in icnformat.Fields)
                 {
-                    var icnFormatFieldFromDB = icnFormatFieldsFromDB.Where(ic => ic.ICNFormatMasterFieldId == icnFormatField.ICNFormatMasterFieldId).FirstOrDefault();
-
-                    if (icnFormatFieldFromDB != null && icnFormatFieldFromDB.Id > 0)
-                    {
-                        icnFormatField.Id = icnFormatFieldFromDB.Id;
-                    }
+                    var fromDB = icnFormatFieldsFromDB.FirstOrDefault(ic => ic.ICNFormatMasterFieldId == icnFormatField.ICNFormatMasterFieldId);
+                    if (fromDB != null && fromDB.Id > 0)
+                        icnFormatField.Id = fromDB.Id;
                 }
             }
 
-            using (ApplicationDbContext applicationContext = new())
+            if (icnformat.Id > 0)
             {
-                //if this is an existing format
-                if (icnformat.Id > 0)
+                icnformat.UpdatedBy = User.Identity.Name;
+                icnformat.UpdatedOn = DateTime.UtcNow;
+
+                if (icnformat.Fields != null)
                 {
-                    icnformat.UpdatedBy = User.Identity.Name;
-                    icnformat.UpdatedOn = DateTime.UtcNow;
-
-                    //if there are existing fields in the database, check if they are there in the paylod. if not, it should be deleted from the db.
-                    if (icnformat.Fields != null)
+                    foreach (ICNFormatField field in icnFormatFieldsFromDB)
                     {
-                        foreach(ICNFormatField field in icnFormatFieldsFromDB)
+                        var formatField = icnformat.Fields.FirstOrDefault(f => f.Id == field.Id);
+                        if (formatField == null)
                         {
-                            var formatField = icnformat.Fields.Where(f => f.Id == field.Id).FirstOrDefault();
-                            if (formatField == null)
-                            {
-                                var icnFormatFieldFromDB = icnFormatFieldsFromDB.Where(ic => ic.Id == field.Id).FirstOrDefault();
-                                if (icnFormatFieldFromDB != null)
-                                {
-                                    applicationContext.Entry(icnFormatFieldFromDB).State = EntityState.Deleted;
-                                }
-
-                            }
-                        }
-
-                        foreach (ICNFormatField icnFormatField in icnformat.Fields)
-                        {
-                            var icnFormatFieldFromDB = icnFormatFieldsFromDB.Where(ic => ic.ICNFormatMasterFieldId == icnFormatField.ICNFormatMasterFieldId).FirstOrDefault();
-
-                            if (icnFormatFieldFromDB != null && icnFormatFieldFromDB.Id > 0)
-                            {
-                                icnFormatFieldFromDB.DisplayOrder = icnFormatField.DisplayOrder;
-                                applicationContext.Entry(icnFormatFieldFromDB).State = EntityState.Modified;
-                            }
-                            else
-                            {
-                                icnFormatField.ICNFormatId = icnformat.Id;
-                                applicationContext.Add(icnFormatField);
-                            }
+                            var fromDB = icnFormatFieldsFromDB.FirstOrDefault(ic => ic.Id == field.Id);
+                            if (fromDB != null) _db.Entry(fromDB).State = EntityState.Deleted;
                         }
                     }
 
-                    //mark entity as modified.
-                    applicationContext.Entry(icnformat).State = EntityState.Modified;
-                }
-                else
-                {
-                    //need to update login user email
-                    icnformat.CreatedBy = User.Identity.Name;
-                    icnformat.UpdatedBy = User.Identity.Name;
-                    icnformat.CreatedOn = DateTime.UtcNow;
-                    icnformat.UpdatedOn = DateTime.UtcNow;
-                    var recordCount = _configurationsManager.CheckDuplicateICTFormat(icnformat);
-                    if (recordCount > 0)
+                    foreach (ICNFormatField icnFormatField in icnformat.Fields)
                     {
-                        return Json("Duplicate");
+                        var fromDB = icnFormatFieldsFromDB.FirstOrDefault(ic => ic.ICNFormatMasterFieldId == icnFormatField.ICNFormatMasterFieldId);
+                        if (fromDB != null && fromDB.Id > 0)
+                        {
+                            fromDB.DisplayOrder = icnFormatField.DisplayOrder;
+                            _db.Entry(fromDB).State = EntityState.Modified;
+                        }
+                        else
+                        {
+                            icnFormatField.ICNFormatId = icnformat.Id;
+                            _db.Add(icnFormatField);
+                        }
                     }
-
-                    applicationContext.Icnformats.Add(icnformat);
                 }
-                applicationContext.SaveChanges();
+                _db.Entry(icnformat).State = EntityState.Modified;
             }
-
+            else
+            {
+                icnformat.CreatedBy = User.Identity.Name;
+                icnformat.UpdatedBy = User.Identity.Name;
+                icnformat.CreatedOn = DateTime.UtcNow;
+                icnformat.UpdatedOn = DateTime.UtcNow;
+                if (await _configurationsManager.CheckDuplicateICTFormatAsync(icnformat) > 0)
+                    return Json("Duplicate");
+                _db.Icnformats.Add(icnformat);
+            }
+            await _db.SaveChangesAsync();
             return Json(icnformat);
         }
-      
-        public JsonResult DeleteICNFormat(int id)
+
+        public async Task<JsonResult> DeleteICNFormat(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var informationCode = applicationContext.Icnformats.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(informationCode, ""));
-            }
+            var informationCode = await _db.Icnformats.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(informationCode, ""));
         }
         #endregion
     }

@@ -1,4 +1,4 @@
-﻿using CSDBPortal.Data;
+using CSDBPortal.Data;
 using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
 using Microsoft.Data.SqlClient;
@@ -9,384 +9,244 @@ namespace CSDBPortal.Business
 {
     public class ICNManager
     {
+        private readonly ApplicationDbContext _db;
 
-        public ICNViewModel GetProjects()
+        public ICNManager(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        public async Task<ICNViewModel> GetProjectsAsync()
         {
             ICNViewModel _iCNViewModel = new ICNViewModel();
-            _iCNViewModel.ProjectList  = new List<ProjectDropDown>();
+            _iCNViewModel.ProjectList = new List<ProjectDropDown>();
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    var result = (from p in _db.Projects
-                                  select new { p.Id, p.Name }).ToList();
-                    foreach (var obj in result)
-                    {
-                        _iCNViewModel.ProjectList.Add(new ProjectDropDown { ProjecctId = obj.Id, Name = obj.Name });
-                    }
-                }
+                var result = await (from p in _db.Projects select new { p.Id, p.Name }).ToListAsync();
+                foreach (var obj in result)
+                    _iCNViewModel.ProjectList.Add(new ProjectDropDown { ProjecctId = obj.Id, Name = obj.Name });
             }
-            catch (Exception ex)
-            {
-                //
-            }
+            catch { }
             return _iCNViewModel;
         }
 
-        public int GetMaxSequenceNumber(int projectId)
+        public async Task<int> GetMaxSequenceNumberAsync(int projectId)
         {
-            int maxSequenceNumber = 0;
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    var result = (from icn in _db.IcnNumbers
-                                         join p in _db.Projects on icn.ProjectId equals p.Id
-                                  where icn.ProjectId == projectId
-                                  select icn.SeqNo).Max();
-
-                    if (result != null)
-                    {
-                        maxSequenceNumber = result;
-                    }
-                }
+                var result = await (from icn in _db.IcnNumbers
+                                    join p in _db.Projects on icn.ProjectId equals p.Id
+                                    where icn.ProjectId == projectId
+                                    select icn.SeqNo).MaxAsync();
+                return result;
             }
-            catch (Exception ex)
-            {
-                //
-            }
-            return maxSequenceNumber;
+            catch { return 0; }
         }
 
-        public string GetMaxVarcode(int projectId, int sequenceNumber)
+        public async Task<string> GetMaxVarcodeAsync(int projectId, int sequenceNumber)
         {
-            string maxVarcode = string.Empty;
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    var result = (from icn in _db.IcnNumbers
-                                  join p in _db.Projects on icn.ProjectId equals p.Id
-                                  where icn.ProjectId == projectId && icn.SeqNo == sequenceNumber
-                                  select icn.VarCode).Max();
-
-                    if (result != null)
-                    {
-                        maxVarcode = result;
-                    }
-                }
+                var result = await (from icn in _db.IcnNumbers
+                                    join p in _db.Projects on icn.ProjectId equals p.Id
+                                    where icn.ProjectId == projectId && icn.SeqNo == sequenceNumber
+                                    select icn.VarCode).MaxAsync();
+                return result ?? string.Empty;
             }
-            catch (Exception ex)
-            {
-                //
-            }
-            return maxVarcode;
+            catch { return string.Empty; }
         }
 
-        public int GetMaxIssueNo(int projectId, int sequenceNumber, string varCode)
+        public async Task<int> GetMaxIssueNoAsync(int projectId, int sequenceNumber, string varCode)
         {
-            int maxIssueNo = 0;
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    var result = (from icn in _db.IcnNumbers
-                                  join p in _db.Projects on icn.ProjectId equals p.Id
-                                  where icn.ProjectId == projectId && icn.SeqNo == sequenceNumber && icn.VarCode.Equals(varCode)
-                                  select icn.IssueNo).Max();
-
-                    if (result != null)
-                    {
-                        maxIssueNo = result;
-                    }
-                }
+                var result = await (from icn in _db.IcnNumbers
+                                    join p in _db.Projects on icn.ProjectId equals p.Id
+                                    where icn.ProjectId == projectId && icn.SeqNo == sequenceNumber && icn.VarCode.Equals(varCode)
+                                    select icn.IssueNo).MaxAsync();
+                return result ?? 0;
             }
-            catch (Exception ex)
-            {
-                //
-            }
-            return maxIssueNo;
+            catch { return 0; }
         }
 
-        public List<int> GetSequenceNumbers(int projectId)
+        public async Task<List<int>> GetSequenceNumbersAsync(int projectId)
         {
             List<int> sequenceNumbers = new List<int>();
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    var result = (from icn in _db.IcnNumbers
-                                  join p in _db.Projects on icn.ProjectId equals p.Id
-                                  where icn.ProjectId == projectId
-                                  select new { icn.SeqNo }).ToList();
-                    foreach (var obj in result)
-                    {
-                        if (!sequenceNumbers.Contains(obj.SeqNo))
-                        {
-                            sequenceNumbers.Add(obj.SeqNo);
-                        }
-                    }
-                }
+                var result = await (from icn in _db.IcnNumbers
+                                    join p in _db.Projects on icn.ProjectId equals p.Id
+                                    where icn.ProjectId == projectId
+                                    select icn.SeqNo).Distinct().ToListAsync();
+                sequenceNumbers = result;
             }
-            catch (Exception ex)
-            {
-                //
-            }
+            catch { }
             return sequenceNumbers;
         }
 
-        public List<string> GetVarcodes(int projectId, int sequenceNumber)
+        public async Task<List<string>> GetVarcodesAsync(int projectId, int sequenceNumber)
         {
             List<string> varCodes = new List<string>();
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    var result = (from icn in _db.IcnNumbers
-                                  join p in _db.Projects on icn.ProjectId equals p.Id
-                                  where icn.ProjectId == projectId && icn.SeqNo == sequenceNumber
-                                  select new { icn.VarCode }).ToList();
-                    foreach (var obj in result)
-                    {
-                        if (!varCodes.Contains(obj.VarCode))
-                        {
-                            varCodes.Add(obj.VarCode);
-                        }
-                    }
-                }
+                var result = await (from icn in _db.IcnNumbers
+                                    join p in _db.Projects on icn.ProjectId equals p.Id
+                                    where icn.ProjectId == projectId && icn.SeqNo == sequenceNumber
+                                    select icn.VarCode).Distinct().ToListAsync();
+                varCodes = result;
             }
-            catch (Exception ex)
-            {
-                //
-            }
+            catch { }
             return varCodes;
         }
 
-        public List<CustomICNNumber> ICNNumberByProjectId(int projectid)
+        public async Task<List<CustomICNNumber>> ICNNumberByProjectIdAsync(int projectid)
         {
             List<CustomICNNumber> customICNNumberList = new List<CustomICNNumber>();
             try
             {
-                using (ApplicationDbContext _db = new())
+                var result = await (from icn in _db.IcnNumbers
+                                    join p in _db.Projects on icn.ProjectId equals p.Id
+                                    where icn.ProjectId == projectid
+                                    select new { icn.Id, icn.Number, icn.UpdatedBy, icn.ProjectId, p.Name }).ToListAsync();
+                foreach (var obj in result)
                 {
-                    var result = (from icn in _db.IcnNumbers
-                                  join  p in _db.Projects on icn.ProjectId equals p.Id
-                                  where icn.ProjectId == projectid
-                                  select new { icn.Id,icn.Number,icn.UpdatedBy,icn.ProjectId,p.Name }).ToList();
-                    foreach (var obj in result)
+                    customICNNumberList.Add(new CustomICNNumber
                     {
-                        customICNNumberList.Add(new CustomICNNumber { Id = obj.Id,
-                            Number = obj.Number,
-                            UpdatedBy=obj.UpdatedBy,
-                            ProjectId=obj.ProjectId,
-                            ProjectName=obj.Name });
-                    }
+                        Id = obj.Id, Number = obj.Number, UpdatedBy = obj.UpdatedBy,
+                        ProjectId = obj.ProjectId, ProjectName = obj.Name
+                    });
                 }
             }
-            catch (Exception ex)
-            {
-                //
-            }
+            catch { }
             return customICNNumberList;
         }
 
-
-        public void GenerateICNNumber(ICNumberGenerationModel icnNumberGenerationModel, string userName)
+        public async Task GenerateICNNumberAsync(ICNumberGenerationModel icnNumberGenerationModel, string userName)
         {
-            using (ApplicationDbContext applicationDbContext = new())
+            Project project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == icnNumberGenerationModel.ProjectId);
+            if (project == null) return;
+
+            StringBuilder icnNumber = new StringBuilder("ICN-");
+            Icnformat icnFormat = await _db.Icnformats.FirstOrDefaultAsync(icn => icn.Id == project.IcnformatId);
+            if (icnFormat == null) return;
+
+            List<ICNFormatField> fieldList = await _db.ICNFormatFields
+                .Where(icn => icn.ICNFormatId == icnFormat.Id).OrderBy(o => o.DisplayOrder).ToListAsync();
+
+            if (fieldList == null || fieldList.Count == 0) return;
+
+            foreach (ICNFormatField field in fieldList)
             {
-                Project project = applicationDbContext.Projects.Where(p => p.Id == icnNumberGenerationModel.ProjectId).FirstOrDefault();
-                if (project != null)
+                ICNFormatMasterField icnField = await _db.ICNFormatMasterFields.FirstOrDefaultAsync(i => i.Id == field.ICNFormatMasterFieldId);
+                if (icnField == null) continue;
+
+                if (icnField.IsForeignKey.HasValue == false)
                 {
-                    StringBuilder icnNumber = new StringBuilder("ICN-");
-
-                    Icnformat icnFormat = applicationDbContext.Icnformats.Where(icn => icn.Id == project.IcnformatId).FirstOrDefault();
-                    if (icnFormat != null)
+                    switch (icnField.Field)
                     {
-                        List<ICNFormatField> fieldList = applicationDbContext.ICNFormatFields.Where(icn => icn.ICNFormatId == icnFormat.Id).OrderBy(o => o.DisplayOrder).ToList();
-                        if (fieldList != null && fieldList.Count > 0)
+                        case "SEC": icnNumber.Append("Y-"); break;
+                        case "ISSUENO": icnNumber.Append("<<ISSUENO>>-"); break;
+                        case "SEQNO": icnNumber.Append("<<SEQNO>>-"); break;
+                        case "VARCODE": icnNumber.Append("<<VARCODE>>-"); break;
+                    }
+                }
+                else if (icnField.IsForeignKey == false)
+                {
+                    var value = project.GetType().GetProperty(icnField.ProjectFieldReference).GetValue(project, null);
+                    icnNumber.Append(value);
+                    icnNumber.Append("-");
+                }
+                else
+                {
+                    var value = project.GetType().GetProperty(icnField.ProjectFieldReference).GetValue(project, null);
+                    StringBuilder query = new StringBuilder("Select ");
+                    query.Append(icnField.ReferenceColumn).Append(" From ").Append(icnField.ReferenceTable)
+                         .Append(" where ").Append(icnField.ReferenceKey).Append(" = ").Append(value);
+
+                    using (SqlConnection connection = new SqlConnection(_db.Database.GetConnectionString()))
+                    {
+                        SqlCommand command = new SqlCommand(query.ToString(), connection);
+                        await connection.OpenAsync();
+                        SqlDataReader reader = await command.ExecuteReaderAsync();
+                        try
                         {
-                            foreach (ICNFormatField field in fieldList)
+                            while (await reader.ReadAsync())
                             {
-                                ICNFormatMasterField icnField = applicationDbContext.ICNFormatMasterFields.Where(i => i.Id == field.ICNFormatMasterFieldId).FirstOrDefault();
-                                if (icnField != null)
-                                {
-                                    if (icnField.IsForeignKey.HasValue == false)
-                                    {
-                                        switch(icnField.Field)
-                                        {
-                                            case "SEC":
-                                                icnNumber.Append("Y");
-                                                icnNumber.Append("-");
-                                                break;
-                                            case "ISSUENO":
-                                                icnNumber.Append("<<ISSUENO>>");
-                                                icnNumber.Append("-");
-                                                break;
-                                            case "SEQNO":
-                                                icnNumber.Append("<<SEQNO>>");
-                                                icnNumber.Append("-");
-                                                break;
-                                            case "VARCODE":
-                                                icnNumber.Append("<<VARCODE>>");
-                                                icnNumber.Append("-");
-                                                break;
-                                        }
-                                    } 
-                                    else if (icnField.IsForeignKey == false)
-                                    {
-                                        var value = project.GetType().GetProperty(icnField.ProjectFieldReference).GetValue(project, null);
-
-                                        icnNumber.Append(value);
-                                        icnNumber.Append("-");
-                                    }
-                                    else
-                                    {
-                                        var value = project.GetType().GetProperty(icnField.ProjectFieldReference).GetValue(project, null);
-
-                                        StringBuilder query = new StringBuilder("Select ");
-                                        query.Append(icnField.ReferenceColumn);
-                                        query.Append(" From ");
-                                        query.Append(icnField.ReferenceTable);
-                                        query.Append(" where ");
-                                        query.Append(icnField.ReferenceKey);
-                                        query.Append(" = ");
-                                        query = query.Append(value);
-
-                                        using (SqlConnection connection = new SqlConnection(applicationDbContext.Database.GetConnectionString()))
-                                        {
-                                            SqlCommand command = new SqlCommand(query.ToString(), connection);
-                                            connection.Open();
-                                            SqlDataReader reader = command.ExecuteReader();
-                                            try
-                                            {
-                                                while (reader.Read())
-                                                {
-                                                    icnNumber.Append(reader[0]);
-                                                    icnNumber.Append("-");
-                                                }
-                                            }
-                                            finally
-                                            {
-                                                reader.Close();
-                                            }
-                                        }
-                                    }
-                                }
+                                icnNumber.Append(reader[0]);
+                                icnNumber.Append("-");
                             }
                         }
-
-                        string newIcnNumber = icnNumber.ToString();
-                        int sequenceNumber = GetMaxSequenceNumber(icnNumberGenerationModel.ProjectId);
-                        string varCode = GetMaxVarcode(icnNumberGenerationModel.ProjectId, sequenceNumber);
-                        int issueNo = GetMaxIssueNo(icnNumberGenerationModel.ProjectId, sequenceNumber,varCode);
-
-                        if (string.IsNullOrWhiteSpace(varCode))
-                        {
-                            varCode = "A";
-                        }
-
-                        if (issueNo <=0 )
-                        {
-                            issueNo = 0;
-                        }
-
-                        switch (icnNumberGenerationModel.GenerateBy)
-                        {
-                            case ICNNumberGenerateBy.SEQUENCENUMBER:
-                                for (int i = 1; i <= icnNumberGenerationModel.Count; i++)
-                                {
-                                    int newSequenceNumber = sequenceNumber + i;
-
-                                    string templateNumber = newIcnNumber.Replace("<<SEQNO>>", $"{newSequenceNumber:00000}");
-                                    templateNumber = templateNumber.Replace("<<VARCODE>>", varCode);
-                                    templateNumber = templateNumber.Replace("<<ISSUENO>>", $"{issueNo:00}");
-
-                                    IcnNumber newIcnNumberRecord = new IcnNumber()
-                                    {
-                                        Number = templateNumber,
-                                        DataModuleId = 0,
-                                        ProjectId = icnNumberGenerationModel.ProjectId,
-                                        //ImagePath
-                                        IsAllocated = true,
-                                        UpdatedBy = userName,
-                                        UpdatedOn = DateTime.UtcNow,
-                                        ICNFormatId = icnFormat.Id,
-                                        SeqNo = newSequenceNumber,
-                                        VarCode = varCode,
-                                        IssueNo = issueNo
-                                    };
-
-                                    applicationDbContext.Add(newIcnNumberRecord);
-                                }
-                                break;
-                            case ICNNumberGenerateBy.VARCODE:
-                                int newSequenceNumberForVarCode = icnNumberGenerationModel.SequenceNumber;
-
-                                var newIssueNo = (from icn in applicationDbContext.IcnNumbers
-                                            join p in applicationDbContext.Projects on icn.ProjectId equals p.Id
-                                            where icn.ProjectId == icnNumberGenerationModel.ProjectId && icn.SeqNo == icnNumberGenerationModel.SequenceNumber
-                                            select icn.IssueNo).FirstOrDefault();
-
-                                varCode = GetMaxVarcode(icnNumberGenerationModel.ProjectId, newSequenceNumberForVarCode);
-                                string newVarCode = ((char)(((int)varCode[0]) + 1)).ToString();
-
-                                string templateNumberForVarcode = newIcnNumber.Replace("<<SEQNO>>", $"{newSequenceNumberForVarCode:00000}");
-                                templateNumberForVarcode = templateNumberForVarcode.Replace("<<VARCODE>>", newVarCode);
-                                templateNumberForVarcode = templateNumberForVarcode.Replace("<<ISSUENO>>", $"{newIssueNo:00}");
-
-                                IcnNumber newIcnNumberRecordForVarcode = new IcnNumber()
-                                {
-                                    Number = templateNumberForVarcode,
-                                    DataModuleId = 0,
-                                    ProjectId = icnNumberGenerationModel.ProjectId,
-                                    //ImagePath
-                                    IsAllocated = true,
-                                    UpdatedBy = userName,
-                                    UpdatedOn = DateTime.UtcNow,
-                                    ICNFormatId = icnFormat.Id,
-                                    SeqNo = newSequenceNumberForVarCode,
-                                    VarCode = newVarCode,
-                                    IssueNo = newIssueNo
-                                };
-
-                                applicationDbContext.Add(newIcnNumberRecordForVarcode);
-                                break;
-                            case ICNNumberGenerateBy.ISSUENO:
-                                int newSequenceNumberForIssueNumber = icnNumberGenerationModel.SequenceNumber;
-                                varCode = icnNumberGenerationModel.VarCode;
-                                issueNo = GetMaxIssueNo(icnNumberGenerationModel.ProjectId, newSequenceNumberForIssueNumber, varCode);
-                                issueNo = issueNo + 1;
-
-                                string templateNumberForIssueNumber = newIcnNumber.Replace("<<SEQNO>>", $"{newSequenceNumberForIssueNumber:00000}");
-                                templateNumberForIssueNumber = templateNumberForIssueNumber.Replace("<<VARCODE>>", varCode);
-                                templateNumberForIssueNumber = templateNumberForIssueNumber.Replace("<<ISSUENO>>", $"{issueNo:00}");
-
-                                IcnNumber newIcnNumberRecordForIssueNumber = new IcnNumber()
-                                {
-                                    Number = templateNumberForIssueNumber,
-                                    DataModuleId = 0,
-                                    ProjectId = icnNumberGenerationModel.ProjectId,
-                                    //ImagePath
-                                    IsAllocated = true,
-                                    UpdatedBy = userName,
-                                    UpdatedOn = DateTime.UtcNow,
-                                    ICNFormatId = icnFormat.Id,
-                                    SeqNo = newSequenceNumberForIssueNumber,
-                                    VarCode = varCode,
-                                    IssueNo = issueNo
-                                };
-                                applicationDbContext.Add(newIcnNumberRecordForIssueNumber);
-                                break;
-                        }
-
-                        applicationDbContext.SaveChanges();
+                        finally { reader.Close(); }
                     }
                 }
             }
-        }
 
+            string newIcnNumber = icnNumber.ToString();
+            int sequenceNumber = await GetMaxSequenceNumberAsync(icnNumberGenerationModel.ProjectId);
+            string varCode = await GetMaxVarcodeAsync(icnNumberGenerationModel.ProjectId, sequenceNumber);
+            int issueNo = await GetMaxIssueNoAsync(icnNumberGenerationModel.ProjectId, sequenceNumber, varCode);
+
+            if (string.IsNullOrWhiteSpace(varCode)) varCode = "A";
+            if (issueNo <= 0) issueNo = 0;
+
+            switch (icnNumberGenerationModel.GenerateBy)
+            {
+                case ICNNumberGenerateBy.SEQUENCENUMBER:
+                    for (int i = 1; i <= icnNumberGenerationModel.Count; i++)
+                    {
+                        int newSequenceNumber = sequenceNumber + i;
+                        string templateNumber = newIcnNumber
+                            .Replace("<<SEQNO>>", $"{newSequenceNumber:00000}")
+                            .Replace("<<VARCODE>>", varCode)
+                            .Replace("<<ISSUENO>>", $"{issueNo:00}");
+                        _db.Add(new IcnNumber
+                        {
+                            Number = templateNumber, DataModuleId = 0, ProjectId = icnNumberGenerationModel.ProjectId,
+                            IsAllocated = true, UpdatedBy = userName, UpdatedOn = DateTime.UtcNow,
+                            ICNFormatId = icnFormat.Id, SeqNo = newSequenceNumber, VarCode = varCode, IssueNo = issueNo
+                        });
+                    }
+                    break;
+                case ICNNumberGenerateBy.VARCODE:
+                    int newSeqForVarCode = icnNumberGenerationModel.SequenceNumber;
+                    var newIssueNo = await (from icn in _db.IcnNumbers
+                                     join p in _db.Projects on icn.ProjectId equals p.Id
+                                     where icn.ProjectId == icnNumberGenerationModel.ProjectId && icn.SeqNo == icnNumberGenerationModel.SequenceNumber
+                                     select icn.IssueNo).FirstOrDefaultAsync();
+                    varCode = await GetMaxVarcodeAsync(icnNumberGenerationModel.ProjectId, newSeqForVarCode);
+                    string newVarCode = ((char)(((int)varCode[0]) + 1)).ToString();
+                    string templateForVarcode = newIcnNumber
+                        .Replace("<<SEQNO>>", $"{newSeqForVarCode:00000}")
+                        .Replace("<<VARCODE>>", newVarCode)
+                        .Replace("<<ISSUENO>>", $"{newIssueNo:00}");
+                    _db.Add(new IcnNumber
+                    {
+                        Number = templateForVarcode, DataModuleId = 0, ProjectId = icnNumberGenerationModel.ProjectId,
+                        IsAllocated = true, UpdatedBy = userName, UpdatedOn = DateTime.UtcNow,
+                        ICNFormatId = icnFormat.Id, SeqNo = newSeqForVarCode, VarCode = newVarCode, IssueNo = newIssueNo
+                    });
+                    break;
+                case ICNNumberGenerateBy.ISSUENO:
+                    int newSeqForIssueNumber = icnNumberGenerationModel.SequenceNumber;
+                    varCode = icnNumberGenerationModel.VarCode;
+                    issueNo = await GetMaxIssueNoAsync(icnNumberGenerationModel.ProjectId, newSeqForIssueNumber, varCode) + 1;
+                    string templateForIssueNumber = newIcnNumber
+                        .Replace("<<SEQNO>>", $"{newSeqForIssueNumber:00000}")
+                        .Replace("<<VARCODE>>", varCode)
+                        .Replace("<<ISSUENO>>", $"{issueNo:00}");
+                    _db.Add(new IcnNumber
+                    {
+                        Number = templateForIssueNumber, DataModuleId = 0, ProjectId = icnNumberGenerationModel.ProjectId,
+                        IsAllocated = true, UpdatedBy = userName, UpdatedOn = DateTime.UtcNow,
+                        ICNFormatId = icnFormat.Id, SeqNo = newSeqForIssueNumber, VarCode = varCode, IssueNo = issueNo
+                    });
+                    break;
+            }
+
+            await _db.SaveChangesAsync();
+        }
     }
+
     public class CustomICNNumber : IcnNumber
     {
         public string ProjectName { set; get; }

@@ -1,8 +1,6 @@
-﻿using CSDBPortal.Business;
-using CSDBPortal.Data;
+using CSDBPortal.Business;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -10,110 +8,147 @@ namespace CSDBPortal.Controllers
 {
     public class AdministrationController : BaseController
     {
-        BaseManager baseManager = new();
-        AdministrationManager administrationManager = new();
-        IServiceProvider serviceProvider;
-        IPasswordHasher<IdentityUser> passwordHasher;
-        UserManager<IdentityUser> userManager;
+        private readonly AdministrationManager _administrationManager;
+        private readonly BaseManager _baseManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AdministrationController(IServiceProvider serviceProvider, IPasswordHasher<IdentityUser> passwordHasher)
+        public AdministrationController(
+            AdministrationManager administrationManager,
+            BaseManager baseManager,
+            UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
-            this.serviceProvider = serviceProvider;
-            this.passwordHasher = passwordHasher;
-            userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            _administrationManager = administrationManager;
+            _baseManager = baseManager;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             try
             {
-                AdministrationManager _administrationManager = new();
-                return View(_administrationManager.GetAdministrationDetailInfo());
+                return View(await _administrationManager.GetAdministrationDetailInfoAsync());
             }
-            catch (Exception ex)
-            {
-                //todo
-            }
-            // todo; need to redirect error page or message
+            catch { }
             return View();
         }
 
-        public JsonResult GetFeature(string roleId)
+        public async Task<JsonResult> GetFeature(string roleId)
         {
             List<string> features = new List<string>();
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            if (roleManager != null)
+            IdentityRole role = await _roleManager.FindByIdAsync(roleId);
+            if (role != null)
             {
-                IdentityRole role = roleManager.Roles.Where(r => r.Id == roleId).FirstOrDefault();
-                if (role != null)
-                {
-                    var claims = roleManager.GetClaimsAsync(role).Result;
-                    foreach(Claim claim in claims)
-                    {
-                        features.Add(claim.Value);
-                    }
-                }
+                var claims = await _roleManager.GetClaimsAsync(role);
+                foreach (Claim claim in claims)
+                    features.Add(claim.Value);
             }
-
             return Json(features);
         }
-        public JsonResult CreateRole(IdentityRole role, List<string> features)
-        {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+        public async Task<JsonResult> CreateRole(IdentityRole role, List<string> features)
+        {
             if (string.IsNullOrWhiteSpace(role.Id) || string.Compare(role.Id, "0") == 0)
             {
-                var recordCount = administrationManager.CheckDuplicateRole(role);
-                if (recordCount > 0)
-                {
-                    return Json("Duplicate");
-                }
+                var recordCount = await _administrationManager.CheckDuplicateRoleAsync(role);
+                if (recordCount > 0) return Json("Duplicate");
 
                 var newRole = new IdentityRole(role.Name);
-                var roleCreationResult = roleManager.CreateAsync(newRole).Result;
+                var roleCreationResult = await _roleManager.CreateAsync(newRole);
                 if (roleCreationResult.Succeeded)
                 {
                     foreach (var feature in features)
-                    {
-                        var claimAddedResult = roleManager.AddClaimAsync(newRole, new Claim("Permission", feature)).Result;
-                    }
+                        await _roleManager.AddClaimAsync(newRole, new Claim("Permission", feature));
                 }
-
                 return Json(roleCreationResult);
             }
             else
             {
-                IdentityRole identityRole = roleManager.Roles.Where(r => r.Id == role.Id).FirstOrDefault();
+                IdentityRole identityRole = await _roleManager.FindByIdAsync(role.Id);
                 identityRole.Name = role.Name;
 
-                var claims = roleManager.GetClaimsAsync(identityRole).Result;
+                var claims = await _roleManager.GetClaimsAsync(identityRole);
                 foreach (Claim claim in claims)
                 {
-                    if (features.Contains(claim.Value) == false)
-                    {
-                        var result = roleManager.RemoveClaimAsync(identityRole, claim).Result;
-                    }
+                    if (!features.Contains(claim.Value))
+                        await _roleManager.RemoveClaimAsync(identityRole, claim);
                 }
-
                 foreach (string feature in features)
                 {
-                    var claim = claims.Where(c => c.Value == feature).FirstOrDefault();
+                    var claim = claims.FirstOrDefault(c => c.Value == feature);
                     if (claim == null)
-                    {
-                        var result = roleManager.AddClaimAsync(identityRole, new Claim("Permission", feature)).Result;
-                    }
+                        await _roleManager.AddClaimAsync(identityRole, new Claim("Permission", feature));
                 }
-
-                return Json(roleManager.UpdateAsync(identityRole).Result);
+                return Json(await _roleManager.UpdateAsync(identityRole));
             }
         }
 
-        public JsonResult DeleteRole(string id)
+        public async Task<JsonResult> DeleteRole(string id)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            IdentityRole identityRole = await _roleManager.FindByIdAsync(id);
+            return Json(await _roleManager.DeleteAsync(identityRole));
+        }
 
-            IdentityRole identityRole = roleManager.Roles.Where(r => r.Id == id).FirstOrDefault();
-            return Json(roleManager.DeleteAsync(identityRole).Result);
+        public async Task<JsonResult> GetRoles(string userId)
+        {
+            IList<string> roles = new List<string>();
+            var userFromDB = await _userManager.FindByIdAsync(userId);
+            if (userFromDB != null)
+                roles = await _userManager.GetRolesAsync(userFromDB);
+            return Json(roles);
+        }
+
+        public async Task<JsonResult> CreateUser(IdentityUser user, IList<string> roles, bool update)
+        {
+            IdentityResult result;
+
+            if (!update)
+            {
+                var userFromDB = await _userManager.FindByNameAsync(user.UserName);
+                if (userFromDB != null)
+                {
+                    result = IdentityResult.Failed(new IdentityError { Code = "Duplicate", Description = "User with same name already exists!" });
+                }
+                else
+                {
+                    string password = GetPassword(Request.Headers["Authorization"][0]);
+                    result = await _userManager.CreateAsync(user, password);
+                    if (result.Succeeded)
+                    {
+                        foreach (string role in roles)
+                            await _userManager.AddToRoleAsync(user, role);
+                    }
+                }
+            }
+            else
+            {
+                var userFromDB = await _userManager.FindByIdAsync(user.Id);
+                userFromDB.UserName = user.UserName;
+                userFromDB.Email = user.Email;
+                userFromDB.PhoneNumber = user.PhoneNumber;
+                result = await _userManager.UpdateAsync(userFromDB);
+
+                IList<string> currentRoles = await _userManager.GetRolesAsync(userFromDB);
+                foreach (string role in currentRoles)
+                {
+                    if (!roles.Contains(role))
+                        await _userManager.RemoveFromRoleAsync(userFromDB, role);
+                }
+                foreach (string role in roles)
+                {
+                    if (!currentRoles.Contains(role))
+                        await _userManager.AddToRoleAsync(userFromDB, role);
+                }
+            }
+            return Json(result);
+        }
+
+        public async Task<JsonResult> DeleteUser(string id)
+        {
+            var userFromDB = await _userManager.FindByIdAsync(id);
+            return Json(await _userManager.DeleteAsync(userFromDB));
         }
 
         private string GetPassword(string header)
@@ -123,80 +158,6 @@ namespace CSDBPortal.Controllers
             string decodedTxt = System.Text.Encoding.UTF8.GetString(decodedBytes);
             string[] content2 = decodedTxt.Split(':');
             return content2[1];
-        }
-
-        public JsonResult GetRoles(string userId)
-        {
-            IList<string> roles = new List<string>();
-            var userFromDB = userManager.Users.Where(u => u.Id == userId).FirstOrDefault();
-            if (userFromDB != null)
-            {
-                roles = userManager.GetRolesAsync(userFromDB).Result;
-            }
-
-            return Json(roles);
-        }
-
-        public JsonResult CreateUser(IdentityUser user, IList<string> roles, bool update)
-        {
-            IdentityResult result;
-
-            if (update == false)
-            {
-                var userFromDB = userManager.Users.Where(u => u.UserName == user.UserName).FirstOrDefault();
-
-                if (userFromDB != null)
-                {
-                    result = IdentityResult.Failed(new IdentityError() { Code = "Duplicate", Description = "User with same name already exists!" });
-                }
-                else
-                {
-                    string password = GetPassword(Request.Headers["Authorization"][0]);
-                    result = userManager.CreateAsync(user, password).Result;
-                    if (result.Succeeded)
-                    {
-                        foreach (string role in roles)
-                        {
-                            IdentityResult roleResult = userManager.AddToRoleAsync(user, role).Result;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                var userFromDB = userManager.Users.Where(u => u.Id == user.Id).FirstOrDefault();
-                userFromDB.UserName = user.UserName;
-                userFromDB.Email = user.Email;
-                userFromDB.PhoneNumber = user.PhoneNumber;
-
-                result = userManager.UpdateAsync(userFromDB).Result;
-
-                IList<string> currentRoles = userManager.GetRolesAsync(userFromDB).Result;
-                foreach(string role in currentRoles)
-                {
-                    if (roles.Contains(role) == false)
-                    {
-                        IdentityResult roleResult = userManager.RemoveFromRoleAsync(userFromDB, role).Result;
-                    }
-                }
-
-                foreach(string role in roles)
-                {
-                    if (currentRoles.Contains(role) == false)
-                    {
-                        IdentityResult roleResult = userManager.AddToRoleAsync(userFromDB, role).Result;
-                    }
-                }
-            }
-
-            return Json(result);
-        }
-
-        public JsonResult DeleteUser(string id)
-        {
-            var userFromDB = userManager.Users.Where(u => u.Id == id).FirstOrDefault();
-
-            return Json(userManager.DeleteAsync(userFromDB).Result);
         }
     }
 }

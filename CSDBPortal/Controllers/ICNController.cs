@@ -1,4 +1,4 @@
-﻿using CSDBPortal.Business;
+using CSDBPortal.Business;
 using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -7,49 +7,41 @@ namespace CSDBPortal.Controllers
 {
     public class ICNController : BaseController
     {
-        ICNManager _iCNManager = new();
-        BaseManager _baseManager = new();
-        public IActionResult Index()
+        private readonly ICNManager _iCNManager;
+        private readonly BaseManager _baseManager;
+
+        public ICNController(ICNManager iCNManager, BaseManager baseManager)
         {
-            return View();
+            _iCNManager = iCNManager;
+            _baseManager = baseManager;
         }
 
-        public JsonResult GetSequenceNumber(int projectId)
-        {
-            var result = _iCNManager.GetSequenceNumbers(projectId);
-            return Json(result);
-        }
+        public IActionResult Index() => View();
 
-        public JsonResult GetVarcodes(int projectId, int sequenceNumber)
-        {
-            var result = _iCNManager.GetVarcodes(projectId, sequenceNumber);
-            return Json(result);
-        }
-        public JsonResult GetProjects()
+        public async Task<JsonResult> GetSequenceNumber(int projectId)
+            => Json(await _iCNManager.GetSequenceNumbersAsync(projectId));
+
+        public async Task<JsonResult> GetVarcodes(int projectId, int sequenceNumber)
+            => Json(await _iCNManager.GetVarcodesAsync(projectId, sequenceNumber));
+
+        public async Task<JsonResult> GetProjects()
         {
             try
             {
-              
-                var result = _iCNManager.GetProjects();
+                var result = await _iCNManager.GetProjectsAsync();
                 return Json(result.ProjectList);
             }
-            catch (Exception ex)
-            {
-                //
-            }
+            catch { }
             return Json(null);
         }
 
-        public JsonResult ICNNumberByProjectId(int projectId)
-        {
-            return Json(_iCNManager.ICNNumberByProjectId(projectId));
-        }
+        public async Task<JsonResult> ICNNumberByProjectId(int projectId)
+            => Json(await _iCNManager.ICNNumberByProjectIdAsync(projectId));
 
-
-        public JsonResult CreateICNNumber(ICNumberGenerationModel icnNumberGenerationModel)
+        public async Task<JsonResult> CreateICNNumber(ICNumberGenerationModel icnNumberGenerationModel)
         {
-            _iCNManager.GenerateICNNumber(icnNumberGenerationModel, User.Identity.Name);
+            await _iCNManager.GenerateICNNumberAsync(icnNumberGenerationModel, User.Identity.Name);
             return Json(true);
-        }       
+        }
     }
 }

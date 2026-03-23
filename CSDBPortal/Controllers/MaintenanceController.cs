@@ -1,12 +1,10 @@
-﻿using CSDBPortal.Business;
+using CSDBPortal.Business;
 using CSDBPortal.Data;
 using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic.FileIO;
-using System.Data;
-using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
@@ -16,164 +14,131 @@ namespace CSDBPortal.Controllers
 {
     public class MaintenanceController : BaseController
     {
-        private readonly IWebHostEnvironment appEnvironment;
+        private readonly ApplicationDbContext _db;
+        private readonly IWebHostEnvironment _appEnvironment;
+        private readonly BaseManager _baseManager;
+        private readonly MaintenanceManager _maintenanceManager;
 
-        BaseManager _baseManager = new();
-        MaintenanceManager maintenancesManager = new();
-
-        public MaintenanceController(IWebHostEnvironment appEnvironmentvalue)
+        public MaintenanceController(
+            ApplicationDbContext db,
+            IWebHostEnvironment appEnvironment,
+            BaseManager baseManager,
+            MaintenanceManager maintenanceManager)
         {
-            this.appEnvironment = appEnvironmentvalue;
+            _db = db;
+            _appEnvironment = appEnvironment;
+            _baseManager = baseManager;
+            _maintenanceManager = maintenanceManager;
         }
 
-        //[Authorize]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             try
             {
-                MaintenanceManager _maintenanceManager = new();
-                return View(_maintenanceManager.GetMaintenanceDetailInfo());
+                return View(await _maintenanceManager.GetMaintenanceDetailInfoAsync());
             }
-            catch (Exception ex)
-            {
-                //todo
-            }
-            // todo; need to redirect error page or message
+            catch { }
             return View();
         }
 
-        public JsonResult CreateLocationCode(LocationCode locationCode)
+        public async Task<JsonResult> CreateLocationCode(LocationCode locationCode)
         {
-            // need to assign login user email here
             locationCode.CreatedBy = User.Identity.Name;
             locationCode.UpdatedOn = DateTime.UtcNow;
-            string mode = string.Empty;
+            string mode;
             if (locationCode.Id > 0)
             {
                 mode = "Edit";
             }
             else
             {
-                var recordCount = maintenancesManager.CheckLocationCode(locationCode);
-                if (recordCount > 0)
-                {
+                if (await _maintenanceManager.CheckLocationCodeAsync(locationCode) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
             }
-            return Json(_baseManager.CreateOrUpdateRecord(locationCode, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(locationCode, mode));
         }
 
-        public JsonResult DeleteLocationCode(int id)
+        public async Task<JsonResult> DeleteLocationCode(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var locationo = applicationContext.LocationCodes.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(locationo, ""));
-            }
+            var locationo = await _db.LocationCodes.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(locationo, ""));
         }
 
-        public JsonResult CreateLocationCodeSet(LocationCodeSet locationCodeSet)
+        public async Task<JsonResult> CreateLocationCodeSet(LocationCodeSet locationCodeSet)
         {
-            // need to assign login user email here
             locationCodeSet.CreatedBy = User.Identity.Name;
             locationCodeSet.UpdatedOn = DateTime.UtcNow;
-            string mode = string.Empty;
+            string mode;
             if (locationCodeSet.Id > 0)
             {
                 mode = "Edit";
             }
             else
             {
-                var recordCount = maintenancesManager.CheckLocationCodeSet(locationCodeSet);
-                if (recordCount > 0)
-                {
+                if (await _maintenanceManager.CheckLocationCodeSetAsync(locationCodeSet) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
             }
-            return Json(_baseManager.CreateOrUpdateRecord(locationCodeSet, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(locationCodeSet, mode));
         }
 
-        public JsonResult DeleteLocationCodeSet(int id)
+        public async Task<JsonResult> DeleteLocationCodeSet(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var locationo = applicationContext.LocationCodeSets.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(locationo, ""));
-            }
+            var locationo = await _db.LocationCodeSets.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(locationo, ""));
         }
 
-        public JsonResult CreateRPC(ResponsiblePartnerCode rpc)
+        public async Task<JsonResult> CreateRPC(ResponsiblePartnerCode rpc)
         {
-            // need to assign login user email here
-
-            string mode = string.Empty;
+            string mode;
             if (rpc.Id > 0)
             {
                 mode = "Edit";
             }
             else
             {
-                var recordCount = maintenancesManager.CheckRPC(rpc);
-                if (recordCount > 0)
-                {
+                if (await _maintenanceManager.CheckRPCAsync(rpc) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
             }
-            return Json(_baseManager.CreateOrUpdateRecord(rpc, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(rpc, mode));
         }
 
-        public JsonResult DeleteRPC(int id)
+        public async Task<JsonResult> DeleteRPC(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var rpc = applicationContext.ResponsiblePartnerCodes.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(rpc, ""));
-            }
+            var rpc = await _db.ResponsiblePartnerCodes.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(rpc, ""));
         }
 
-
-
-        public JsonResult CreateDataTypeModule(DataModuleType dataModuleType)
+        public async Task<JsonResult> CreateDataTypeModule(DataModuleType dataModuleType)
         {
-            // need to assign login user email here
             dataModuleType.CreatedBy = User.Identity.Name;
-            string mode = string.Empty;
+            string mode;
             if (dataModuleType.Id > 0)
             {
                 mode = "Edit";
             }
             else
             {
-                var recordCount = maintenancesManager.CheckDataModuleType(dataModuleType);
-                if (recordCount > 0)
-                {
+                if (await _maintenanceManager.CheckDataModuleTypeAsync(dataModuleType) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
             }
-            return Json(_baseManager.CreateOrUpdateRecord(dataModuleType, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(dataModuleType, mode));
         }
 
-        public JsonResult DeleteDataTypeModule(int id)
+        public async Task<JsonResult> DeleteDataTypeModule(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var dataModuleType = applicationContext.DataModuleTypes.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(dataModuleType, ""));
-            }
+            var dataModuleType = await _db.DataModuleTypes.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(dataModuleType, ""));
         }
 
-        public JsonResult CreateProject(Project project)
+        public async Task<JsonResult> CreateProject(Project project)
         {
             project.CreatedBy = User.Identity.Name;
-
-            string mode = string.Empty;
-            string brexTemplate = string.Empty;
-
-            var recordCount = maintenancesManager.CheckProject(project, out brexTemplate);
+            string mode;
+            var (recordCount, brexTemplate) = await _maintenanceManager.CheckProjectAsync(project);
 
             if (project.Id > 0)
             {
@@ -186,47 +151,35 @@ namespace CSDBPortal.Controllers
                 mode = "Add";
                 project.CreatedBy = User.Identity.Name;
                 project.CreatedDate = DateTime.UtcNow;
-
-                if (recordCount > 0)
-                {
-                    return Json("Duplicate");
-                }
+                if (recordCount > 0) return Json("Duplicate");
             }
 
             if (string.IsNullOrEmpty(brexTemplate))
             {
-                using (ApplicationDbContext applicationContext = new())
-                {
-                    IssueNo issueNo = applicationContext.IssueNos.Where(i => i.Id == project.IssueNoId).FirstOrDefault();
-                    project.BrexTemplate = issueNo.BrexTemplate;
-                }
+                IssueNo issueNo = await _db.IssueNos.FirstOrDefaultAsync(i => i.Id == project.IssueNoId);
+                project.BrexTemplate = issueNo.BrexTemplate;
             }
             else
             {
                 project.BrexTemplate = brexTemplate;
             }
 
-            bool projectCreated = _baseManager.CreateOrUpdateRecord(project, mode);
-            if (projectCreated == true && mode == "Add")
-            {
-                maintenancesManager.CopySNS(project, User.Identity.Name);
-            }
+            bool projectCreated = await _baseManager.CreateOrUpdateRecordAsync(project, mode);
+            if (projectCreated && mode == "Add")
+                await _maintenanceManager.CopySNSAsync(project, User.Identity.Name);
 
             return Json(projectCreated);
         }
 
-        public JsonResult DeleteProject(int id)
+        public async Task<JsonResult> DeleteProject(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var project = applicationContext.Projects.Where(i => i.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(project, ""));
-            }
+            var project = await _db.Projects.FirstOrDefaultAsync(i => i.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(project, ""));
         }
 
-        public JsonResult CreateSns(StandardNumberingSystem sns)
+        public async Task<JsonResult> CreateSns(StandardNumberingSystem sns)
         {
-            string mode = string.Empty;
+            string mode;
             if (sns.Id > 0)
             {
                 mode = "Edit";
@@ -235,34 +188,29 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                var recordCount = maintenancesManager.CheckSns(sns);
-                if (recordCount > 0)
-                {
+                if (await _maintenanceManager.CheckSnsAsync(sns) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
                 sns.CreatedBy = User.Identity.Name;
                 sns.CreatedOn = DateTime.UtcNow;
             }
-            return Json(_baseManager.CreateOrUpdateRecord(sns, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(sns, mode));
         }
 
-        public JsonResult CreateProjectSns(ProjectStandardNumberingSystem projectSns)
+        public async Task<JsonResult> CreateProjectSns(ProjectStandardNumberingSystem projectSns)
         {
-            using (ApplicationDbContext applicationContext = new())
+            var projectSnsTemp = await _db.ProjectStandardNumberingSystems
+                .FirstOrDefaultAsync(p => p.ProjectId == projectSns.ProjectId && p.Snsid == projectSns.Snsid);
+            if (projectSnsTemp != null)
             {
-                ProjectStandardNumberingSystem projectSnsTemp = applicationContext.ProjectStandardNumberingSystems.Where(p => p.ProjectId == projectSns.ProjectId && p.Snsid == projectSns.Snsid).FirstOrDefault();
-                if (projectSnsTemp != null)
-                {
-                    projectSns.Id = projectSnsTemp.Id;
-                }
-                else
-                {
-                    projectSns.Snsid = applicationContext.ProjectStandardNumberingSystems.Max(p => p.Snsid).Value + 1;
-                }
+                projectSns.Id = projectSnsTemp.Id;
+            }
+            else
+            {
+                projectSns.Snsid = (await _db.ProjectStandardNumberingSystems.MaxAsync(p => p.Snsid)).Value + 1;
             }
 
-            string mode = string.Empty;
+            string mode;
             if (projectSns.Id > 0)
             {
                 mode = "Edit";
@@ -271,48 +219,37 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                var recordCount = maintenancesManager.CheckProjectSns(projectSns);
-                if (recordCount > 0)
-                {
+                if (await _maintenanceManager.CheckProjectSnsAsync(projectSns) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
                 projectSns.CreatedBy = User.Identity.Name;
                 projectSns.CreatedOn = DateTime.UtcNow;
             }
-            return Json(_baseManager.CreateOrUpdateRecord(projectSns, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(projectSns, mode));
         }
 
-        public JsonResult DeleteSns(int id)
+        public async Task<JsonResult> DeleteSns(int id)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var locationo = applicationContext.StandardNumberingSystems.Where(s => s.Id == id).FirstOrDefault();
-                return Json(_baseManager.DeleteRecord(locationo, ""));
-            }
+            var sns = await _db.StandardNumberingSystems.FirstOrDefaultAsync(s => s.Id == id);
+            return Json(await _baseManager.DeleteRecordAsync(sns, ""));
         }
 
-        public JsonResult CreateDMC(DataModuleCode dataModuleCode)
+        public async Task<JsonResult> CreateDMC(DataModuleCode dataModuleCode)
         {
-            string mode = string.Empty;
+            string mode;
+            InformationCode informationCode = await _db.InformationCodes.FirstOrDefaultAsync(i => i.Id == dataModuleCode.InformationCodeId);
+            LocationCode locationCode = await _db.LocationCodes.FirstOrDefaultAsync(i => i.Id == dataModuleCode.LocationCodeId);
 
-            using (ApplicationDbContext applicationContext = new())
-            {
-                InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Id == dataModuleCode.InformationCodeId).FirstOrDefault();
-                LocationCode locationCode = applicationContext.LocationCodes.Where(i => i.Id == dataModuleCode.LocationCodeId).FirstOrDefault();
-
-                string dcValue = string.IsNullOrEmpty(dataModuleCode.DC) ? "-" : "-" + dataModuleCode.DC;
-
-                dataModuleCode.DMC = @"DMC-"
-                                    + dataModuleCode.ModelIdentification + "-"
-                                    + dataModuleCode.SDC + "-"
-                                    + dataModuleCode.StandardNumberingSystem
-                                    + dcValue
-                                    + dataModuleCode.DCV + "-"
-                                    + informationCode.Code
-                                    + dataModuleCode.ICV + "-"
-                                    + locationCode.Code;
-            }
+            string dcValue = string.IsNullOrEmpty(dataModuleCode.DC) ? "-" : "-" + dataModuleCode.DC;
+            dataModuleCode.DMC = @"DMC-"
+                                + dataModuleCode.ModelIdentification + "-"
+                                + dataModuleCode.SDC + "-"
+                                + dataModuleCode.StandardNumberingSystem
+                                + dcValue
+                                + dataModuleCode.DCV + "-"
+                                + informationCode.Code
+                                + dataModuleCode.ICV + "-"
+                                + locationCode.Code;
 
             if (dataModuleCode.Id > 0)
             {
@@ -322,668 +259,321 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                var recordCount = maintenancesManager.CheckDMC(dataModuleCode);
-                if (recordCount > 0)
-                {
+                if (await _maintenanceManager.CheckDMCAsync(dataModuleCode) > 0)
                     return Json("Duplicate");
-                }
                 mode = "Add";
                 dataModuleCode.CreatedBy = User.Identity.Name;
                 dataModuleCode.CreatedOn = DateTime.UtcNow;
             }
-
-            return Json(_baseManager.CreateOrUpdateRecord(dataModuleCode, mode));
+            return Json(await _baseManager.CreateOrUpdateRecordAsync(dataModuleCode, mode));
         }
 
-        public JsonResult DeleteDMC(int dmcId)
+        public async Task<JsonResult> DeleteDMC(int dmcId)
         {
-            using (ApplicationDbContext applicationContext = new())
+            var dataModuleCode = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
+            if (dataModuleCode != null)
+                dataModuleCode.IsDeleted = true;
+            return Json(await _db.SaveChangesAsync());
+        }
+
+        public async Task<JsonResult> SaveBrexRule(BrexRule brexRule)
+        {
+            var brexRuleFromDb = await _db.BrexRules.FirstOrDefaultAsync(b => b.Id == brexRule.Id);
+            if (brexRuleFromDb != null)
             {
-                var dataModuleCode = applicationContext.DataModuleCodes.Where(d => d.Id == dmcId).FirstOrDefault();
-                if (dataModuleCode != null)
-                {
-                    dataModuleCode.IsDeleted = true;
-                }
-
-                return Json(applicationContext.SaveChanges());
+                brexRuleFromDb.Group = brexRule.Group;
+                brexRuleFromDb.RuleName = brexRule.RuleName;
+                brexRuleFromDb.XmlTag = brexRule.XmlTag;
+                brexRuleFromDb.SubXmlTag = brexRule.SubXmlTag;
+                brexRuleFromDb.Type = brexRule.Type;
+                brexRuleFromDb.Length = brexRule.Length;
+                brexRuleFromDb.RangeValue = brexRule.RangeValue;
+                brexRuleFromDb.MatchValue = brexRule.MatchValue;
+                brexRuleFromDb.AttributeName = brexRule.AttributeName;
+                brexRuleFromDb.UpdatedBy = User.Identity.Name;
+                brexRuleFromDb.UpdatedOn = DateTime.UtcNow;
             }
+            return Json(await _db.SaveChangesAsync());
         }
 
-        public JsonResult SaveBrexRule(BrexRule brexRule)
-        {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var brexRuleFromDb = applicationContext.BrexRules.Where(b => b.Id == brexRule.Id).FirstOrDefault();
-                if (brexRuleFromDb != null)
-                {
-                    brexRuleFromDb.Group = brexRule.Group;
-                    brexRuleFromDb.RuleName = brexRule.RuleName;
-                    brexRuleFromDb.XmlTag = brexRule.XmlTag;
-                    brexRuleFromDb.SubXmlTag = brexRule.SubXmlTag;
-                    brexRuleFromDb.Type = brexRule.Type;
-                    brexRuleFromDb.Length = brexRule.Length;
-                    brexRuleFromDb.RangeValue = brexRule.RangeValue;
-                    brexRuleFromDb.MatchValue = brexRule.MatchValue;
-                    brexRuleFromDb.AttributeName = brexRule.AttributeName;
-                    brexRuleFromDb.UpdatedBy = User.Identity.Name;
-                    brexRuleFromDb.UpdatedOn = DateTime.UtcNow;
-                }
+        public async Task<JsonResult> GetBrexRules(int projectId)
+            => Json(await _maintenanceManager.GetBrexRulesAsync(projectId));
 
-                return Json(applicationContext.SaveChanges());
-            }
+        public async Task<JsonResult> GetProjectNavigationTree(int projectId)
+            => Json(await _maintenanceManager.GetProjectNavigationTreeAsync(projectId));
+
+        public async Task<JsonResult> SaveProjectNavigationTree(int projectId, string navigationTreeDataJson)
+        {
+            List<NavigationTreeData>? navigationTreeData = JsonSerializer.Deserialize<List<NavigationTreeData>>(navigationTreeDataJson);
+            await _maintenanceManager.SaveProjectNavigationTreeAsync(projectId, navigationTreeData.ToArray(), User.Identity.Name);
+            return Json(await _maintenanceManager.GetProjectNavigationTreeAsync(projectId));
         }
 
-        public JsonResult GetBrexRules(int projectId)
+        public async Task<JsonResult> GetProjectNavigation(int projectId)
+            => Json(await _maintenanceManager.GetProjectNavigationAsync(projectId));
+
+        public async Task<JsonResult> GetProjectSns(int projectId)
+            => Json(await _maintenanceManager.GetProjectSnsAsync(projectId));
+
+        public async Task<JsonResult> GetDataModuleCodes(string dmc, int projectId)
+            => Json(await _maintenanceManager.GetDataModuleCodesAsync(projectId));
+
+        public async Task<JsonResult> GetLocationCodes(int projectId)
+            => Json(await _maintenanceManager.GetLocationCodesAsync(projectId));
+
+        public async Task<JsonResult> GetInformationCodes(int projectId)
+            => Json(await _maintenanceManager.GetInformationCodesAsync(projectId));
+
+        public async Task<JsonResult> GetProject(int projectId)
+            => Json(await _maintenanceManager.GetProjectAsync(projectId));
+
+        public async Task<JsonResult> GetSnsCode(int snsId, int projectId)
+            => Json(await _maintenanceManager.GetSnsCodeAsync(snsId, projectId));
+
+        public async Task<JsonResult> GetIssueTypeFiles(int projectId)
         {
-            return Json(maintenancesManager.GetBrexRules(projectId));
-        }
-
-        public JsonResult GetProjectNavigationTree(int projectId)
-        {
-            return Json(maintenancesManager.GetProjectNavigationTree(projectId));
-        }
-
-        public JsonResult SaveProjectNavigationTree(int projectId, string navigationTreeDataJson)
-        {
-            List<NavigationTreeData>? navigationTreeData =
-                JsonSerializer.Deserialize<List<NavigationTreeData>>(navigationTreeDataJson);
-            maintenancesManager.SaveProjectNavigationTree(projectId, navigationTreeData.ToArray(), User.Identity.Name);
-
-            return Json(maintenancesManager.GetProjectNavigationTree(projectId));
-        }
-
-        public JsonResult GetProjectNavigation(int projectId)
-        {
-            return Json(maintenancesManager.GetProjectNavigation(projectId));
-        }
-
-        public JsonResult GetProjectSns(int projectId)
-        {
-            return Json(maintenancesManager.GetProjectSns(projectId));
-        }
-
-        public JsonResult GetDataModuleCodes(string dmc, int projectId)
-        {
-            return Json(maintenancesManager.GetDataModuleCodes(projectId));
-        }
-
-        public JsonResult GetLocationCodes(int projectId)
-        {
-            return Json(maintenancesManager.GetLocationCodes(projectId));
-        }
-
-        public JsonResult GetInformationCodes(int projectId)
-        {
-            return Json(maintenancesManager.GetInformationCodes(projectId));
-        }
-
-        public JsonResult GetProject(int projectId)
-        {
-            return Json(maintenancesManager.GetProject(projectId));
-        }
-
-        public JsonResult GetSnsCode(int snsId, int projectId)
-        {
-            return Json(maintenancesManager.GetSnsCode(snsId, projectId));
-        }
-
-        public JsonResult GetIssueTypeFiles(int projectId)
-        {
-            List<IssueTypeFile> issues = new List<IssueTypeFile>();
-
-            using (ApplicationDbContext applicationContext = new())
-            {
-                var project = applicationContext.Projects.Where(p => p.Id == projectId).FirstOrDefault();
-                if (project != null)
-                {
-                    issues = applicationContext.IssueTypeFiles.Where(p => p.IssueNoId == project.IssueNoId).ToList();
-                }
-            }
-
+            var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+            if (project == null) return Json(new List<IssueTypeFile>());
+            var issues = await _db.IssueTypeFiles.Where(p => p.IssueNoId == project.IssueNoId).ToListAsync();
             return Json(issues);
         }
 
         public FileResult DownloadDMCTemplate()
         {
             StringBuilder csvHeader = new StringBuilder();
-            csvHeader.Append("Project Name,");
-            csvHeader.Append("Tech Name,");
-            csvHeader.Append("Info Name,");
-            csvHeader.Append("Schema File,");
-            csvHeader.Append("SNS,");
-            csvHeader.Append("DC,");
-            csvHeader.Append("DCV,");
-            csvHeader.Append("Information Code,");
-            csvHeader.Append("ICV,");
-            csvHeader.Append("Location Code");
-
+            csvHeader.Append("Project Name,Tech Name,Info Name,Schema File,SNS,DC,DCV,Information Code,ICV,Location Code");
             return File(Encoding.UTF8.GetBytes(csvHeader.ToString()), "text/plain", "DMCTemplate.csv");
-
-            //using (var writer = new StreamWriter("DMCTemplate.csv"))
-            //using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            //{
-            //    csv.WriteRecords(myPersonObjects);
-            //}
-
-            //File.WriteAllText(filePath, csv.ToString());
-
-
-            //DataTable dt = new DataTable("Grid");
-            //dt.Columns.AddRange(new DataColumn[10] 
-            //                        {
-            //                            new DataColumn("Project Name"),
-            //                            new DataColumn("Tech Name"),
-            //                            new DataColumn("Info Name"),
-            //                            new DataColumn("Schema File"),
-            //                            new DataColumn("SNS"),
-            //                            new DataColumn("DC"),
-            //                            new DataColumn("DCV"),
-            //                            new DataColumn("Information Code"),
-            //                            new DataColumn("ICV"),
-            //                            new DataColumn("Location Code"),
-            //                        });
-
-            //using (XLWorkbook wb = new XLWorkbook())
-            //{
-            //    wb.Worksheets.Add(dt);
-            //    using (MemoryStream stream = new MemoryStream())
-            //    {
-            //        wb.SaveAs(stream);
-            //        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "DMC.xlsx");
-            //    }
-            //}
         }
 
         [HttpPost]
-        public IActionResult UploadDMC()
+        public async Task<IActionResult> UploadDMC()
         {
             List<string> successfulIds = new List<string>();
             List<string> failedIds = new List<string>();
 
-            using (ApplicationDbContext context = new ApplicationDbContext())
+            foreach (IFormFile file in Request.Form.Files)
             {
-                foreach (IFormFile file in Request.Form.Files)
+                using (TextFieldParser parser = new TextFieldParser(file.OpenReadStream()))
                 {
-                    using (TextFieldParser parser = new TextFieldParser(file.OpenReadStream()))
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(",");
+                    bool isHeaderCompleted = false;
+                    while (!parser.EndOfData)
                     {
-                        parser.TextFieldType = FieldType.Delimited;
-                        parser.SetDelimiters(",");
-                        bool isHeaderCompleted = false;
-                        while (!parser.EndOfData)
+                        string[] fields = parser.ReadFields();
+                        if (isHeaderCompleted)
                         {
-                            string[] fields = parser.ReadFields();
-                            if (isHeaderCompleted == true)
+                            try
                             {
-                                try
+                                Project project = await _db.Projects.FirstOrDefaultAsync(p => p.Name == fields[0]);
+                                InformationCode informationCode = await _db.InformationCodes.FirstOrDefaultAsync(i => i.Code == fields[7] && i.InformationCodeSetId == project.InformationCodeId);
+                                LocationCode locationCode = await _db.LocationCodes.FirstOrDefaultAsync(l => l.Code == fields[9] && l.LocationCodeSetId == project.LocationCodeId);
+                                IssueTypeFile issueTypeFile = await _db.IssueTypeFiles.FirstOrDefaultAsync(f => f.Name == fields[3]);
+
+                                string dcValue = string.IsNullOrEmpty(fields[5]) ? "-" : "-" + fields[5];
+                                string dmCode = @"DMC-" + project.ModelIdentification + "-" + project.SDC + "-"
+                                                + fields[4] + dcValue + fields[6] + "-"
+                                                + informationCode.Code + fields[8] + "-" + locationCode.Code;
+
+                                _db.DataModuleCodes.Add(new DataModuleCode()
                                 {
-                                    Project project = context.Projects.Where(p => p.Name == fields[0]).FirstOrDefault();
-                                    InformationCode informationCode = context.InformationCodes.Where(i => i.Code == fields[7] && i.InformationCodeSetId == project.InformationCodeId).FirstOrDefault();
-                                    LocationCode locationCode = context.LocationCodes.Where(l => l.Code == fields[9] && l.LocationCodeSetId == project.LocationCodeId).FirstOrDefault();
-                                    IssueTypeFile issueTypeFile = context.IssueTypeFiles.Where(f => f.Name == fields[3]).FirstOrDefault();
-
-                                    string dcValue = string.IsNullOrEmpty(fields[5]) ? "-" : "-" + fields[5];
-                                    string dmCode = @"DMC-"
-                                                        + project.ModelIdentification + "-"
-                                                            + project.SDC + "-"
-                                                            + fields[4]
-                                                            + dcValue
-                                                            + fields[6] + "-"
-                                                            + informationCode.Code
-                                                            + fields[8] + "-"
-                                                            + locationCode.Code;
-
-                                    context.DataModuleCodes.Add(new DataModuleCode()
-                                    {
-                                        CreatedBy = User.Identity.Name,
-                                        CreatedOn = DateTime.UtcNow,
-                                        DC = fields[5],
-                                        DCV = fields[6],
-                                        ICV = fields[8],
-                                        InfoName = fields[2],
-                                        InformationCodeId = informationCode.Id,
-                                        IssueFileId = issueTypeFile.Id,
-                                        LocationCodeId = locationCode.Id,
-                                        ModelIdentification = project.ModelIdentification,
-                                        ProjectId = project.Id,
-                                        SDC = project.SDC,
-                                        StandardNumberingSystem = fields[4],
-                                        TechName = fields[1],
-                                        DMC = dmCode
-                                    });
-
-                                    successfulIds.Add(String.Join(",", fields));
-
-                                    context.SaveChanges();
-                                }
-                                catch (Exception e)
-                                {
-                                    failedIds.Add(String.Join(",", fields));
-                                }
+                                    CreatedBy = User.Identity.Name, CreatedOn = DateTime.UtcNow,
+                                    DC = fields[5], DCV = fields[6], ICV = fields[8],
+                                    InfoName = fields[2], InformationCodeId = informationCode.Id,
+                                    IssueFileId = issueTypeFile.Id, LocationCodeId = locationCode.Id,
+                                    ModelIdentification = project.ModelIdentification, ProjectId = project.Id,
+                                    SDC = project.SDC, StandardNumberingSystem = fields[4],
+                                    TechName = fields[1], DMC = dmCode
+                                });
+                                successfulIds.Add(String.Join(",", fields));
                             }
-                            isHeaderCompleted = true;
+                            catch
+                            {
+                                failedIds.Add(String.Join(",", fields));
+                            }
                         }
+                        isHeaderCompleted = true;
                     }
                 }
             }
+            await _db.SaveChangesAsync();
 
             return RedirectToAction("Index", "Maintenance");
         }
 
-        public FileResult ViewDMCXml(int dmcId)
+        public async Task<FileResult> ViewDMCXml(int dmcId)
         {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                DataModuleCode dmc = applicationContext.DataModuleCodes.Where(d => d.Id == dmcId).FirstOrDefault();
-                return File(Encoding.UTF8.GetBytes(dmc.xml), "text/xml", dmc.DMC + ".xml");
-            }
+            DataModuleCode dmc = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
+            return File(Encoding.UTF8.GetBytes(dmc.xml), "text/xml", dmc.DMC + ".xml");
         }
 
-        public JsonResult GenerateBrexXml(int projectId)
+        public async Task<JsonResult> GenerateBrexXml(int projectId)
         {
             try
             {
-                using (ApplicationDbContext applicationContext = new())
-                {
-                    DataModuleCode dmcCode = applicationContext.DataModuleCodes.Where(d => d.IsBrexXml == true && d.ProjectId == projectId).FirstOrDefault();
-                    if (dmcCode == null)
-                    {
-                        Project project = applicationContext.Projects.Where(p => p.Id == projectId).FirstOrDefault();
-                        ResponsiblePartnerCode rpc = applicationContext.ResponsiblePartnerCodes.Where(r => r.Id == project.RPCId).FirstOrDefault();
+                DataModuleCode dmcCode = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.IsBrexXml == true && d.ProjectId == projectId);
+                if (dmcCode != null)
+                    return new JsonResult(new { Status = false, Message = "Brex XML is already available for this Project!" });
 
-                        string xmlContext = project.BrexTemplate;
-
-                        XmlDocument xmlDoc = new XmlDocument();
-                        xmlDoc.LoadXml(xmlContext);
-
-                        XmlNamespaceManager xMan = new XmlNamespaceManager(xmlDoc.NameTable);
-
-                        StringBuilder dmcString = new StringBuilder();
-                        dmcString.Append("DMC-");
-                        dmcString.Append(project.ModelIdentification);
-                        dmcString.Append("-");
-                        dmcString.Append(project.SDC);
-                        dmcString.Append("-");
-
-                        string informationCodeString = string.Empty;
-                        string locationCodeString = string.Empty;
-                        string dcString = string.Empty;
-                        string dcvString = string.Empty;
-                        string icString = string.Empty;
-                        string icvString = string.Empty;
-                        string infoNameString = string.Empty;
-                        string snsString = string.Empty;
-                        string techNameString = string.Empty;
-
-                        XmlNode node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/dmCode", xMan);
-                        if (node != null)
-                        {
-                            dmcString.Append(node.Attributes["systemCode"].Value);
-                            dmcString.Append("-");
-                            dmcString.Append(node.Attributes["disassyCode"].Value);
-                            dmcString.Append("-");
-                            dmcString.Append(node.Attributes["disassyCodeVariant"].Value);
-                            dmcString.Append("-");
-                            dmcString.Append(node.Attributes["infoCode"].Value);
-                            dmcString.Append("-");
-                            dmcString.Append(node.Attributes["infoCodeVariant"].Value);
-                            dmcString.Append("-");
-                            dmcString.Append(node.Attributes["itemLocationCode"].Value);
-                            dmcString.Append("-");
-
-                            informationCodeString = node.Attributes["infoCode"].Value;
-                            locationCodeString = node.Attributes["itemLocationCode"].Value;
-                            snsString = node.Attributes["systemCode"].Value;
-
-                            node.Attributes["modelIdentCode"].Value = project.ModelIdentification;
-                            node.Attributes["subSubSystemCode"].Value = "0";
-                            node.Attributes["subSystemCode"].Value = "0";
-                            node.Attributes["systemDiffCode"].Value = project.SDC;
-                        }
-
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/title", xMan);
-                        if (node != null)
-                        {
-                            techNameString = node.InnerText;
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/subject", xMan);
-                        if (node != null)
-                        {
-                            infoNameString = node.InnerText;
-                        }
-
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/creator", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = rpc.Rpccage;
-                        }
-
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/publisher", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = rpc.Rpccage;
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/contributor", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = rpc.Rpccage;
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/date", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = DateTime.Now.Date.ToString("yyyy-MM-dd");
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/type", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = "text";
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/format", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = "text / xml";
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/identifier", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = dmcString.ToString();
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/language", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = "en-US";
-                        }
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/rights", xMan);
-                        if (node != null)
-                        {
-                            node.InnerText = "01_cc51"; //need to check
-                        }
-
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/language", xMan);
-                        if (node != null)
-                        {
-                            node.Attributes["countryIsoCode"].Value = "US";
-                            node.Attributes["languageIsoCode"].Value = "en";
-                        }
-
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/issueInfo", xMan);
-                        if (node != null)
-                        {
-                            node.Attributes["inWork"].Value = "00";
-                            node.Attributes["issueNumber"].Value = "001";
-                        }
-
-                        node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/issueDate", xMan);
-                        if (node != null)
-                        {
-                            node.Attributes["day"].Value = DateTime.Now.Date.Day.ToString("D2");
-                            node.Attributes["month"].Value = DateTime.Now.Date.Month.ToString("D2");
-                            node.Attributes["year"].Value = DateTime.Now.Date.Year.ToString("D4");
-                        }
-
-                        StringWriter stringWriter = new StringWriter();
-                        XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter);
-
-                        xmlDoc.WriteTo(xmlTextWriter);
-                        InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Code == informationCodeString).FirstOrDefault();
-                        LocationCode locationCode = applicationContext.LocationCodes.Where(i => i.Code == locationCodeString).FirstOrDefault();
-
-                        DataModuleCode dataModuleCode = new DataModuleCode()
-                        {
-                            IsDeleted = false,
-                            InformationCodeId = informationCode.Id,
-                            LocationCodeId = locationCode.Id,
-                            CreatedBy = User.Identity.Name,
-                            CreatedOn = DateTime.UtcNow,
-                            DC = dcString,
-                            DCV = dcvString,
-                            DMC = dmcString.ToString(),
-                            ICV = icvString,
-                            InfoName = infoNameString,
-                            IssueFileId = 1,
-                            ModelIdentification = project.ModelIdentification,
-                            ProjectId = project.Id,
-                            SDC = project.SDC,
-                            StandardNumberingSystem = snsString,
-                            TechName = techNameString,
-                            IsBrexXml = true,
-                            xml = stringWriter.ToString()
-                        };
-
-                        applicationContext.DataModuleCodes.Add(dataModuleCode);
-                        applicationContext.SaveChanges();
-                        return (new JsonResult(new { Status = true, Message = "Brex XML Created Successfully!" }));
-                    }
-                    else
-                    {
-                        return (new JsonResult(new { Status = false, Message = "Brex XML is already available for this Project!" }));
-                    }
-                }
-            }
-            catch(Exception e)
-            {
-                return (new JsonResult(new { Status = false, Message = "Error while generating Brex XML!" }));
-            }
-        }
-
-        public JsonResult GenerateDMCXml(int dmcId)
-        {
-            using (ApplicationDbContext applicationContext = new())
-            {
-                DataModuleCode dmc = applicationContext.DataModuleCodes.Where(d => d.Id == dmcId).FirstOrDefault();
-                Project project = applicationContext.Projects.Where(p => p.Id == dmc.ProjectId).FirstOrDefault();
-                ResponsiblePartnerCode rpc = applicationContext.ResponsiblePartnerCodes.Where(r => r.Id == project.RPCId).FirstOrDefault();
-                InformationCode informationCode = applicationContext.InformationCodes.Where(i => i.Id == dmc.InformationCodeId).FirstOrDefault();
-                LocationCode locationCode = applicationContext.LocationCodes.Where(l => l.Id == dmc.LocationCodeId).FirstOrDefault();
-                IssueTypeFile issueTypeFile = applicationContext.IssueTypeFiles.Where(i => i.Id == dmc.IssueFileId).FirstOrDefault();
-
-                string xmlContext = project.BrexTemplate;
-                //xmlContext = xmlContext.Replace("brex.xsd", issueTypeFile.Name);
+                Project project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+                ResponsiblePartnerCode rpc = await _db.ResponsiblePartnerCodes.FirstOrDefaultAsync(r => r.Id == project.RPCId);
 
                 XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.LoadXml(xmlContext);
-
+                xmlDoc.LoadXml(project.BrexTemplate);
                 XmlNamespaceManager xMan = new XmlNamespaceManager(xmlDoc.NameTable);
-                //xMan.AddNamespace("noNamespaceSchemaLocation", "http://www.s1000d.org/S1000D_4-0/xml_schema_flat/descript.xsd");
-                //xMan.AddNamespace("dc", "http://www.purl.org/dc/elements/1.1/");
-                //xMan.AddNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-                //xMan.AddNamespace("xlink", "http://www.w3.org/1999/xlink");
-                //xMan.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
-                XmlNode node = xmlDoc.SelectSingleNode("/dmodule", xMan);
-                if (node != null)
-                {
-                    node.Attributes["xsi:noNamespaceSchemaLocation"].Value = "http://www.s1000d.org/S1000D_4-2/xml_schema_flat/" + issueTypeFile.Name;
-                }
+                StringBuilder dmcString = new StringBuilder("DMC-");
+                dmcString.Append(project.ModelIdentification).Append("-").Append(project.SDC).Append("-");
 
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/creator", xMan);
-                if (node != null)
-                {
-                    node.InnerText = rpc.Rpccage;
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/title", xMan);
-                if (node != null)
-                {
-                    node.InnerText = dmc.TechName;
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/subject", xMan);
-                if (node != null)
-                {
-                    node.InnerText = dmc.InfoName;
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/publisher", xMan);
-                if (node != null)
-                {
-                    node.InnerText = rpc.Rpccage;
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/contributor", xMan);
-                if (node != null)
-                {
-                    node.InnerText = rpc.Rpccage;
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/date", xMan);
-                if (node != null)
-                {
-                    node.InnerText = DateTime.Now.Date.ToString("yyyy-MM-dd");
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/type", xMan);
-                if (node != null)
-                {
-                    node.InnerText = "text";
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/format", xMan);
-                if (node != null)
-                {
-                    node.InnerText = "text / xml";
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/identifier", xMan);
-                if (node != null)
-                {
-                    node.InnerText = dmc.DMC;
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/language", xMan);
-                if (node != null)
-                {
-                    node.InnerText = "en-US";
-                }
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/Description/rights", xMan);
-                if (node != null)
-                {
-                    node.InnerText = "01_cc51"; //need to check
-                }
+                string informationCodeString = string.Empty, locationCodeString = string.Empty;
+                string snsString = string.Empty, infoNameString = string.Empty, techNameString = string.Empty;
 
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/dmCode", xMan);
+                XmlNode node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/dmCode", xMan);
                 if (node != null)
                 {
-                    node.Attributes["assyCode"].Value = dmc.DC; //Need to check
-                    node.Attributes["disassyCode"].Value = dmc.DC;
-                    node.Attributes["disassyCodeVariant"].Value = dmc.DCV;
-                    node.Attributes["infoCode"].Value = informationCode.Code;
-                    node.Attributes["infoCodeVariant"].Value = dmc.ICV;
-                    node.Attributes["itemLocationCode"].Value = locationCode.Code;
-                    node.Attributes["modelIdentCode"].Value = dmc.ModelIdentification;
+                    dmcString.Append(node.Attributes["systemCode"].Value).Append("-")
+                             .Append(node.Attributes["disassyCode"].Value).Append("-")
+                             .Append(node.Attributes["disassyCodeVariant"].Value).Append("-")
+                             .Append(node.Attributes["infoCode"].Value).Append("-")
+                             .Append(node.Attributes["infoCodeVariant"].Value).Append("-")
+                             .Append(node.Attributes["itemLocationCode"].Value).Append("-");
+                    informationCodeString = node.Attributes["infoCode"].Value;
+                    locationCodeString = node.Attributes["itemLocationCode"].Value;
+                    snsString = node.Attributes["systemCode"].Value;
+                    node.Attributes["modelIdentCode"].Value = project.ModelIdentification;
                     node.Attributes["subSubSystemCode"].Value = "0";
                     node.Attributes["subSystemCode"].Value = "0";
-                    node.Attributes["systemCode"].Value = dmc.StandardNumberingSystem; //Need to check
-                    node.Attributes["systemDiffCode"].Value = dmc.SDC;
+                    node.Attributes["systemDiffCode"].Value = project.SDC;
                 }
+
+                SetXmlNodeText(xmlDoc, xMan, "/dmodule[@*]/Description/title", out techNameString);
+                SetXmlNodeText(xmlDoc, xMan, "/dmodule[@*]/Description/subject", out infoNameString);
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/creator", rpc.Rpccage);
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/publisher", rpc.Rpccage);
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/contributor", rpc.Rpccage);
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/date", DateTime.Now.Date.ToString("yyyy-MM-dd"));
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/type", "text");
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/format", "text / xml");
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/identifier", dmcString.ToString());
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/language", "en-US");
+                SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/rights", "01_cc51");
 
                 node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/language", xMan);
-                if (node != null)
-                {
-                    node.Attributes["countryIsoCode"].Value = "US";
-                    node.Attributes["languageIsoCode"].Value = "en";
-                }
+                if (node != null) { node.Attributes["countryIsoCode"].Value = "US"; node.Attributes["languageIsoCode"].Value = "en"; }
 
                 node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/issueInfo", xMan);
-                if (node != null)
-                {
-                    node.Attributes["inWork"].Value = "00";
-                    node.Attributes["issueNumber"].Value = "001";
-                }
+                if (node != null) { node.Attributes["inWork"].Value = "00"; node.Attributes["issueNumber"].Value = "001"; }
 
                 node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/issueDate", xMan);
                 if (node != null)
                 {
-                    node.Attributes["day"].Value = DateTime.Now.Date.Day.ToString("D2");
-                    node.Attributes["month"].Value = DateTime.Now.Date.Month.ToString("D2");
-                    node.Attributes["year"].Value = DateTime.Now.Date.Year.ToString("D4");
-                }
-
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/dmTitle/techName", xMan);
-                if (node != null)
-                {
-                    node.InnerText = dmc.TechName;
-                }
-
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/dmTitle/infoName", xMan);
-                if (node != null)
-                {
-                    node.InnerText = dmc.InfoName;
-                }
-
-                node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmStatus/brexDmRef/dmRef/dmRefIdent/dmCode", xMan);
-                if (node != null)
-                {
-                    node.Attributes["assyCode"].Value = dmc.DC; //Need to check
-                    node.Attributes["disassyCode"].Value = dmc.DC;
-                    node.Attributes["disassyCodeVariant"].Value = dmc.DCV;
-                    node.Attributes["infoCode"].Value = informationCode.Code;
-                    node.Attributes["infoCodeVariant"].Value = dmc.ICV;
-                    node.Attributes["itemLocationCode"].Value = locationCode.Code;
-                    node.Attributes["modelIdentCode"].Value = dmc.ModelIdentification;
-                    node.Attributes["subSubSystemCode"].Value = "0";
-                    node.Attributes["subSystemCode"].Value = "0";
-                    node.Attributes["systemCode"].Value = dmc.StandardNumberingSystem; //Need to check
-                    node.Attributes["systemDiffCode"].Value = dmc.SDC;
+                    node.Attributes["day"].Value = DateTime.Now.Day.ToString("D2");
+                    node.Attributes["month"].Value = DateTime.Now.Month.ToString("D2");
+                    node.Attributes["year"].Value = DateTime.Now.Year.ToString("D4");
                 }
 
                 StringWriter stringWriter = new StringWriter();
-                XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter);
+                xmlDoc.WriteTo(new XmlTextWriter(stringWriter));
 
-                xmlDoc.WriteTo(xmlTextWriter);
-                dmc.xml = stringWriter.ToString();
+                InformationCode informationCode = await _db.InformationCodes.FirstOrDefaultAsync(i => i.Code == informationCodeString);
+                LocationCode locationCode = await _db.LocationCodes.FirstOrDefaultAsync(i => i.Code == locationCodeString);
 
-                applicationContext.SaveChanges();
-
-                return new JsonResult(true);
+                _db.DataModuleCodes.Add(new DataModuleCode()
+                {
+                    IsDeleted = false, InformationCodeId = informationCode.Id, LocationCodeId = locationCode.Id,
+                    CreatedBy = User.Identity.Name, CreatedOn = DateTime.UtcNow, DC = string.Empty,
+                    DCV = string.Empty, DMC = dmcString.ToString(), ICV = string.Empty,
+                    InfoName = infoNameString, IssueFileId = 1, ModelIdentification = project.ModelIdentification,
+                    ProjectId = project.Id, SDC = project.SDC, StandardNumberingSystem = snsString,
+                    TechName = techNameString, IsBrexXml = true, xml = stringWriter.ToString()
+                });
+                await _db.SaveChangesAsync();
+                return new JsonResult(new { Status = true, Message = "Brex XML Created Successfully!" });
             }
-
-
+            catch
+            {
+                return new JsonResult(new { Status = false, Message = "Error while generating Brex XML!" });
+            }
         }
 
-        //public JsonResult GenerateDMCXml(int dmcId)
-        //{
-        //    using (ApplicationDbContext applicationContext = new())
-        //    {
-        //        DataModuleCode dmc = applicationContext.DataModuleCodes.Where(d => d.Id == dmcId).FirstOrDefault();
-        //        IssueTypeFile issueTypeFile = applicationContext.IssueTypeFiles.Where(i => i.Id == dmc.IssueFileId).FirstOrDefault();
+        public async Task<JsonResult> GenerateDMCXml(int dmcId)
+        {
+            DataModuleCode dmc = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
+            Project project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == dmc.ProjectId);
+            ResponsiblePartnerCode rpc = await _db.ResponsiblePartnerCodes.FirstOrDefaultAsync(r => r.Id == project.RPCId);
+            InformationCode informationCode = await _db.InformationCodes.FirstOrDefaultAsync(i => i.Id == dmc.InformationCodeId);
+            LocationCode locationCode = await _db.LocationCodes.FirstOrDefaultAsync(l => l.Id == dmc.LocationCodeId);
+            IssueTypeFile issueTypeFile = await _db.IssueTypeFiles.FirstOrDefaultAsync(i => i.Id == dmc.IssueFileId);
 
-        //        using (var stream = new MemoryStream())
-        //        {
-        //            try
-        //            {
-        //                System.Text.UTF8Encoding ob = new UTF8Encoding();
-        //                byte[] xsdData = ob.GetBytes(issueTypeFile.Data);
-        //                stream.Write(xsdData, 0, xsdData.Length);
-        //                stream.Seek(0, SeekOrigin.Begin);
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(project.BrexTemplate);
+            XmlNamespaceManager xMan = new XmlNamespaceManager(xmlDoc.NameTable);
 
-        //                XmlReaderSettings settings = new XmlReaderSettings();
-        //                settings.IgnoreWhitespace = true;
+            XmlNode node = xmlDoc.SelectSingleNode("/dmodule", xMan);
+            if (node != null) node.Attributes["xsi:noNamespaceSchemaLocation"].Value = "http://www.s1000d.org/S1000D_4-2/xml_schema_flat/" + issueTypeFile.Name;
 
-        //                using (var reader = XmlReader.Create(stream, settings))
-        //                {
-        //                    var schema = XmlSchema.Read(reader, null);
-        //                    //var gen = new XmlSampleGenerator(schema, new XmlQualifiedName("dmodule"));
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/creator", rpc.Rpccage);
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/title", dmc.TechName);
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/subject", dmc.InfoName);
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/publisher", rpc.Rpccage);
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/contributor", rpc.Rpccage);
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/date", DateTime.Now.Date.ToString("yyyy-MM-dd"));
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/type", "text");
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/format", "text / xml");
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/identifier", dmc.DMC);
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/language", "en-US");
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/Description/rights", "01_cc51");
 
-        //                    StringBuilder xml = new StringBuilder();
+            node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/language", xMan);
+            if (node != null) { node.Attributes["countryIsoCode"].Value = "US"; node.Attributes["languageIsoCode"].Value = "en"; }
 
-        //                    using (var writeStream = new MemoryStream())
-        //                    {
-        //                        XmlTextWriter textWriter = new XmlTextWriter(writeStream, null);
-        //                        textWriter.Formatting = Formatting.Indented;
-        //                        XmlQualifiedName qname = new XmlQualifiedName("dmodule");
-        //                        XmlSampleGenerator generator = new XmlSampleGenerator(schema, qname);
-        //                        generator.WriteXml(textWriter);
-        //                        writeStream.Position = 0;
+            node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmIdent/issueInfo", xMan);
+            if (node != null) { node.Attributes["inWork"].Value = "00"; node.Attributes["issueNumber"].Value = "001"; }
 
-        //                        using (var streamReader = new StreamReader(writeStream))
-        //                        {
-        //                            string text = streamReader.ReadToEnd();
-        //                        }
-        //                    }
-        //                }
-        //            }   
-        //            catch(Exception ex)
-        //            {
+            node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/issueDate", xMan);
+            if (node != null)
+            {
+                node.Attributes["day"].Value = DateTime.Now.Day.ToString("D2");
+                node.Attributes["month"].Value = DateTime.Now.Month.ToString("D2");
+                node.Attributes["year"].Value = DateTime.Now.Year.ToString("D4");
+            }
 
-        //            }
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/dmTitle/techName", dmc.TechName);
+            SetXmlNodeInnerText(xmlDoc, xMan, "/dmodule[@*]/identAndStatusSection/dmAddress/dmAddressItems/dmTitle/infoName", dmc.InfoName);
 
-        //            return new JsonResult(true);
-        //        }
+            node = xmlDoc.SelectSingleNode("/dmodule[@*]/identAndStatusSection/dmStatus/brexDmRef/dmRef/dmRefIdent/dmCode", xMan);
+            if (node != null)
+            {
+                node.Attributes["assyCode"].Value = dmc.DC;
+                node.Attributes["disassyCode"].Value = dmc.DC;
+                node.Attributes["disassyCodeVariant"].Value = dmc.DCV;
+                node.Attributes["infoCode"].Value = informationCode.Code;
+                node.Attributes["infoCodeVariant"].Value = dmc.ICV;
+                node.Attributes["itemLocationCode"].Value = locationCode.Code;
+                node.Attributes["modelIdentCode"].Value = dmc.ModelIdentification;
+                node.Attributes["subSubSystemCode"].Value = "0";
+                node.Attributes["subSystemCode"].Value = "0";
+                node.Attributes["systemCode"].Value = dmc.StandardNumberingSystem;
+                node.Attributes["systemDiffCode"].Value = dmc.SDC;
+            }
 
-        //    }
+            StringWriter stringWriter = new StringWriter();
+            xmlDoc.WriteTo(new XmlTextWriter(stringWriter));
+            dmc.xml = stringWriter.ToString();
+            await _db.SaveChangesAsync();
+            return new JsonResult(true);
+        }
 
+        private void SetXmlNodeInnerText(XmlDocument doc, XmlNamespaceManager xMan, string xpath, string value)
+        {
+            XmlNode node = doc.SelectSingleNode(xpath, xMan);
+            if (node != null) node.InnerText = value;
+        }
 
-        //}
+        private void SetXmlNodeText(XmlDocument doc, XmlNamespaceManager xMan, string xpath, out string value)
+        {
+            XmlNode node = doc.SelectSingleNode(xpath, xMan);
+            value = node?.InnerText ?? string.Empty;
+        }
     }
 }

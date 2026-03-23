@@ -1,57 +1,43 @@
-﻿using CSDBPortal.Data;
+using CSDBPortal.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace CSDBPortal.Business
 {
     public class BaseManager
     {
-        public bool CreateOrUpdateRecord<T>(T tableObj, string Mode)
+        private readonly ApplicationDbContext _db;
+
+        public BaseManager(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        public async Task<bool> CreateOrUpdateRecordAsync<T>(T tableObj, string mode) where T : class
         {
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    if (Mode == "Add")
-                    {
-                        _db.Entry(tableObj).State = EntityState.Added;
-                    }
-                    else
-                    {
-                        _db.Entry(tableObj).State = EntityState.Modified;
-                    }
-                    _db.SaveChanges();
-                }
+                _db.Entry(tableObj).State = mode == "Add" ? EntityState.Added : EntityState.Modified;
+                await _db.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
             return true;
         }
 
-        public bool DeleteRecord<T>(T tableObj, string deleteType)
+        public async Task<bool> DeleteRecordAsync<T>(T tableObj, string deleteType) where T : class
         {
             try
             {
-                using (ApplicationDbContext _db = new())
-                {
-                    if (deleteType == "Logical")
-                    {
-                        _db.Entry(tableObj).State = EntityState.Modified;
-                    }
-                    else
-                    {
-                        _db.Entry(tableObj).State = EntityState.Deleted;
-                    }
-                    _db.SaveChanges();
-                }
+                _db.Entry(tableObj).State = deleteType == "Logical" ? EntityState.Modified : EntityState.Deleted;
+                await _db.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
             return true;
-
         }
     }
 }

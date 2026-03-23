@@ -1,42 +1,39 @@
-﻿using CSDBPortal.Data;
+using CSDBPortal.Data;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace CSDBPortal.Business
 {
     public class AdministrationManager
     {
-        public AdministrationViewModel GetAdministrationDetailInfo()
+        private readonly ApplicationDbContext _db;
+
+        public AdministrationManager(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        public async Task<AdministrationViewModel> GetAdministrationDetailInfoAsync()
         {
             AdministrationViewModel administrationViewModel = new();
             try
             {
-                using (ApplicationDbContext applicationDbContext = new())
+                administrationViewModel.ProjectCompleted = await _db.Projects.CountAsync();
+                administrationViewModel.Users = await _db.Users.ToListAsync();
+                administrationViewModel.Roles = await _db.Roles.ToListAsync();
+                administrationViewModel.UserCount = administrationViewModel.Users.Count;
+                administrationViewModel.ActiveUsers = administrationViewModel.Users.Count;
+
+                administrationViewModel.Features = new List<string>();
+                var fields = typeof(Features).GetFields(BindingFlags.Public | BindingFlags.Static);
+                foreach (FieldInfo field in fields)
                 {
-                    // todo : need to modify the below linq query with proper tables and condition.
-                    administrationViewModel.ProjectCompleted = (from i in applicationDbContext.Projects
-                                                                 select i).Count();
-                    //administrationViewModel.UserCount = (from i in applicationDbContext.UserDetails
-                    //                                  select i).Count();
-                    //administrationViewModel.ActiveUsers = (from i in applicationDbContext.UserDetails
-                    //                                        select i).Count();
-
-                    administrationViewModel.Users = applicationDbContext.Users.ToList();
-                    administrationViewModel.Roles = applicationDbContext.Roles.ToList();
-
-                    administrationViewModel.UserCount = administrationViewModel.Users.Count();
-                    administrationViewModel.ActiveUsers = administrationViewModel.Users.Count();
-
-                    administrationViewModel.Features = new List<string>();
-                    var fields = typeof(Features).GetFields(BindingFlags.Public | BindingFlags.Static);
-                    foreach (FieldInfo field in fields)
-                    {
-                        administrationViewModel.Features.Add(field.GetValue(null).ToString());
-                    }
-
-                    return administrationViewModel;
+                    administrationViewModel.Features.Add(field.GetValue(null).ToString());
                 }
+
+                return administrationViewModel;
             }
             catch
             {
@@ -44,20 +41,16 @@ namespace CSDBPortal.Business
             }
         }
 
-        public int CheckDuplicateRole(IdentityRole role)
+        public async Task<int> CheckDuplicateRoleAsync(IdentityRole role)
         {
-            int result = 0;
             try
             {
-                using (ApplicationDbContext applicationDbContext = new())
-                {
-                    result = applicationDbContext.Roles.Where(r => r.Name == role.Name).Count();
-                }
+                return await _db.Roles.CountAsync(r => r.Name == role.Name);
             }
-            catch (Exception ex)
+            catch
             {
+                return 0;
             }
-            return result;
         }
     }
 }

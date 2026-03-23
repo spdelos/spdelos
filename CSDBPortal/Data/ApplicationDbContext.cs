@@ -1,4 +1,4 @@
-﻿using CSDBPortal.Models;
+using CSDBPortal.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +11,8 @@ namespace CSDBPortal.Data
         {
         }
 
+        // Parameterless constructor kept for migration tooling; OnConfiguring falls back
+        // to appsettings.json only when no options are already configured (i.e. at design time).
         public ApplicationDbContext()
         {
         }
@@ -23,7 +25,6 @@ namespace CSDBPortal.Data
         public virtual DbSet<DataModuleType> DataModuleTypes { get; set; } = null!;
         public virtual DbSet<Designation> Designations { get; set; } = null!;
         public virtual DbSet<IcnNumber> IcnNumbers { get; set; } = null!;
-
         public virtual DbSet<ICNFormatField> ICNFormatFields { get; set; } = null!;
         public virtual DbSet<ICNFormatMasterField> ICNFormatMasterFields { get; set; } = null!;
         public virtual DbSet<Icnformat> Icnformats { get; set; } = null!;
@@ -41,131 +42,70 @@ namespace CSDBPortal.Data
         public virtual DbSet<StandardNumberingSystem> StandardNumberingSystems { get; set; } = null!;
         public virtual DbSet<UserDetail> UserDetails { get; set; } = null!;
         public virtual DbSet<XmlValidation> XmlValidations { get; set; } = null!;
-
-        public virtual DbSet<DataModuleCode> DataModuleCodes { get; set; } = null;
+        public virtual DbSet<DataModuleCode> DataModuleCodes { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                var configuation = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
-                var connectionString = configuation.GetSection("ConnectionStrings").GetSection("DefaultConnection").Value;
-
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
+                var connectionString = configuration.GetSection("ConnectionStrings")
+                    .GetSection("DefaultConnection").Value;
                 optionsBuilder.UseSqlServer(connectionString);
-            //        "Data Source=ATPLAPTOP24\\SQLEXPRESS;Initial Catalog=CSDB;User ID=localhost;Password=Window@123"); ;
             }
         }
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    modelBuilder.Entity<BrexRule>(entity =>
-        //    {
-        //        entity.Property(e => e.Dmtype).HasColumnName("DMTYPE");
-        //    });
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-        //    modelBuilder.Entity<CompanyInformation>(entity =>
-        //    {
-        //        entity.HasKey(e => e.CompanyId);
+            // DataModuleCode — most-queried table: filtered by project, deletion flag, info/location codes
+            modelBuilder.Entity<DataModuleCode>().HasIndex(d => d.ProjectId).HasDatabaseName("IX_DataModuleCode_ProjectId");
+            modelBuilder.Entity<DataModuleCode>().HasIndex(d => d.InformationCodeId).HasDatabaseName("IX_DataModuleCode_InformationCodeId");
+            modelBuilder.Entity<DataModuleCode>().HasIndex(d => d.LocationCodeId).HasDatabaseName("IX_DataModuleCode_LocationCodeId");
+            modelBuilder.Entity<DataModuleCode>().HasIndex(d => d.IsDeleted).HasDatabaseName("IX_DataModuleCode_IsDeleted");
+            modelBuilder.Entity<DataModuleCode>().HasIndex(d => new { d.ProjectId, d.IsDeleted }).HasDatabaseName("IX_DataModuleCode_ProjectId_IsDeleted");
+            modelBuilder.Entity<DataModuleCode>().HasIndex(d => new { d.ProjectId, d.IsBrexXml }).HasDatabaseName("IX_DataModuleCode_ProjectId_IsBrexXml");
 
-        //        entity.ToTable("CompanyInformation");
-        //    });
+            // ProjectNavigation — tree queries always filter by ProjectId + ParentId
+            modelBuilder.Entity<ProjectNavigation>().HasIndex(n => n.ProjectId).HasDatabaseName("IX_ProjectNavigation_ProjectId");
+            modelBuilder.Entity<ProjectNavigation>().HasIndex(n => n.ParentId).HasDatabaseName("IX_ProjectNavigation_ParentId");
+            modelBuilder.Entity<ProjectNavigation>().HasIndex(n => new { n.ProjectId, n.ParentId }).HasDatabaseName("IX_ProjectNavigation_ProjectId_ParentId");
 
-        //    modelBuilder.Entity<DataModule>(entity =>
-        //    {
-        //        entity.ToTable("DataModule");
+            // StandardNumberingSystem — self-join on ParentId for tree traversal
+            modelBuilder.Entity<StandardNumberingSystem>().HasIndex(s => s.ParentId).HasDatabaseName("IX_StandardNumberingSystem_ParentId");
 
-        //        entity.Property(e => e.Alc).HasColumnName("ALC");
+            // LocationCode — joined on LocationCodeSetId in every location-code query
+            modelBuilder.Entity<LocationCode>().HasIndex(l => l.LocationCodeSetId).HasDatabaseName("IX_LocationCode_LocationCodeSetId");
 
-        //        entity.Property(e => e.Dmc).HasColumnName("DMC");
+            // InformationCode — joined on InformationCodeSetId in every info-code query
+            modelBuilder.Entity<InformationCode>().HasIndex(i => i.InformationCodeSetId).HasDatabaseName("IX_InformationCode_InformationCodeSetId");
 
-        //        entity.Property(e => e.Ent).HasColumnName("ENT");
+            // Project — FK columns used in joins from DMC and ICN queries
+            modelBuilder.Entity<Project>().HasIndex(p => p.IcnformatId).HasDatabaseName("IX_Project_IcnformatId");
+            modelBuilder.Entity<Project>().HasIndex(p => p.InformationCodeId).HasDatabaseName("IX_Project_InformationCodeId");
+            modelBuilder.Entity<Project>().HasIndex(p => p.IssueNoId).HasDatabaseName("IX_Project_IssueNoId");
 
-        //        entity.Property(e => e.Lcn).HasColumnName("LCN");
+            // IcnNumber — filtered and max-aggregated by ProjectId and SeqNo
+            modelBuilder.Entity<IcnNumber>().HasIndex(i => i.ProjectId).HasDatabaseName("IX_IcnNumber_ProjectId");
+            modelBuilder.Entity<IcnNumber>().HasIndex(i => new { i.ProjectId, i.SeqNo }).HasDatabaseName("IX_IcnNumber_ProjectId_SeqNo");
 
-        //        entity.Property(e => e.Lcntype).HasColumnName("LCNType");
+            // BrexRule — always filtered by ProjectId
+            modelBuilder.Entity<BrexRule>().HasIndex(b => b.ProjectId).HasDatabaseName("IX_BrexRule_ProjectId");
 
-        //        entity.Property(e => e.TaskId).HasColumnName("TaskID");
-        //    });
+            // ProjectStandardNumberingSystem — filtered by ProjectId and joined on Snsid
+            modelBuilder.Entity<ProjectStandardNumberingSystem>().HasIndex(p => p.ProjectId).HasDatabaseName("IX_ProjectSNS_ProjectId");
+            modelBuilder.Entity<ProjectStandardNumberingSystem>().HasIndex(p => p.Snsid).HasDatabaseName("IX_ProjectSNS_Snsid");
+            modelBuilder.Entity<ProjectStandardNumberingSystem>().HasIndex(p => new { p.ProjectId, p.Snsid }).HasDatabaseName("IX_ProjectSNS_ProjectId_Snsid");
 
-        //    modelBuilder.Entity<DataModuleStatus>(entity =>
-        //    {
-        //        entity.ToTable("DataModuleStatus");
-        //    });
+            // IssueTypeFile — filtered by IssueNoId
+            modelBuilder.Entity<IssueTypeFile>().HasIndex(i => i.IssueNoId).HasDatabaseName("IX_IssueTypeFile_IssueNoId");
 
-        //    modelBuilder.Entity<FolderDetail>(entity =>
-        //    {
-        //        entity.Property(e => e.Id).ValueGeneratedNever();
-        //    });
-
-        //    modelBuilder.Entity<FolderUserLink>(entity =>
-        //    {
-        //        entity.Property(e => e.Id).ValueGeneratedNever();
-        //    });
-
-        //    modelBuilder.Entity<IcnNumber>(entity =>
-        //    {
-        //        entity.Property(e => e.IcnNumber1).HasColumnName("IcnNumber");
-        //    });
-
-        //    modelBuilder.Entity<Icnformat>(entity =>
-        //    {
-        //        entity.ToTable("ICNFormats");
-        //    });
-
-        //    modelBuilder.Entity<ICNFormatMasterField>(entity => {
-        //        entity.ToTable("ICNFormatMasterFields");
-        //    });
-
-        //    modelBuilder.Entity<ICNFormatField>(entity => {
-        //        entity.ToTable("ICNFormatFields");
-        //    });
-
-        //    modelBuilder.Entity<IssueNo>(entity =>
-        //    {
-        //        entity.ToTable("IssueNo").HasMany<IssueTypeFile>(i => i.IssueTypeFiles);
-        //    });
-
-        //    modelBuilder.Entity<LicenseManagement>(entity =>
-        //    {
-        //        entity.HasKey(e => e.LicenseId);
-
-        //        entity.ToTable("LicenseManagement");
-        //    });
-
-        //    modelBuilder.Entity<Project>(entity =>
-        //    {
-        //        entity.ToTable("Project");
-
-        //        entity.Property(e => e.IcnformatId).HasColumnName("ICNFormatId");
-
-        //        entity.Property(e => e.Rpcid).HasColumnName("RPCId");
-
-        //        entity.Property(e => e.Sdc).HasColumnName("SDC");
-
-        //        entity.Property(e => e.SnssetId).HasColumnName("SNSSetId");
-        //    });
-
-        //    modelBuilder.Entity<ProjectStandardNumberingSystem>(entity =>
-        //    {
-        //        entity.Property(e => e.Snsid).HasColumnName("SNSId");
-        //    });
-
-        //    modelBuilder.Entity<ResponsiblePartnerCode>(entity =>
-        //    {
-        //        entity.Property(e => e.Rpccage).HasColumnName("RPCCage");
-        //    });
-
-        //    modelBuilder.Entity<XmlValidation>(entity =>
-        //    {
-        //        entity.ToTable("XmlValidation");
-        //    });
-
-        //    modelBuilder.Entity<IssueTypeFile>(entity =>
-        //    {
-        //        entity.ToTable("IssueTypeFiles").HasOne<IssueNo>(e => e.IssueNo);
-        //    });
-
-        //    base.OnModelCreating(modelBuilder);
-        //}
+            // ICNFormatField — joined and ordered by ICNFormatId
+            modelBuilder.Entity<ICNFormatField>().HasIndex(i => i.ICNFormatId).HasDatabaseName("IX_ICNFormatField_ICNFormatId");
+        }
     }
 }

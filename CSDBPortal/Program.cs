@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CSDBPortal.Data;
+using CSDBPortal.Business;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Append connection pool settings to the configured connection string
+var baseConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = baseConnection + ";Min Pool Size=10;Max Pool Size=300;Connect Timeout=30;";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
-
-//builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-//    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -18,23 +19,28 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-
 })
-            .AddDefaultTokenProviders()
-            .AddDefaultUI()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddDefaultTokenProviders()
+    .AddDefaultUI()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication();
 builder.Services.AddMvc();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
 builder.Services.AddControllersWithViews();
+
+// Register managers as Scoped so they share the request-scoped DbContext
+builder.Services.AddScoped<BaseManager>();
+builder.Services.AddScoped<MaintenanceManager>();
+builder.Services.AddScoped<AdministrationManager>();
+builder.Services.AddScoped<ConfigurationsManager>();
+builder.Services.AddScoped<ICNManager>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -42,7 +48,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
