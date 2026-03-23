@@ -922,11 +922,9 @@ a:hover { text-decoration: none !important; }
 }
 
 .login-logo-navietm {
-    height: 96px;
-    width: auto;
-    object-fit: contain;
+    width: 100%;
+    height: auto;
     display: block;
-    margin: 0 auto;
     background: transparent;
 }
 
