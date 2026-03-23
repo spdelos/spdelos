@@ -39,6 +39,33 @@
                     </a>
                 </li>
             }
+            @if (User.HasClaim("Permission", Features.Publisher))
+            {
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-3" data-bs-toggle="pill" href="#pills-icn-3">
+                        <i class="fa-solid fa-upload"></i>
+                        <span class="ml-2">Publisher</span>
+                    </a>
+                </li>
+            }
+            @if (User.HasClaim("Permission", Features.Viewer))
+            {
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-4" data-bs-toggle="pill" href="#pills-icn-4">
+                        <i class="fa-solid fa-eye"></i>
+                        <span class="ml-2">Viewer</span>
+                    </a>
+                </li>
+            }
+            @if (User.HasClaim("Permission", Features.Licensing))
+            {
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-tab-5" data-bs-toggle="pill" href="#pills-icn-5">
+                        <i class="fa-solid fa-key"></i>
+                        <span class="ml-2">Licensing</span>
+                    </a>
+                </li>
+            }
         </ul>
         <div class="tab-content" id="pills-tabContent">
             @if (User.HasClaim("Permission", Features.GenerateICNNumber))
@@ -115,6 +142,30 @@
 
                 </div>
                 <!-- /. tab-2 end -->
+            }
+            @if (User.HasClaim("Permission", Features.Publisher))
+            {
+                <div class="tab-pane fade" id="pills-icn-3" role="tabpanel" aria-labelledby="pills-tab-3">
+                    <div class="card shadow-sm" style="padding:20px;">
+                        <p class="text-muted mb-0">Publisher coming soon.</p>
+                    </div>
+                </div>
+            }
+            @if (User.HasClaim("Permission", Features.Viewer))
+            {
+                <div class="tab-pane fade" id="pills-icn-4" role="tabpanel" aria-labelledby="pills-tab-4">
+                    <div class="card shadow-sm" style="padding:20px;">
+                        <p class="text-muted mb-0">Viewer coming soon.</p>
+                    </div>
+                </div>
+            }
+            @if (User.HasClaim("Permission", Features.Licensing))
+            {
+                <div class="tab-pane fade" id="pills-icn-5" role="tabpanel" aria-labelledby="pills-tab-5">
+                    <div class="card shadow-sm" style="padding:20px;">
+                        <p class="text-muted mb-0">Licensing coming soon.</p>
+                    </div>
+                </div>
             }
         </div>
 

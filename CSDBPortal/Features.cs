@@ -15,6 +15,11 @@
         public static string DMCAdministration = "DMC Administration";
         public static string GenerateICNNumber = "Generate ICN";
         public static string ViewICNNumber = "View ICN";
+        public static string Publisher = "Publisher";
+        public static string Viewer = "Viewer";
+        public static string Licensing = "Licensing";
+        public static string StylesheetAdministration = "Stylesheet Administration";
+        public static string ImagesAdministration = "Images Administration";
         public static string UserAndRoleAdministration = "User and Role Administration";
     }
 }

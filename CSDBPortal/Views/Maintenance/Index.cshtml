@@ -5,11 +5,15 @@
     bool hasSNS        = User.HasClaim("Permission", Features.SNSAdministration);
     bool hasProject    = User.HasClaim("Permission", Features.ProjectAdministration);
     bool hasDMC        = User.HasClaim("Permission", Features.DMCAdministration);
+    bool hasStylesheet = User.HasClaim("Permission", Features.StylesheetAdministration);
+    bool hasImages     = User.HasClaim("Permission", Features.ImagesAdministration);
 
     bool _m = true;
     bool snsFirst        = _m && hasSNS;        if (hasSNS)        _m = false;
     bool projectFirst    = _m && hasProject;    if (hasProject)    _m = false;
-    bool dmcFirst        = _m && hasDMC;
+    bool dmcFirst        = _m && hasDMC;        if (hasDMC)        _m = false;
+    bool ssFirst         = _m && hasStylesheet; if (hasStylesheet) _m = false;
+    bool imagesFirst     = _m && hasImages;
 }
 
 <div class="alert" style="display:none" id="mainAlert">
@@ -49,6 +53,22 @@
                    data-bs-toggle="tab" href="#pills-7" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-file-code"></i></span>
                     <span>DMC</span>
+                </a>
+            }
+            @if (hasStylesheet)
+            {
+                <a class="maint-nav-item @(ssFirst ? "active" : "")" id="pills-tab-8"
+                   data-bs-toggle="tab" href="#pills-8" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-palette"></i></span>
+                    <span>Stylesheet</span>
+                </a>
+            }
+            @if (hasImages)
+            {
+                <a class="maint-nav-item @(imagesFirst ? "active" : "")" id="pills-tab-9"
+                   data-bs-toggle="tab" href="#pills-9" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-images"></i></span>
+                    <span>Images</span>
                 </a>
             }
         </nav>
@@ -253,6 +273,22 @@
                     </div>
                 </div>
                 <!-- /. tab-5 end -->
+            }
+            @if (hasStylesheet)
+            {
+                <div class="tab-pane fade" id="pills-8" role="tabpanel" aria-labelledby="pills-tab-8">
+                    <div class="card" style="padding:20px;">
+                        <p class="text-muted mb-0">Stylesheet management coming soon.</p>
+                    </div>
+                </div>
+            }
+            @if (hasImages)
+            {
+                <div class="tab-pane fade" id="pills-9" role="tabpanel" aria-labelledby="pills-tab-9">
+                    <div class="card" style="padding:20px;">
+                        <p class="text-muted mb-0">Images management coming soon.</p>
+                    </div>
+                </div>
             }
         </div>
     </div>
