@@ -925,6 +925,8 @@ a:hover { text-decoration: none !important; }
     height: 32px;
     width: auto;
     object-fit: contain;
+    display: block;
+    margin: 0 auto;
 }
 
 .login-hero {
