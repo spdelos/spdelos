@@ -69,29 +69,35 @@
                 </nav>
 
                 <div class="sidebar-footer">
-                    <div class="sidebar-user dropup" id="userMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="sidebar-user-avatar">
+                    <div class="sidebar-user dropup" id="userMenuToggle">
+                        <div class="sidebar-user-avatar" data-bs-toggle="dropdown" aria-expanded="false">
                             @(Context.User.Identity.Name?.Length > 0
                                 ? Context.User.Identity.Name.Substring(0, 1).ToUpper()
                                 : "U")
                         </div>
+                        <ul class="dropdown-menu dropdown-menu-dark sidebar-user-dropdown" aria-labelledby="userMenuToggle">
+                            <li><span class="dropdown-item-text fw-semibold">@Context.User.Identity.Name</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-area="Identity"
+                                      asp-page="/Account/Logout"
+                                      asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })"
+                                      method="post">
+                                    <button type="submit" class="dropdown-item">Sign out</button>
+                                </form>
+                            </li>
+                        </ul>
                         <div class="sidebar-user-info">
                             <div class="sidebar-user-name">@Context.User.Identity.Name</div>
-                            <span class="sidebar-logout-btn">Sign out</span>
-                        </div>
-                    </div>
-                    <ul class="dropdown-menu dropdown-menu-dark sidebar-user-dropdown" aria-labelledby="userMenuToggle">
-                        <li><span class="dropdown-item-text fw-semibold">@Context.User.Identity.Name</span></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
                             <form asp-area="Identity"
                                   asp-page="/Account/Logout"
                                   asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })"
-                                  method="post">
-                                <button type="submit" class="dropdown-item">Sign out</button>
+                                  method="post"
+                                  class="d-inline">
+                                <button type="submit" class="sidebar-logout-btn">Sign out</button>
                             </form>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </aside>
 
