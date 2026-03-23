@@ -1,31 +1,30 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CSDBPortal.Controllers
 {
+    [AllowAnonymous]
     public class AccountController : BaseController
     {
+        private readonly SignInManager<IdentityUser> _signInManager;
+
+        public AccountController(SignInManager<IdentityUser> signInManager)
+        {
+            _signInManager = signInManager;
+        }
+
         public IActionResult Index() => RedirectToAction("Identity", "Login");
 
         [Route("login")]
         [HttpPost]
         public async Task<IActionResult> LoginAsync(string email, string password)
         {
-            if (email?.Trim() == "testuser@gmail.com" && password?.Trim() == "password")
-            {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, email),
-                    new Claim(ClaimTypes.Name, email)
-                };
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                await HttpContext.SignInAsync(new ClaimsPrincipal(identity));
+            var result = await _signInManager.PasswordSignInAsync(email, password, isPersistent: false, lockoutOnFailure: true);
+            if (result.Succeeded)
                 return RedirectToAction("Index", "Administration");
-            }
 
-            ViewBag.error = "Invalid Account";
+            ViewBag.error = result.IsLockedOut ? "Account is locked out." : "Invalid Account";
             return View("Index");
         }
 
@@ -33,7 +32,7 @@ namespace CSDBPortal.Controllers
         [HttpGet]
         public async Task<IActionResult> LogoutAsync()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index");
         }
     }
