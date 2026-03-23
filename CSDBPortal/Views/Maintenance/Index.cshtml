@@ -9,7 +9,8 @@
     bool _m = true;
     bool snsFirst     = _m && hasSNS;     if (hasSNS)     _m = false;
     bool projectFirst = _m && hasProject; if (hasProject) _m = false;
-    bool dmcFirst     = _m && hasDMC;
+    bool dmcFirst     = _m && hasDMC;     if (hasDMC)     _m = false;
+    bool ssFirst      = _m;               _m = false;
 }
 
 <div class="alert" style="display:none" id="mainAlert">
@@ -70,7 +71,7 @@
             @if (User.HasClaim("Permission", Features.SNSAdministration))
             {
                 <!-- tab-4 start -->
-                <div class="tab-pane fade" id="pills-4" role="tabpanel" aria-labelledby="pills-tab-4">
+                <div class="tab-pane fade @(snsFirst ? "show active" : "")" id="pills-4" role="tabpanel" aria-labelledby="pills-tab-4">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">
@@ -113,7 +114,7 @@
             @if (User.HasClaim("Permission", Features.ProjectAdministration))
             {
                 <!-- tab-5 start -->
-                <div class="tab-pane fade" id="pills-5" role="tabpanel" aria-labelledby="pills-tab-5">
+                <div class="tab-pane fade @(projectFirst ? "show active" : "")" id="pills-5" role="tabpanel" aria-labelledby="pills-tab-5">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">
@@ -182,7 +183,7 @@
             @if (User.HasClaim("Permission", Features.DMCAdministration))
             {
                 <!-- tab-5 start -->
-                <div class="tab-pane fade" id="pills-7" role="tabpanel" aria-labelledby="pills-tab-7">
+                <div class="tab-pane fade @(dmcFirst ? "show active" : "")" id="pills-7" role="tabpanel" aria-labelledby="pills-tab-7">
                     <div class="actions mb-3">
                         <div class="row">
                             <div class="col-12 text-right">
@@ -264,7 +265,7 @@
                 </div>
                 <!-- /. tab-5 end -->
             }
-            <div class="tab-pane fade" id="pills-8" role="tabpanel" aria-labelledby="pills-tab-8">
+            <div class="tab-pane fade @(ssFirst ? "show active" : "")" id="pills-8" role="tabpanel" aria-labelledby="pills-tab-8">
                 <div class="card" style="padding:20px;">
                     <p class="text-muted mb-0">Stylesheet management coming soon.</p>
                 </div>

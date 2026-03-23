@@ -1,5 +1,10 @@
 ﻿@{
     ViewData["Title"] = "ICN";
+    bool hasGenerate = User.HasClaim("Permission", Features.GenerateICNNumber);
+    bool hasView     = User.HasClaim("Permission", Features.ViewICNNumber);
+    bool _f = true;
+    bool generateFirst = _f && hasGenerate; if (hasGenerate) _f = false;
+    bool viewFirst     = _f && hasView;
 }
 <style>
     .generate_button {
@@ -24,7 +29,7 @@
             @if (User.HasClaim("Permission", Features.GenerateICNNumber))
             {
                 <li class="nav-item item-one" role="presentation">
-                    <a class="nav-link active" id="pills-tab-1" data-bs-toggle="pill" href="#pills-1">
+                    <a class="nav-link @(generateFirst ? "active" : "")" id="pills-tab-1" data-bs-toggle="pill" href="#pills-1">
                         <img src="./dist/img/Icons/ICN/Generate ICN.png" alt="Generate icon">
                         <span class="ml-2">Generate ICN</span>
                     </a>
@@ -33,7 +38,7 @@
             @if (User.HasClaim("Permission", Features.ViewICNNumber))
             {
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="pills-tab-2" data-bs-toggle="pill" href="#pills-2">
+                    <a class="nav-link @(viewFirst ? "active" : "")" id="pills-tab-2" data-bs-toggle="pill" href="#pills-2">
                         <img src="./dist/img/Icons/ICN/View-ICN.png" alt="View icon">
                         <span class="ml-2"> View ICN </span>
                     </a>
@@ -71,7 +76,7 @@
             @if (User.HasClaim("Permission", Features.GenerateICNNumber))
             {
                 <!-- tab-1 start -->
-                <div class="tab-pane fade show active" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
+                <div class="tab-pane fade @(generateFirst ? "show active" : "")" id="pills-1" role="tabpanel" aria-labelledby="pills-tab-1">
                     <div class="card shadow-sm" style="padding:20px;">
                         <div style="margin-bottom:20px;">
                             <label for="select" class="input-title">Select Project </label>
@@ -116,7 +121,7 @@
             @if (User.HasClaim("Permission", Features.ViewICNNumber))
             {
                 <!-- tab-2 start -->
-                <div class="tab-pane fade" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
+                <div class="tab-pane fade @(viewFirst ? "show active" : "")" id="pills-2" role="tabpanel" aria-labelledby="pills-tab-2">
                     <div class="card shadow-sm d-flex justify-content-center" style="padding:20px;">
                         <label for="select" class="input-title">Select Project </label>
                         <select class="form-select form-control" aria-label="Default select example" id="project_1">
