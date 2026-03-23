@@ -86,6 +86,7 @@ a:hover { text-decoration: none !important; }
 .sidebar-brand {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     padding: 16px;
     min-height: var(--topbar-h);
@@ -101,11 +102,12 @@ a:hover { text-decoration: none !important; }
 }
 
 .sidebar-brand-navietm {
-    height: 44px;
+    height: 88px;
     width: auto;
     max-width: 100%;
     object-fit: contain;
     flex-shrink: 0;
+    mix-blend-mode: multiply;
     transition: height 0.2s ease, width 0.2s ease;
 }
 
