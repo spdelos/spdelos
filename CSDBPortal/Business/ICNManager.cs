@@ -63,7 +63,7 @@ namespace CSDBPortal.Business
                 var result = await (from icn in _db.IcnNumbers
                                     join p in _db.Projects on icn.ProjectId equals p.Id
                                     where icn.ProjectId == projectId && icn.SeqNo == sequenceNumber && icn.VarCode.Equals(varCode)
-                                    select icn.IssueNo).MaxAsync();
+                                    select (int?)icn.IssueNo).MaxAsync();
                 return result ?? 0;
             }
             catch { return 0; }
