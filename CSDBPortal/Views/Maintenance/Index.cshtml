@@ -193,7 +193,7 @@
                                 <a href="/Maintenance/DownloadDMCTemplate" class="btn" id="btnDownloadDMCTemplate">
                                     Download Template
                                 </a>
-                                <form asp-action="UploadDMC" asp-controller="Maintenance" method="post" enctype="multipart/form-data">
+                                <form class="d-inline" asp-action="UploadDMC" asp-controller="Maintenance" method="post" enctype="multipart/form-data">
                                     <input id="upload" name="upload" style="display:none" type="file" onchange="this.form.submit();" />
                                     <a class="btn" id="btnUploadDMC" name="uploadbutton">Upload</a>
                                 </form>
