@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace CSDBPortal.Models
 {
@@ -11,7 +12,8 @@ namespace CSDBPortal.Models
         public int Id { get; set; }
         [Column("ProjectId")] 
         public int ProjectId { get; set; }
-        [Column("DMCId")] 
+        [Column("DMCId")]
+        [JsonPropertyName("dmcId")]
         public int DMCId { get; set; }
 
         [Column("Title")]

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace CSDBPortal.Models
 {
@@ -28,6 +29,7 @@ namespace CSDBPortal.Models
         [Column("ModelIdentification")]
         public string? ModelIdentification { get; set; }
         [Column("Sdc")]
+        [JsonPropertyName("sdc")]
         public string? SDC { get; set; }
         [Column("SubjectLength")]
         public int SubjectLength { get; set; }

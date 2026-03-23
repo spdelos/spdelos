@@ -30,7 +30,9 @@ builder.Services.AddAuthentication();
 builder.Services.AddMvc();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase);
 
 // Register managers as Scoped so they share the request-scoped DbContext
 builder.Services.AddScoped<BaseManager>();

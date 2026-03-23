@@ -1,4 +1,5 @@
 ﻿using CSDBPortal.Models;
+using System.Text.Json.Serialization;
 namespace CSDBPortal.ViewModels
 {
     public class MaintenanceViewModel
@@ -34,6 +35,7 @@ namespace CSDBPortal.ViewModels
 
     public class CustomProjectNavigation : ProjectNavigation
     {
+        [JsonPropertyName("dmc")]
         public string DMC { get; set; }
         public string ParentDMC { get; set; }
         public int parent_id { get; set; }
