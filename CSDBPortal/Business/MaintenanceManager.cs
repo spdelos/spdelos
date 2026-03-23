@@ -118,6 +118,8 @@ namespace CSDBPortal.Business
                                 join p in _db.Projects on dmc.ProjectId equals p.Id
                                 join ic in _db.InformationCodes on dmc.InformationCodeId equals ic.Id
                                 join lc in _db.LocationCodes on dmc.LocationCodeId equals lc.Id
+                                join xv in _db.XmlValidations on dmc.Id equals xv.DataModuleId into xvGroup
+                                from xv in xvGroup.DefaultIfEmpty()
                                 where dmc.IsDeleted == false
                                 select new {
                                     dmc.Id, dmc.DMC, dmc.ProjectId, dmc.ModelIdentification, dmc.SDC,
@@ -125,7 +127,9 @@ namespace CSDBPortal.Business
                                     dmc.InfoName, dmc.TechName, dmc.LocationCodeId, dmc.CreatedBy,
                                     dmc.IsBrexXml, dmc.CreatedOn, dmc.UpdatedBy, dmc.UpdatedOn,
                                     ProjectName = p.Title, InformationCodeDesc = ic.Code,
-                                    dmc.xml, LocationCodeDesc = lc.Code
+                                    dmc.xml, LocationCodeDesc = lc.Code,
+                                    ValidationStatus = (bool?)xv.UploadStatus,
+                                    ValidationMessage = xv.Message
                                 }).ToListAsync();
 
                 maintenanceViewModel.DataModuleCodes = new List<CustomDataModuleCode>();
@@ -145,7 +149,9 @@ namespace CSDBPortal.Business
                         IsBrexXml = dataModuleCode.IsBrexXml,
                         StandardNumberingSystem = dataModuleCode.StandardNumberingSystem,
                         SDC = dataModuleCode.SDC, xml = dataModuleCode.xml,
-                        UpdatedBy = dataModuleCode.UpdatedBy, UpdatedOn = dataModuleCode.UpdatedOn
+                        UpdatedBy = dataModuleCode.UpdatedBy, UpdatedOn = dataModuleCode.UpdatedOn,
+                        ValidationStatus = dataModuleCode.ValidationStatus,
+                        ValidationMessage = dataModuleCode.ValidationMessage
                     });
                 }
 

@@ -18,17 +18,20 @@ namespace CSDBPortal.Controllers
         private readonly IWebHostEnvironment _appEnvironment;
         private readonly BaseManager _baseManager;
         private readonly MaintenanceManager _maintenanceManager;
+        private readonly BrexValidationEngine _brexValidationEngine;
 
         public MaintenanceController(
             ApplicationDbContext db,
             IWebHostEnvironment appEnvironment,
             BaseManager baseManager,
-            MaintenanceManager maintenanceManager)
+            MaintenanceManager maintenanceManager,
+            BrexValidationEngine brexValidationEngine)
         {
             _db = db;
             _appEnvironment = appEnvironment;
             _baseManager = baseManager;
             _maintenanceManager = maintenanceManager;
+            _brexValidationEngine = brexValidationEngine;
         }
 
         public async Task<IActionResult> Index()
@@ -564,7 +567,17 @@ namespace CSDBPortal.Controllers
             xmlDoc.WriteTo(new XmlTextWriter(stringWriter));
             dmc.xml = stringWriter.ToString();
             await _db.SaveChangesAsync();
-            return new JsonResult(true);
+
+            // Auto-validate against BREX rules after generating XML
+            var (passed, message) = await _brexValidationEngine.ValidateAsync(dmc.Id, User.Identity.Name);
+            return new JsonResult(new { status = passed, message });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidateDMC(int dmcId)
+        {
+            var (passed, message) = await _brexValidationEngine.ValidateAsync(dmcId, User.Identity.Name);
+            return Json(new { status = passed, message });
         }
 
         private void SetXmlNodeInnerText(XmlDocument doc, XmlNamespaceManager xMan, string xpath, string value)

@@ -24,6 +24,8 @@ namespace CSDBPortal.ViewModels
         public string ProjectName { get; set; }
         public string InformationCodeDesc { get; set; }
         public string LocationCodeDesc { get; set; }
+        public bool? ValidationStatus { get; set; }
+        public string? ValidationMessage { get; set; }
     }
 
     public class CustomProjet : Project

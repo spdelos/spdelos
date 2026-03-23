@@ -40,6 +40,7 @@ builder.Services.AddScoped<MaintenanceManager>();
 builder.Services.AddScoped<AdministrationManager>();
 builder.Services.AddScoped<ConfigurationsManager>();
 builder.Services.AddScoped<ICNManager>();
+builder.Services.AddScoped<BrexValidationEngine>();
 
 var app = builder.Build();
 

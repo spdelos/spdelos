@@ -418,10 +418,11 @@
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
-                                        <th width="20%">Project Name</th>
-                                        <th width="55%">DMC</th>
+                                        <th width="18%">Project Name</th>
+                                        <th width="44%">DMC</th>
                                         <th width="5%">XML</th>
-                                        <th width="20%">Actions</th>
+                                        <th width="8%">BREX</th>
+                                        <th width="25%">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -433,8 +434,8 @@
                                             <td style="display:none">@p.InformationCodeId</td>
                                             <td style="display:none">@p.LocationCodeId</td>
 
-                                            <td width="20%">@p.ProjectName</td>
-                                            <td width="55%">@p.DMC</td>
+                                            <td width="18%">@p.ProjectName</td>
+                                            <td width="44%">@p.DMC</td>
                                             @if (p.xml != null)
                                             {
                                                 <td width="5%"><a href="#" class="btn edit_button view_dmc_xml">View</a></td>
@@ -443,7 +444,25 @@
                                             {
                                                 <td width="5%"><a href="#" class="btn edit_button generate_DMC">Generate</a></td>
                                             }
-                                            <td width="20%">
+                                            <td width="8%">
+                                                @if (p.ValidationStatus == true)
+                                                {
+                                                    <span class="badge bg-success" title="@p.ValidationMessage">Pass</span>
+                                                }
+                                                else if (p.ValidationStatus == false)
+                                                {
+                                                    <span class="badge bg-danger brex-fail-badge" style="cursor:pointer" title="@p.ValidationMessage">Fail</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">—</span>
+                                                }
+                                            </td>
+                                            <td width="25%">
+                                                @if (p.xml != null)
+                                                {
+                                                    <a href="#" class="btn edit_button validate_DMC">Validate</a>
+                                                }
                                                 <a href="#" class="btn edit_button delete_DMC">Delete</a>
                                             </td>
                                         </tr>
@@ -2052,6 +2071,23 @@
             });
 
 
+
+            $('#tableDMC tbody').on('click', '.validate_DMC', function () {
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+                $.ajax({
+                    type: "POST",
+                    url: "/Maintenance/ValidateDMC",
+                    data: { dmcId: id },
+                    dataType: "json",
+                    success: function (data) {
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('ValidateDMC failed:', status, error);
+                    }
+                });
+            });
 
             $('#tableDMC tbody').on('click', '.delete_DMC', function () {
 
