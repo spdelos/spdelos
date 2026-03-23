@@ -282,21 +282,42 @@ namespace CSDBPortal.Controllers
         public async Task<JsonResult> SaveBrexRule(BrexRule brexRule)
         {
             var brexRuleFromDb = await _db.BrexRules.FirstOrDefaultAsync(b => b.Id == brexRule.Id);
-            if (brexRuleFromDb != null)
+            if (brexRuleFromDb == null)
+                return Json(new { saved = false, validated = false, count = 0, passed = 0, failed = 0 });
+
+            brexRuleFromDb.Group = brexRule.Group;
+            brexRuleFromDb.RuleName = brexRule.RuleName;
+            brexRuleFromDb.XmlTag = brexRule.XmlTag;
+            brexRuleFromDb.SubXmlTag = brexRule.SubXmlTag;
+            brexRuleFromDb.Type = brexRule.Type;
+            brexRuleFromDb.Length = brexRule.Length;
+            brexRuleFromDb.RangeValue = brexRule.RangeValue;
+            brexRuleFromDb.MatchValue = brexRule.MatchValue;
+            brexRuleFromDb.AttributeName = brexRule.AttributeName;
+            brexRuleFromDb.UpdatedBy = User.Identity.Name;
+            brexRuleFromDb.UpdatedOn = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            // Project-wide re-validation: run BREX validation on every DM with generated XML in this project
+            var dmIds = await _db.DataModuleCodes
+                .Where(d => d.ProjectId == brexRuleFromDb.ProjectId
+                         && d.IsBrexXml == false
+                         && d.xml != null
+                         && d.IsDeleted == false)
+                .Select(d => d.Id)
+                .ToListAsync();
+
+            if (!dmIds.Any())
+                return Json(new { saved = true, validated = false, count = 0, passed = 0, failed = 0 });
+
+            int passedCount = 0, failedCount = 0;
+            foreach (var dmId in dmIds)
             {
-                brexRuleFromDb.Group = brexRule.Group;
-                brexRuleFromDb.RuleName = brexRule.RuleName;
-                brexRuleFromDb.XmlTag = brexRule.XmlTag;
-                brexRuleFromDb.SubXmlTag = brexRule.SubXmlTag;
-                brexRuleFromDb.Type = brexRule.Type;
-                brexRuleFromDb.Length = brexRule.Length;
-                brexRuleFromDb.RangeValue = brexRule.RangeValue;
-                brexRuleFromDb.MatchValue = brexRule.MatchValue;
-                brexRuleFromDb.AttributeName = brexRule.AttributeName;
-                brexRuleFromDb.UpdatedBy = User.Identity.Name;
-                brexRuleFromDb.UpdatedOn = DateTime.UtcNow;
+                var (passed, _) = await _brexValidationEngine.ValidateAsync(dmId, User.Identity.Name);
+                if (passed) passedCount++; else failedCount++;
             }
-            return Json(await _db.SaveChangesAsync());
+
+            return Json(new { saved = true, validated = true, count = dmIds.Count, passed = passedCount, failed = failedCount });
         }
 
         public async Task<JsonResult> GetBrexRules(int projectId)

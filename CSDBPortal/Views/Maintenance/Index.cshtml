@@ -1878,10 +1878,21 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/SaveBrexRule",
+                    url: "/Maintenance/SaveBrexRule",
                     data: { brexRule: brexRule },
                     dataType: "json",
                     success: function (data) {
+                        if (data.validated) {
+                            var status = data.failed === 0;
+                            var msg = 'BREX rule saved. Project-wide validation complete: '
+                                + data.passed + ' passed, ' + data.failed + ' failed (of ' + data.count + ' data modules).';
+                            showAlert(status, msg);
+                        } else {
+                            showAlert(true, 'BREX rule saved. No data modules with generated XML found in this project.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('SaveBrexRule failed:', status, error);
                     }
                 });
 
