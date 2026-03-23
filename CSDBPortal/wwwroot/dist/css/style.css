@@ -104,10 +104,12 @@ a:hover { text-decoration: none !important; }
 .sidebar-brand-navietm {
     height: 88px;
     width: auto;
-    max-width: 100%;
+    max-width: calc(100% - 16px);
     object-fit: contain;
     flex-shrink: 0;
-    mix-blend-mode: multiply;
+    background: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    padding: 6px 10px;
     transition: height 0.2s ease, width 0.2s ease;
 }
 
@@ -130,9 +132,10 @@ a:hover { text-decoration: none !important; }
     padding: 12px 8px;
 }
 .app-sidebar.collapsed .sidebar-brand-navietm {
-    height: 40px;
-    width: 40px;
+    height: 44px;
+    width: 44px;
     object-fit: contain;
+    padding: 4px;
 }
 
 .topbar-csdb-logo {
