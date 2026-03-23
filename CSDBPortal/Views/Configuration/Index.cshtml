@@ -1,6 +1,6 @@
 ﻿@model CSDBPortal.ViewModels.ConfigurationViewModel
 @{
-    ViewData["Title"] = "Configuration";
+    ViewData["Title"] = "Configure";
 
     bool hasIssu        = User.HasClaim("Permission", Features.IssuAdministration);
     bool hasInfoCodeSet = User.HasClaim("Permission", Features.InfoCodeSetAdministration);
@@ -18,7 +18,7 @@
 
     <!-- ── Vertical Tab Nav ── -->
     <nav class="vtab-nav" id="pills-tab" role="tablist">
-        <div class="vtab-nav-title">Configuration</div>
+        <div class="vtab-nav-title">Configure</div>
 
         @if (hasIssu)
         {

@@ -1,6 +1,6 @@
 ﻿@model CSDBPortal.ViewModels.MaintenanceViewModel
 @{
-    ViewData["Title"] = "Maintenance";
+    ViewData["Title"] = "Manage";
 
     bool hasLocCodeSet = User.HasClaim("Permission", Features.LocationCodeSetAdministration);
     bool hasLocCode    = User.HasClaim("Permission", Features.LocationCodeAdministration);
@@ -29,7 +29,7 @@
     <!-- ── Secondary Navigation Panel ── -->
     <aside class="maint-panel">
         <div class="maint-panel-header">
-            <div class="maint-panel-title">Maintenance</div>
+            <div class="maint-panel-title">Manage</div>
             <div class="maint-panel-sub">Project data &amp; structures</div>
         </div>
 
