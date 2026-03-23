@@ -851,75 +851,147 @@ a:hover { text-decoration: none !important; }
 .icn-wrapper .generate_button:hover { background: var(--primary); }
 
 /* ════════════════════════════════════════════
-   LOGIN PAGE
+   LOGIN PAGE  (redesigned – split-panel layout)
    ════════════════════════════════════════════ */
-.log-in_button {
-    background-color: #568CDA;
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 16px;
-    color: #FFFFFF;
+.login-page {
+    margin: 0;
+    padding: 0;
+    background: var(--sidebar-bg);
 }
 
-.log-in_button:hover { color: #FFFFFF; }
-
-.sign-up_button {
-    background-color: transparent;
-    border-radius: 6px;
-    font-size: 16px;
-    color: #000000;
-    border: 1px solid #000000;
-}
-
-.log-in_form {
-    background-image: url(../img/form-bg.png);
+.login-shell {
+    display: flex;
     min-height: 100vh;
-    background-repeat: no-repeat;
+}
+
+/* ── Left panel: branding / hero ── */
+.login-panel-left {
+    width: 420px;
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    background-image: url(../img/form-bg.png);
     background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-panel-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 37, 64, 0.82);
+}
+
+.login-brand-top,
+.login-hero,
+.login-panel-footer-text {
+    position: relative;
+    z-index: 1;
+}
+
+.login-logo-navietm {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.login-hero {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.log-in_form .card {
-    background: rgba(205,225,253,0.58);
-    box-shadow: 0 16px 24px rgba(0,0,0,0.04);
-    border-radius: 24px;
-    width: 580px;
-    padding: 30px 24px;
+.login-logo-ship {
+    width: 200px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
 }
 
-.form-title h1 {
-    font-weight: 600;
-    font-size: 32px;
-    color: #1F1D37;
+.login-panel-footer-text {
+    color: var(--sidebar-text);
+    font-size: 12px;
+    opacity: 0.6;
+    text-align: center;
 }
 
-.log-in_form .input-title,
-.log-in_form .form-check-label {
-    line-height: 1.6;
-    color: #1F1D37;
+/* ── Right panel: form ── */
+.login-panel-right {
+    flex: 1;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
 }
 
-.log-in_form .submit_button {
-    background-color: #337AB7;
-    border-radius: 6px;
-    font-weight: 600;
-    color: #FFFFFF;
+.login-form-box {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 40px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
-.log-in_form .psw a {
-    color: #323C71 !important;
+.login-logos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
 }
 
-.log-in_footer {
-    background: #1F83C8;
-    padding: 10px 20px;
+.login-logo-csdb {
+    height: 34px;
+    width: auto;
+    object-fit: contain;
 }
 
-.log-in_footer .nav-link {
+.login-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.login-subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.login-forgot {
     font-size: 13px;
-    color: #FFFFFF !important;
+    color: var(--primary-light);
+    text-decoration: none;
+}
+
+.login-forgot:hover { text-decoration: underline; }
+
+.login-submit {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    padding: 11px;
+    border-radius: var(--radius-sm);
+    border: none;
+    transition: background 0.2s;
+}
+
+.login-submit:hover {
+    background: var(--primary-hover);
+    color: white;
+}
+
+@media (max-width: 640px) {
+    .login-panel-left { display: none; }
+    .login-panel-right { padding: 24px 16px; }
+    .login-form-box { padding: 28px 20px; }
 }
 
 /* ════════════════════════════════════════════
