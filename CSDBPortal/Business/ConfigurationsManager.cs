@@ -25,6 +25,9 @@ namespace CSDBPortal.Business
                 configurationViewModel.Icnformats = new List<CustomIcnFormat>();
                 configurationViewModel.IcnFormatMasterDestinationFields = new List<ICNFormatMasterField>();
                 configurationViewModel.IcnFormatMasterFields = new List<ICNFormatMasterField>();
+                configurationViewModel.LocationCodes = new List<CustomLocationCode>();
+                configurationViewModel.LocationCodesSets = new List<LocationCodeSet>();
+                configurationViewModel.ResponsiblePartnerCodes = new List<ResponsiblePartnerCode>();
 
                 configurationViewModel.Designations = await _db.Designations.ToListAsync();
                 configurationViewModel.InformationCodesSets = await _db.InformationCodeSets.ToListAsync();
@@ -99,6 +102,25 @@ namespace CSDBPortal.Business
                         DataModuleId = ic.DataModuleId,
                         InformationCodeSetId = ic.InformationCodeSetId,
                         InformationCodeSetDescription = ic.InformationCodeSetDescription
+                    });
+                }
+
+                configurationViewModel.LocationCodesSets = await _db.LocationCodeSets.ToListAsync();
+                configurationViewModel.ResponsiblePartnerCodes = await _db.ResponsiblePartnerCodes.ToListAsync();
+
+                var lcresult = await (from lc in _db.LocationCodes
+                                join lcs in _db.LocationCodeSets on lc.LocationCodeSetId equals lcs.Id
+                                select new { lc.Id, lc.Code, lc.Description, lc.LocationCodeSetId, LocationCodeSetDescription = lcs.Description }).ToListAsync();
+
+                foreach (var lc in lcresult)
+                {
+                    configurationViewModel.LocationCodes.Add(new CustomLocationCode
+                    {
+                        Id = lc.Id,
+                        Code = lc.Code,
+                        Description = lc.Description,
+                        LocationCodeSetId = lc.LocationCodeSetId,
+                        LocationCodeSetDescription = lc.LocationCodeSetDescription
                     });
                 }
 
