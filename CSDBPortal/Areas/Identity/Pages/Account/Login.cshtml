@@ -1,37 +1,61 @@
-﻿@page
+@page
 @model LoginModel
 
 @{
     ViewData["Title"] = "Log in";
+    Layout = "/Views/Shared/_Layout.cshtml";
 }
 
-<div class="log-in_form">
-    <div class="container">
-        <div class="card d-flex justify-content-center">
-            <form id="account" method="post">
-                <span class="errmsg">@ViewBag.error</span>
-                <div class="form-title">
-                    <h1 class="text-center pb-4">Log In</h1>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="input-title">Email</label>
-                    <input type="text" class="form-control" name="email">
-                </div>
-                <div class="form-group">
-                    <label for="password" class="input-title">Password</label>
-                    <input type="password" class="form-control" name="password">
-                </div>
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="exampleCheck1">
-                    <label class="form-check-label" for="exampleCheck1">Remember Me?</label>
-                </div>
-                <button type="submit" id="login-submit" class="btn submit_button btn-block mb-2">Submit</button>
-                <span class="psw"> <a href="#">Forgot password?</a></span>
-            </form>
+<div class="login-page">
+    <div class="login-shell">
+
+        <!-- Left branding panel -->
+        <div class="login-panel-left">
+            <div class="login-brand-top">
+                <img src="~/dist/img/logo-1.png" alt="NavIETM" class="login-logo-navietm" />
+            </div>
+            <div class="login-hero">
+                <img src="~/dist/img/logo-3.png" alt="CSDB" class="login-logo-ship" />
+            </div>
+            <p class="login-panel-footer-text">NavIETM&reg; CSDB &mdash; Powered by NavIETM</p>
         </div>
+
+        <!-- Right form panel -->
+        <div class="login-panel-right">
+            <div class="login-form-box">
+                <div class="login-logos">
+                    <img src="~/dist/img/logo-2.png" alt="CSDB" class="login-logo-csdb" />
+                </div>
+                <div class="login-title">Welcome back</div>
+                <div class="login-subtitle">Sign in to your CSDB account</div>
+
+                <form id="account" method="post">
+                    <span class="errmsg text-danger d-block mb-3">@ViewBag.error</span>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label input-title">Email</label>
+                        <input type="text" class="form-control" id="email" name="email" autocomplete="username" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label input-title">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" />
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="form-check mb-0">
+                            <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe" />
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                        </div>
+                        <a href="#" class="login-forgot">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" id="login-submit" class="btn login-submit w-100">Sign in</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 </div>
 
 @section Scripts {
-<partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" />
 }
