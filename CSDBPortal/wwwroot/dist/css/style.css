@@ -922,11 +922,12 @@ a:hover { text-decoration: none !important; }
 }
 
 .login-logo-navietm {
-    height: 32px;
+    height: 96px;
     width: auto;
     object-fit: contain;
     display: block;
     margin: 0 auto;
+    background: transparent;
 }
 
 .login-hero {
