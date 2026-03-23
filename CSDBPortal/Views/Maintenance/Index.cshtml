@@ -944,21 +944,21 @@
 </div>
 
 <div class="modal fade"  id="projectNavigationModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document" style="margin-left: 10rem">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content" >
             <div class="modal-header btn" >
                 <h4 class="modal-title modelprojectSns">Project Navigation</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
+                <div class="row mb-2">
+                    <div class="col-12">
                         <div class="alertProjectNavigationModel" style="display:none;">
                             <span id="alertMessageProjectNavigationModel">This alert box could indicate a successful or positive action.</span>
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
                             <input type="radio" id="projectNavigationDMC" value="dmc" name="dmctype" checked /> DMC
@@ -973,21 +973,21 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <span>DMC List</span>
-                            <select class="form-select form-control" aria-label="Default select example" required id="projectNavigationTreeDmcDropDown"></select>
-                            <button id="addDMCtoTree" class="btn btn-primary" value="AddDMC">Add to Tree</button>
+                            <label class="form-label fw-semibold">DMC List</label>
+                            <select class="form-select form-control w-100" aria-label="Default select example" required id="projectNavigationTreeDmcDropDown"></select>
+                            <button id="addDMCtoTree" class="btn btn-primary w-100 mt-2" value="AddDMC">Add to Tree</button>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <span>Navigation Tree</span>
-                            <div class="table-responsive table-striped droppable">
+                            <label class="form-label fw-semibold">Navigation Tree</label>
+                            <div class="table-responsive table-striped droppable" style="min-height: 150px;">
                                 <div id="projectNavigationTree" style="padding: 0"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer mt-3">
                     <button id="saveProjectNavigationTree" class="btn btn-primary" value="Save">Save</button>
                     <button type="button" class="btn btn-default modelCancelProjectNavigationTree" data-bs-dismiss="modal">Cancel</button>
                 </div>
