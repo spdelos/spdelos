@@ -100,6 +100,13 @@ a:hover { text-decoration: none !important; }
     flex-shrink: 0;
 }
 
+.sidebar-brand-navietm {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .sidebar-brand-text {
     color: white;
     font-size: 15px;
@@ -114,6 +121,14 @@ a:hover { text-decoration: none !important; }
 }
 
 .app-sidebar.collapsed .sidebar-brand-text { display: none; }
+.app-sidebar.collapsed .sidebar-brand-navietm { display: none; }
+
+.topbar-csdb-logo {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+}
 
 /* Nav */
 .sidebar-nav {
