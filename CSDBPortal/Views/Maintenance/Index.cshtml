@@ -2900,7 +2900,8 @@
                 $('#idmLegend').show();
 
                 $.getJSON('/Maintenance/GetIdManagerData?projectId=' + projectId, function (rows) {
-                    if (idmTable) { idmTable.destroy(); idmTable = null; }
+                    if ($.fn.DataTable.isDataTable('#idmTable')) { $('#idmTable').DataTable().destroy(); }
+                    idmTable = null;
 
                     var html = '';
                     if (!rows || rows.length === 0) {
