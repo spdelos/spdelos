@@ -1097,6 +1097,16 @@
 
     <script type="text/javascript">
 
+        // Activate a specific tab when redirected from another page (e.g. ?tab=projects)
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var tab = params.get('tab');
+            if (tab === 'projects') {
+                var el = document.getElementById('pills-tab-5');
+                if (el) bootstrap.Tab.getOrCreateInstance(el).show();
+            }
+        })();
+
         var selectedProject = 0;
         var selectedSNS;
         var currentNodeText;
