@@ -2654,7 +2654,7 @@
         }
 
         function ssAddRowToTable(ss) {
-            var updated = ss.updatedBy ? ss.updatedBy + ' @ ' + ss.updatedOn : '-';
+            var updated = ss.updatedBy ? ss.updatedBy + ' @@ ' + ss.updatedOn : '-';
             var row = '<tr data-id="' + ss.id + '">'
                 + '<td>' + $('<span>').text(ss.name).html() + '</td>'
                 + '<td>' + $('<span>').text(ss.fileName).html() + '</td>'
