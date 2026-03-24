@@ -33,5 +33,9 @@ namespace CSDBPortal.Models
         public int IssueNo { get; set; }
         [Column("AssignedTo")]
         public string? AssignedTo { get; set; }
+        [Column("CheckedInBy")]
+        public string? CheckedInBy { get; set; }
+        [Column("CheckedInOn")]
+        public DateTime? CheckedInOn { get; set; }
     }
 }

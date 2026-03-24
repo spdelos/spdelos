@@ -1,0 +1,342 @@
+@model CSDBPortal.ViewModels.TaskViewModel
+@{
+    ViewData["Title"] = "Task";
+}
+
+<div class="page-header mb-4">
+    <h4 class="mb-0" style="font-weight:700;color:var(--text);">
+        <i class="fa-solid fa-list-check me-2" style="color:var(--primary-light)"></i>My Tasks
+    </h4>
+    <p class="text-muted mt-1 mb-0" style="font-size:13px;">Files assigned to you for authoring and illustration.</p>
+</div>
+
+<!-- Tabs -->
+<ul class="nav tab-header" id="taskTabs" role="tablist">
+    <li class="nav-item item-one" role="presentation">
+        <a class="nav-link active" id="tab-author" data-bs-toggle="tab" href="#panel-author" role="tab">
+            <i class="fa-solid fa-pen-nib me-1"></i> Author
+            <span class="badge bg-secondary ms-1">@Model.AssignedDmcs.Count</span>
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="tab-illustrator" data-bs-toggle="tab" href="#panel-illustrator" role="tab">
+            <i class="fa-solid fa-image me-1"></i> Illustrator
+            <span class="badge bg-secondary ms-1">@Model.AssignedIcns.Count</span>
+        </a>
+    </li>
+</ul>
+
+<div class="tab-content" id="taskTabContent">
+
+    <!-- ══════════════════════════════════════
+         AUTHOR TAB — Assigned DMCs
+         ══════════════════════════════════════ -->
+    <div class="tab-pane fade show active" id="panel-author" role="tabpanel">
+        <div class="card mt-3">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableDmcTask" width="100%">
+                    <thead class="thead">
+                        <tr>
+                            <th style="display:none"></th><!-- Id -->
+                            <th>Project</th>
+                            <th>DMC</th>
+                            <th width="9%">XML</th>
+                            <th width="10%">Status</th>
+                            <th width="14%">Checked Out By</th>
+                            <th width="16%">Check Out Date</th>
+                            <th width="14%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.AssignedDmcs)
+                        {
+                            <tr>
+                                <td style="display:none">@d.Id</td>
+                                <td>@d.ProjectName</td>
+                                <td>@d.DMC</td>
+                                <td>
+                                    @if (d.HasXml)
+                                    {
+                                        <div class="btn-group btn-group-sm">
+                                            @if (d.CheckoutStatus == "CheckedOut")
+                                            {
+                                                <a href="#" class="btn edit_button task_checkin_dmc">Check In</a>
+                                            }
+                                            else
+                                            {
+                                                <a href="#" class="btn edit_button task_checkout_dmc">Check Out</a>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">No XML</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!d.HasXml)
+                                    {
+                                        <span class="badge bg-secondary">—</span>
+                                    }
+                                    else if (d.CheckoutStatus == "CheckedOut")
+                                    {
+                                        <span class="badge bg-warning text-dark">Checked Out</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">Available</span>
+                                    }
+                                </td>
+                                <td>@(d.CheckedOutBy ?? "—")</td>
+                                <td>@(d.CheckedOutOn.HasValue ? d.CheckedOutOn.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm") : "—")</td>
+                                <td>
+                                    @if (d.HasXml)
+                                    {
+                                        <a href="/Task/DownloadDMCXml?dmcId=@d.Id" class="btn edit_button btn-sm">Download</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (!Model.AssignedDmcs.Any())
+        {
+            <div class="text-center text-muted py-5">
+                <i class="fa-solid fa-inbox fa-2x mb-2 d-block"></i>
+                No DMCs are currently assigned to you.
+            </div>
+        }
+    </div>
+
+    <!-- ══════════════════════════════════════
+         ILLUSTRATOR TAB — Assigned ICNs
+         ══════════════════════════════════════ -->
+    <div class="tab-pane fade" id="panel-illustrator" role="tabpanel">
+        <div class="card mt-3">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableIcnTask" width="100%">
+                    <thead class="thead">
+                        <tr>
+                            <th style="display:none"></th><!-- Id -->
+                            <th>Project</th>
+                            <th>ICN Number</th>
+                            <th width="10%">Image</th>
+                            <th width="10%">Status</th>
+                            <th width="14%">Checked In By</th>
+                            <th width="16%">Check In Date</th>
+                            <th width="10%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var i in Model.AssignedIcns)
+                        {
+                            <tr>
+                                <td style="display:none">@i.Id</td>
+                                <td>@i.ProjectName</td>
+                                <td>@i.Number</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(i.ImagePath))
+                                    {
+                                        <a href="@i.ImagePath" target="_blank" class="btn edit_button btn-sm">View</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(i.CheckedInBy))
+                                    {
+                                        <span class="badge bg-success">Checked In</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    }
+                                </td>
+                                <td>@(i.CheckedInBy ?? "—")</td>
+                                <td>@(i.CheckedInOn.HasValue ? i.CheckedInOn.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm") : "—")</td>
+                                <td>
+                                    <a href="#" class="btn edit_button btn-sm task_checkin_icn">Check In</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (!Model.AssignedIcns.Any())
+        {
+            <div class="text-center text-muted py-5">
+                <i class="fa-solid fa-inbox fa-2x mb-2 d-block"></i>
+                No ICNs are currently assigned to you.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- DMC Check In Modal -->
+<div class="modal fade" id="dmcCheckinModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Check In XML</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">DMC: <strong id="dmcCheckinName"></strong></p>
+                <p class="mb-3">Upload the modified XML file. The system will verify that the <code>identAndStatusSection</code> is unchanged and that the file passes BREX validation before accepting it.</p>
+                <input type="file" id="dmcCheckinFile" class="form-control" accept=".xml" />
+                <div id="dmcCheckinMessage" class="mt-3 small" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnDmcCheckinSubmit">Check In</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ICN Check In Modal -->
+<div class="modal fade" id="icnCheckinModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Check In Illustration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">ICN: <strong id="icnCheckinNumber"></strong></p>
+                <p class="mb-3">Upload the completed illustration file (PNG, JPEG, TIFF, SVG, etc.).</p>
+                <input type="file" id="icnCheckinFile" class="form-control" accept="image/*,.svg,.tif,.tiff" />
+                <div id="icnCheckinMessage" class="mt-3 small" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnIcnCheckinSubmit">Check In</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script type="text/javascript">
+
+    // ── DMC: Check Out ──────────────────────────────────────────────
+    var taskCheckoutDmcId = null;
+
+    $('#tableDmcTask tbody').on('click', '.task_checkout_dmc', function () {
+        var rowobj = $(this).closest('tr');
+        taskCheckoutDmcId = rowobj.find('td:eq(0)').text();
+
+        $.ajax({
+            type: 'POST',
+            url: '/Task/CheckoutDMC',
+            data: { dmcId: taskCheckoutDmcId },
+            dataType: 'json',
+            success: function (data) {
+                if (data.status) {
+                    window.location.href = '/Task/DownloadDMCXml?dmcId=' + taskCheckoutDmcId;
+                    setTimeout(function () { location.reload(); }, 1000);
+                } else {
+                    alert(data.message || 'Checkout failed.');
+                }
+            },
+            error: function () { alert('An error occurred during checkout.'); }
+        });
+    });
+
+    // ── DMC: Check In ───────────────────────────────────────────────
+    var dmcCheckinId = null;
+
+    $('#tableDmcTask tbody').on('click', '.task_checkin_dmc', function () {
+        var rowobj = $(this).closest('tr');
+        dmcCheckinId = rowobj.find('td:eq(0)').text();
+        var dmcName  = rowobj.find('td:eq(2)').text();
+        $('#dmcCheckinName').text(dmcName);
+        $('#dmcCheckinFile').val('');
+        $('#dmcCheckinMessage').hide().text('').removeClass('text-success text-danger');
+        $('#btnDmcCheckinSubmit').prop('disabled', false).text('Check In');
+        $('#dmcCheckinModal').modal('show');
+    });
+
+    $('#btnDmcCheckinSubmit').on('click', function () {
+        var file = $('#dmcCheckinFile')[0].files[0];
+        if (!file) {
+            $('#dmcCheckinMessage').show().removeClass('text-success').addClass('text-danger').text('Please select a file.');
+            return;
+        }
+        var fd = new FormData();
+        fd.append('dmcId', dmcCheckinId);
+        fd.append('file', file);
+        $('#btnDmcCheckinSubmit').prop('disabled', true).text('Checking in…');
+
+        $.ajax({
+            type: 'POST', url: '/Task/CheckinDMC', data: fd,
+            processData: false, contentType: false,
+            success: function (data) {
+                if (data.status) {
+                    $('#dmcCheckinMessage').show().removeClass('text-danger').addClass('text-success').text(data.message || 'Check-in successful.');
+                    setTimeout(function () { location.reload(); }, 1500);
+                } else {
+                    $('#dmcCheckinMessage').show().removeClass('text-success').addClass('text-danger').text(data.message || 'Check-in failed.');
+                    $('#btnDmcCheckinSubmit').prop('disabled', false).text('Check In');
+                }
+            },
+            error: function () {
+                $('#dmcCheckinMessage').show().removeClass('text-success').addClass('text-danger').text('An error occurred.');
+                $('#btnDmcCheckinSubmit').prop('disabled', false).text('Check In');
+            }
+        });
+    });
+
+    // ── ICN: Check In ───────────────────────────────────────────────
+    var icnCheckinId = null;
+
+    $('#tableIcnTask tbody').on('click', '.task_checkin_icn', function () {
+        var rowobj = $(this).closest('tr');
+        icnCheckinId = rowobj.find('td:eq(0)').text();
+        var icnNumber = rowobj.find('td:eq(2)').text();
+        $('#icnCheckinNumber').text(icnNumber);
+        $('#icnCheckinFile').val('');
+        $('#icnCheckinMessage').hide().text('').removeClass('text-success text-danger');
+        $('#btnIcnCheckinSubmit').prop('disabled', false).text('Check In');
+        $('#icnCheckinModal').modal('show');
+    });
+
+    $('#btnIcnCheckinSubmit').on('click', function () {
+        var file = $('#icnCheckinFile')[0].files[0];
+        if (!file) {
+            $('#icnCheckinMessage').show().removeClass('text-success').addClass('text-danger').text('Please select a file.');
+            return;
+        }
+        var fd = new FormData();
+        fd.append('icnId', icnCheckinId);
+        fd.append('file', file);
+        $('#btnIcnCheckinSubmit').prop('disabled', true).text('Checking in…');
+
+        $.ajax({
+            type: 'POST', url: '/Task/CheckinICN', data: fd,
+            processData: false, contentType: false,
+            success: function (data) {
+                if (data.status) {
+                    $('#icnCheckinMessage').show().removeClass('text-danger').addClass('text-success').text(data.message || 'Check-in successful.');
+                    setTimeout(function () { location.reload(); }, 1500);
+                } else {
+                    $('#icnCheckinMessage').show().removeClass('text-success').addClass('text-danger').text(data.message || 'Check-in failed.');
+                    $('#btnIcnCheckinSubmit').prop('disabled', false).text('Check In');
+                }
+            },
+            error: function () {
+                $('#icnCheckinMessage').show().removeClass('text-success').addClass('text-danger').text('An error occurred.');
+                $('#btnIcnCheckinSubmit').prop('disabled', false).text('Check In');
+            }
+        });
+    });
+
+</script>
+}
