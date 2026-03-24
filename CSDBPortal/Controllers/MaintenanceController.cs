@@ -428,11 +428,101 @@ namespace CSDBPortal.Controllers
             return RedirectToAction("Index", "Maintenance");
         }
 
-        public async Task<FileResult> ViewDMCXml(int dmcId)
+        // Opens the XML inline in a new browser tab (default XML viewer / Notepad fallback).
+        public async Task<ContentResult> ViewDMCXml(int dmcId)
+        {
+            DataModuleCode dmc = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
+            return Content(dmc.xml, "text/xml", Encoding.UTF8);
+        }
+
+        // Downloads the XML file so the OS opens it in the default XML editor (or Notepad).
+        public async Task<FileResult> DownloadDMCXml(int dmcId)
         {
             DataModuleCode dmc = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
             return File(Encoding.UTF8.GetBytes(dmc.xml), "text/xml", dmc.DMC + ".xml");
         }
+
+        [HttpPost]
+        public async Task<JsonResult> CheckoutDMC(int dmcId)
+        {
+            DataModuleCode dmc = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
+            if (dmc == null)
+                return Json(new { status = false, message = "DMC not found." });
+            if (dmc.CheckoutStatus == "CheckedOut")
+                return Json(new { status = false, message = $"Already checked out by {dmc.CheckedOutBy}." });
+
+            dmc.CheckoutStatus = "CheckedOut";
+            dmc.CheckedOutBy = User.Identity.Name;
+            dmc.CheckedOutOn = DateTime.UtcNow;
+            dmc.OriginalXml = dmc.xml;
+            await _db.SaveChangesAsync();
+
+            return Json(new { status = true });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CheckinDMC(int dmcId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return Json(new { status = false, message = "No file uploaded." });
+
+            DataModuleCode dmc = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
+            if (dmc == null)
+                return Json(new { status = false, message = "DMC not found." });
+            if (dmc.CheckoutStatus != "CheckedOut")
+                return Json(new { status = false, message = "This DMC is not currently checked out." });
+
+            string uploadedXml;
+            using (var reader = new System.IO.StreamReader(file.OpenReadStream(), Encoding.UTF8))
+                uploadedXml = await reader.ReadToEndAsync();
+
+            // Validate XML is well-formed
+            XmlDocument uploadedDoc = new XmlDocument();
+            try { uploadedDoc.LoadXml(uploadedXml); }
+            catch (Exception ex)
+                { return Json(new { status = false, message = $"Uploaded file is not valid XML: {ex.Message}" }); }
+
+            // Constraint 1 — identAndStatusSection must be unchanged
+            if (!string.IsNullOrEmpty(dmc.OriginalXml))
+            {
+                try
+                {
+                    XmlDocument originalDoc = new XmlDocument();
+                    originalDoc.LoadXml(dmc.OriginalXml);
+
+                    string origSection = NormalizeXml(
+                        originalDoc.SelectSingleNode("//identAndStatusSection")?.OuterXml ?? string.Empty);
+                    string newSection = NormalizeXml(
+                        uploadedDoc.SelectSingleNode("//identAndStatusSection")?.OuterXml ?? string.Empty);
+
+                    if (!string.Equals(origSection, newSection, StringComparison.Ordinal))
+                        return Json(new { status = false, message = "Check-in rejected: the identAndStatusSection has been modified. Restore it to its original state and try again." });
+                }
+                catch { /* OriginalXml unparseable — skip comparison */ }
+            }
+
+            // Constraint 2 — BREX validation must pass
+            var (brexPassed, brexMessage) = await _brexValidationEngine.ValidateXmlStringAsync(dmc.ProjectId, uploadedXml);
+            if (!brexPassed)
+                return Json(new { status = false, message = $"Check-in rejected: BREX validation failed. {brexMessage}" });
+
+            // All constraints passed — complete check-in
+            dmc.xml = uploadedXml;
+            dmc.CheckoutStatus = null;
+            dmc.CheckedOutBy = null;
+            dmc.CheckedOutOn = null;
+            dmc.OriginalXml = null;
+            dmc.UpdatedBy = User.Identity.Name;
+            dmc.UpdatedOn = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            await _brexValidationEngine.RecordResultAsync(dmcId, true, brexMessage, User.Identity.Name);
+
+            return Json(new { status = true, message = "Check-in successful. BREX validation passed." });
+        }
+
+        private static string NormalizeXml(string xml) =>
+            System.Text.RegularExpressions.Regex.Replace(xml, @"\s+", " ").Trim();
 
         public async Task<JsonResult> GenerateBrexXml(int projectId)
         {

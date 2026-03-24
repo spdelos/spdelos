@@ -175,6 +175,46 @@ namespace CSDBPortal.Business
             return (false, $"[{label}] <{node.LocalName}> must be nested within <{requiredAncestor}>");
         }
 
+        // ── Check-in helpers ─────────────────────────────────────────────────
+
+        /// <summary>
+        /// Validates raw XML content against the project's active BREX rules
+        /// without touching the database. Used during check-in constraint checks.
+        /// </summary>
+        public async Task<(bool Passed, string Message)> ValidateXmlStringAsync(int projectId, string xmlContent)
+        {
+            var rules = await _db.BrexRules
+                .Where(r => r.ProjectId == projectId && r.IsActive == true && r.XmlTag != null)
+                .ToListAsync();
+
+            if (!rules.Any())
+                return (true, "No active BREX rules defined for this project.");
+
+            XmlDocument xmlDoc = new XmlDocument();
+            try { xmlDoc.LoadXml(xmlContent); }
+            catch (Exception ex)
+                { return (false, $"XML is malformed: {ex.Message}"); }
+
+            var xMan = new XmlNamespaceManager(xmlDoc.NameTable);
+            var failures = new List<string>();
+
+            foreach (var rule in rules)
+            {
+                var (passed, msg) = ApplyRule(xmlDoc, xMan, rule);
+                if (!passed) failures.Add(msg);
+            }
+
+            bool allPassed = failures.Count == 0;
+            string summary = allPassed ? "All BREX rules passed." : string.Join(" | ", failures);
+            return (allPassed, summary);
+        }
+
+        /// <summary>
+        /// Persists a validation result directly (used after a successful check-in).
+        /// </summary>
+        public async Task RecordResultAsync(int dmcId, bool passed, string message, string userName)
+            => await UpsertAsync(dmcId, passed, message, userName);
+
         // ── Helpers ───────────────────────────────────────────────────────────
 
         private static string Label(BrexRule rule) =>

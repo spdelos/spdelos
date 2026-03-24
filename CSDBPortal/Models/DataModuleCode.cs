@@ -27,6 +27,10 @@ namespace CSDBPortal.Models
         public string? xml { get; set; }
         public bool IsBrexXml { get; set; }
         public bool IsDeleted { get; set; }
+        public string? CheckoutStatus { get; set; }
+        public string? CheckedOutBy { get; set; }
+        public DateTime? CheckedOutOn { get; set; }
+        public string? OriginalXml { get; set; }
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
         public string? UpdatedBy { get; set; }

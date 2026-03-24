@@ -209,11 +209,12 @@
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
-                                        <th width="18%">Project Name</th>
-                                        <th width="44%">DMC</th>
-                                        <th width="5%">XML</th>
-                                        <th width="8%">BREX</th>
-                                        <th width="25%">Actions</th>
+                                        <th width="15%">Project Name</th>
+                                        <th width="36%">DMC</th>
+                                        <th width="11%">XML</th>
+                                        <th width="7%">BREX</th>
+                                        <th width="10%">Status</th>
+                                        <th width="21%">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -225,17 +226,22 @@
                                             <td style="display:none">@p.InformationCodeId</td>
                                             <td style="display:none">@p.LocationCodeId</td>
 
-                                            <td width="18%">@p.ProjectName</td>
-                                            <td width="44%">@p.DMC</td>
+                                            <td width="15%">@p.ProjectName</td>
+                                            <td width="36%">@p.DMC</td>
                                             @if (p.xml != null)
                                             {
-                                                <td width="5%"><a href="#" class="btn edit_button view_dmc_xml">View</a></td>
+                                                <td width="11%">
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <a href="#" class="btn edit_button view_dmc_xml" title="Open XML in viewer">View</a>
+                                                        <a href="#" class="btn edit_button checkout_dmc_xml" title="Download and check out">Check Out</a>
+                                                    </div>
+                                                </td>
                                             }
                                             else
                                             {
-                                                <td width="5%"><a href="#" class="btn edit_button generate_DMC">Generate</a></td>
+                                                <td width="11%"><a href="#" class="btn edit_button generate_DMC">Generate</a></td>
                                             }
-                                            <td width="8%">
+                                            <td width="7%">
                                                 @if (p.ValidationStatus == true)
                                                 {
                                                     <span class="badge bg-success" title="@p.ValidationMessage">Pass</span>
@@ -249,10 +255,28 @@
                                                     <span class="badge bg-secondary">—</span>
                                                 }
                                             </td>
-                                            <td width="25%">
+                                            <td width="10%">
+                                                @if (p.xml == null)
+                                                {
+                                                    <span class="badge bg-secondary">—</span>
+                                                }
+                                                else if (p.CheckoutStatus == "CheckedOut")
+                                                {
+                                                    <span class="badge bg-warning text-dark" title="Checked out by @p.CheckedOutBy">Checked Out</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Available</span>
+                                                }
+                                            </td>
+                                            <td width="21%">
                                                 @if (p.xml != null)
                                                 {
                                                     <a href="#" class="btn edit_button validate_DMC">Validate</a>
+                                                }
+                                                @if (p.xml != null && p.CheckoutStatus == "CheckedOut")
+                                                {
+                                                    <a href="#" class="btn edit_button checkin_dmc">Check In</a>
                                                 }
                                                 <a href="#" class="btn edit_button delete_DMC">Delete</a>
                                             </td>
@@ -263,6 +287,29 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Check In Modal -->
+                <div class="modal fade" id="checkinModal" tabindex="-1" aria-labelledby="checkinModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="checkinModalLabel">Check In XML</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-muted mb-2">DMC: <strong id="checkinDmcName"></strong></p>
+                                <p class="mb-3">Upload the modified XML file. The system will verify that the <code>identAndStatusSection</code> is unchanged and that the file passes BREX validation before accepting it.</p>
+                                <input type="file" id="checkinFile" class="form-control" accept=".xml" />
+                                <div id="checkinMessage" class="mt-3 small" style="display:none;"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="btnCheckinSubmit">Check In</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- /. tab-5 end -->
             }
             <div class="tab-pane fade @(ssFirst ? "show active" : "")" id="pills-8" role="tabpanel" aria-labelledby="pills-tab-8">
@@ -1707,10 +1754,81 @@
             });
 
             $('#tableDMC tbody').on('click', '.view_dmc_xml', function () {
-
                 var rowobj = $(this).closest("tr");
                 var id = rowobj.find("td:eq(0)").text();
-                location.href = 'Maintenance/ViewDMCXml?dmcId=' + id;
+                window.open('/Maintenance/ViewDMCXml?dmcId=' + id, '_blank');
+            });
+
+            $('#tableDMC tbody').on('click', '.checkout_dmc_xml', function () {
+                var rowobj = $(this).closest("tr");
+                var id = rowobj.find("td:eq(0)").text();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Maintenance/CheckoutDMC",
+                    data: { dmcId: id },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.status) {
+                            // Trigger download and then refresh to show updated status
+                            window.location.href = '/Maintenance/DownloadDMCXml?dmcId=' + id;
+                            setTimeout(function () { location.reload(); }, 1000);
+                        } else {
+                            alert(data.message || 'Checkout failed.');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred during checkout.');
+                    }
+                });
+            });
+
+            var checkinDmcId = null;
+
+            $('#tableDMC tbody').on('click', '.checkin_dmc', function () {
+                var rowobj = $(this).closest("tr");
+                checkinDmcId = rowobj.find("td:eq(0)").text();
+                var dmcName = rowobj.find("td:eq(5)").text();
+                $('#checkinDmcName').text(dmcName);
+                $('#checkinFile').val('');
+                $('#checkinMessage').hide().text('').removeClass('text-success text-danger');
+                $('#btnCheckinSubmit').prop('disabled', false).text('Check In');
+                $('#checkinModal').modal('show');
+            });
+
+            $('#btnCheckinSubmit').on('click', function () {
+                var file = $('#checkinFile')[0].files[0];
+                if (!file) {
+                    $('#checkinMessage').show().removeClass('text-success').addClass('text-danger').text('Please select a file.');
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('dmcId', checkinDmcId);
+                formData.append('file', file);
+
+                $('#btnCheckinSubmit').prop('disabled', true).text('Checking in...');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Maintenance/CheckinDMC',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        if (data.status) {
+                            $('#checkinMessage').show().removeClass('text-danger').addClass('text-success').text(data.message || 'Check-in successful.');
+                            setTimeout(function () { location.reload(); }, 1500);
+                        } else {
+                            $('#checkinMessage').show().removeClass('text-success').addClass('text-danger').text(data.message || 'Check-in failed.');
+                            $('#btnCheckinSubmit').prop('disabled', false).text('Check In');
+                        }
+                    },
+                    error: function () {
+                        $('#checkinMessage').show().removeClass('text-success').addClass('text-danger').text('An error occurred during check-in.');
+                        $('#btnCheckinSubmit').prop('disabled', false).text('Check In');
+                    }
+                });
             });
 
 
