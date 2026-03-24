@@ -779,5 +779,124 @@ namespace CSDBPortal.Controllers
             XmlNode node = doc.SelectSingleNode(xpath, xMan);
             value = node?.InnerText ?? string.Empty;
         }
+
+        // ── Stylesheet endpoints ───────────────────────────────────────────────
+
+        [HttpPost]
+        public async Task<JsonResult> UploadStylesheet(string name, string? remarks, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return Json(new { status = false, message = "No file selected." });
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".xsl" && ext != ".xslt")
+                return Json(new { status = false, message = "Only .xsl or .xslt files are accepted." });
+
+            string content;
+            using (var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
+                content = await reader.ReadToEndAsync();
+
+            // Basic XML well-formedness check
+            try
+            {
+                var doc = new XmlDocument();
+                doc.LoadXml(content);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = false, message = $"Invalid XML: {ex.Message}" });
+            }
+
+            var stylesheet = new Models.Stylesheet
+            {
+                Name       = name?.Trim() ?? Path.GetFileNameWithoutExtension(file.FileName),
+                FileName   = file.FileName,
+                Content    = content,
+                Remarks    = remarks?.Trim(),
+                UploadedBy = User.Identity!.Name ?? string.Empty,
+                UploadedOn = DateTime.UtcNow
+            };
+
+            _db.Stylesheets.Add(stylesheet);
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                status = true,
+                id         = stylesheet.Id,
+                name       = stylesheet.Name,
+                fileName   = stylesheet.FileName,
+                remarks    = stylesheet.Remarks,
+                uploadedBy = stylesheet.UploadedBy,
+                uploadedOn = stylesheet.UploadedOn.ToString("yyyy-MM-dd HH:mm")
+            });
+        }
+
+        public async Task<JsonResult> GetStylesheets()
+        {
+            var list = await _db.Stylesheets
+                .OrderByDescending(s => s.UploadedOn)
+                .Select(s => new
+                {
+                    s.Id, s.Name, s.FileName, s.Remarks,
+                    s.UploadedBy,
+                    UploadedOn = s.UploadedOn.ToString("yyyy-MM-dd HH:mm"),
+                    UpdatedBy  = s.UpdatedBy,
+                    UpdatedOn  = s.UpdatedOn != null ? s.UpdatedOn.Value.ToString("yyyy-MM-dd HH:mm") : (string?)null
+                })
+                .ToListAsync();
+            return Json(list);
+        }
+
+        public async Task<JsonResult> GetStylesheetContent(int id)
+        {
+            var ss = await _db.Stylesheets.FindAsync(id);
+            if (ss == null) return Json(new { status = false });
+            return Json(new { status = true, id = ss.Id, name = ss.Name, content = ss.Content, remarks = ss.Remarks });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SaveStylesheetContent(int id, string content, string? remarks)
+        {
+            var ss = await _db.Stylesheets.FindAsync(id);
+            if (ss == null) return Json(new { status = false, message = "Not found." });
+
+            // Validate XML before saving
+            try
+            {
+                var doc = new XmlDocument();
+                doc.LoadXml(content);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { status = false, message = $"Invalid XML: {ex.Message}" });
+            }
+
+            ss.Content   = content;
+            ss.Remarks   = remarks?.Trim();
+            ss.UpdatedBy = User.Identity!.Name;
+            ss.UpdatedOn = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            return Json(new { status = true });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteStylesheet(int id)
+        {
+            var ss = await _db.Stylesheets.FindAsync(id);
+            if (ss == null) return Json(new { status = false });
+            _db.Stylesheets.Remove(ss);
+            await _db.SaveChangesAsync();
+            return Json(new { status = true });
+        }
+
+        public async Task<IActionResult> DownloadStylesheet(int id)
+        {
+            var ss = await _db.Stylesheets.FindAsync(id);
+            if (ss == null) return NotFound();
+            var bytes = Encoding.UTF8.GetBytes(ss.Content ?? string.Empty);
+            return File(bytes, "application/xml", ss.FileName);
+        }
     }
 }

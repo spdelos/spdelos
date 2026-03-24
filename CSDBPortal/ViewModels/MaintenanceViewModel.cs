@@ -13,6 +13,8 @@ namespace CSDBPortal.ViewModels
 
         public List<CustomDataModuleCode>? DataModuleCodes { get; set; }
 
+        public List<Stylesheet>? Stylesheets { get; set; }
+
         public string ProjectNavigationJson { get; set; }
         public List<IssueNo>? Issues { get; set; }
         public List<InformationCodeSet>? InformationCodeSets { get; set;}

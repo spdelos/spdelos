@@ -431,11 +431,78 @@
                 <!-- /. tab-10 Allocation end -->
             }
 
+            <!-- tab-8 Stylesheet start -->
             <div class="tab-pane fade @(ssFirst ? "show active" : "")" id="pills-8" role="tabpanel" aria-labelledby="pills-tab-8">
+
+                <!-- Upload card -->
+                <div class="card mb-3" style="padding:20px;">
+                    <h6 class="mb-3"><i class="fa-solid fa-upload me-2"></i>Upload XSLT Stylesheet</h6>
+                    <form id="stylesheetUploadForm" enctype="multipart/form-data">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ssUploadName" placeholder="e.g. PDF Output Style" maxlength="256" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">File (.xsl / .xslt) <span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" id="ssUploadFile" accept=".xsl,.xslt" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Remarks</label>
+                                <input type="text" class="form-control" id="ssUploadRemarks" placeholder="Optional description" maxlength="1000" />
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn w-100" id="btnUploadStylesheet">
+                                    <i class="fas fa-upload me-1"></i> Upload
+                                </button>
+                            </div>
+                        </div>
+                        <div id="ssUploadMsg" class="mt-2" style="display:none;"></div>
+                    </form>
+                </div>
+
+                <!-- Table card -->
                 <div class="card" style="padding:20px;">
-                    <p class="text-muted mb-0">Stylesheet management coming soon.</p>
+                    <h6 class="mb-3"><i class="fa-solid fa-list me-2"></i>Uploaded Stylesheets</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="ssTable" width="100%">
+                            <thead class="thead">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>File</th>
+                                    <th>Uploaded By</th>
+                                    <th>Uploaded On</th>
+                                    <th>Last Updated</th>
+                                    <th>Remarks</th>
+                                    <th style="width:140px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ssTableBody">
+                                @if (Model?.Stylesheets != null)
+                                {
+                                    foreach (var ss in Model.Stylesheets)
+                                    {
+                                        <tr data-id="@ss.Id">
+                                            <td>@ss.Name</td>
+                                            <td>@ss.FileName</td>
+                                            <td>@ss.UploadedBy</td>
+                                            <td>@ss.UploadedOn.ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td>@(ss.UpdatedOn.HasValue ? $"{ss.UpdatedBy} @ {ss.UpdatedOn.Value:yyyy-MM-dd HH:mm}" : "-")</td>
+                                            <td>@(ss.Remarks ?? "-")</td>
+                                            <td class="text-nowrap">
+                                                <button class="btn btn-sm btn-outline-primary me-1 btnEditSS" data-id="@ss.Id" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadStylesheet/@ss.Id" title="Download"><i class="fa-solid fa-download"></i></a>
+                                                <button class="btn btn-sm btn-outline-danger btnDeleteSS" data-id="@ss.Id" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+            <!-- /. tab-8 Stylesheet end -->
             <div class="tab-pane fade" id="pills-9" role="tabpanel" aria-labelledby="pills-tab-9">
                 <div class="card" style="padding:20px;">
                     <p class="text-muted mb-0">Images management coming soon.</p>
@@ -817,7 +884,72 @@
     </div>
 </div>
 
+<!-- ── Stylesheet Edit Modal ── -->
+<div class="modal fade" id="ssEditModal" tabindex="-1" aria-labelledby="ssEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ssEditModalLabel"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Stylesheet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Name</label>
+                        <input type="text" class="form-control" id="ssEditName" maxlength="256" readonly />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Remarks</label>
+                        <input type="text" class="form-control" id="ssEditRemarks" maxlength="1000" placeholder="Optional description" />
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="d-flex gap-2 mb-2 align-items-center flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSsFormatXml" title="Auto-format XML">
+                        <i class="fa-solid fa-indent me-1"></i>Format XML
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSsWordWrap" title="Toggle word wrap">
+                        <i class="fa-solid fa-arrows-left-right me-1"></i>Word Wrap
+                    </button>
+                    <span class="text-muted small ms-auto" id="ssEditorStatus"></span>
+                </div>
+
+                <!-- Code editor area -->
+                <div id="ssCodeEditorWrapper" style="border:1px solid #ced4da; border-radius:4px; overflow:hidden;">
+                    <textarea id="ssCodeEditor" style="display:none;"></textarea>
+                </div>
+
+                <div id="ssEditMsg" class="mt-2" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnSaveStylesheet">
+                    <i class="fas fa-save me-1"></i>Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+
+    <!-- CodeMirror for XSLT editing -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/search.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+    <link  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.css" />
 
     <script type="text/javascript">
 
@@ -2228,6 +2360,179 @@
 
         $(document).on('change', '.alloc-icn-dd', function () {
             $.post('/Maintenance/SaveICNAssignment', { icnId: $(this).data('icn-id'), userId: $(this).val() });
+        });
+
+        // ── Stylesheet tab ──────────────────────────────────────────────────────
+
+        var ssEditor = null;
+        var ssWordWrap = false;
+        var ssCurrentId = 0;
+
+        function ssShowMsg(selector, type, text) {
+            $(selector).removeClass('alert alert-success alert-danger')
+                .addClass('alert alert-' + type)
+                .text(text).show();
+        }
+
+        function ssAddRowToTable(ss) {
+            var updated = ss.updatedBy ? ss.updatedBy + ' @ ' + ss.updatedOn : '-';
+            var row = '<tr data-id="' + ss.id + '">'
+                + '<td>' + $('<span>').text(ss.name).html() + '</td>'
+                + '<td>' + $('<span>').text(ss.fileName).html() + '</td>'
+                + '<td>' + $('<span>').text(ss.uploadedBy).html() + '</td>'
+                + '<td>' + ss.uploadedOn + '</td>'
+                + '<td>' + updated + '</td>'
+                + '<td>' + $('<span>').text(ss.remarks || '-').html() + '</td>'
+                + '<td class="text-nowrap">'
+                + '<button class="btn btn-sm btn-outline-primary me-1 btnEditSS" data-id="' + ss.id + '" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>'
+                + '<a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadStylesheet/' + ss.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
+                + '<button class="btn btn-sm btn-outline-danger btnDeleteSS" data-id="' + ss.id + '" title="Delete"><i class="fa-solid fa-trash"></i></button>'
+                + '</td></tr>';
+            $('#ssTableBody').prepend(row);
+        }
+
+        function ssFormatXml(xml) {
+            var formatted = '';
+            var indent = '';
+            var tab = '  ';
+            xml.split(/>\s*</).forEach(function (node) {
+                if (node.match(/^\/\w/)) indent = indent.substring(tab.length);
+                formatted += indent + '<' + node + '>\n';
+                if (node.match(/^<?\w[^>]*[^\/]$/) && !node.startsWith('?') && !node.startsWith('!')) indent += tab;
+            });
+            return formatted.substring(1, formatted.length - 2);
+        }
+
+        // Upload stylesheet
+        $('#btnUploadStylesheet').on('click', function () {
+            var name = $('#ssUploadName').val().trim();
+            var file = $('#ssUploadFile')[0].files[0];
+            var remarks = $('#ssUploadRemarks').val().trim();
+
+            if (!name) { ssShowMsg('#ssUploadMsg', 'danger', 'Please enter a name.'); return; }
+            if (!file)  { ssShowMsg('#ssUploadMsg', 'danger', 'Please select a file.'); return; }
+
+            var fd = new FormData();
+            fd.append('name', name);
+            fd.append('remarks', remarks);
+            fd.append('file', file);
+
+            $.ajax({
+                url: '/Maintenance/UploadStylesheet',
+                type: 'POST',
+                data: fd,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.status) {
+                        ssShowMsg('#ssUploadMsg', 'success', 'Stylesheet uploaded successfully.');
+                        ssAddRowToTable(res);
+                        $('#ssUploadName').val('');
+                        $('#ssUploadFile').val('');
+                        $('#ssUploadRemarks').val('');
+                    } else {
+                        ssShowMsg('#ssUploadMsg', 'danger', res.message || 'Upload failed.');
+                    }
+                },
+                error: function () { ssShowMsg('#ssUploadMsg', 'danger', 'Server error. Please try again.'); }
+            });
+        });
+
+        // Open edit modal
+        $(document).on('click', '.btnEditSS', function () {
+            var id = $(this).data('id');
+            ssCurrentId = id;
+            $('#ssEditMsg').hide();
+            $.get('/Maintenance/GetStylesheetContent', { id: id }, function (res) {
+                if (!res.status) { alert('Could not load stylesheet.'); return; }
+                $('#ssEditName').val(res.name);
+                $('#ssEditRemarks').val(res.remarks || '');
+
+                // Init or refresh CodeMirror
+                if (!ssEditor) {
+                    ssEditor = CodeMirror(document.getElementById('ssCodeEditorWrapper'), {
+                        value: res.content || '',
+                        mode: 'xml',
+                        theme: 'eclipse',
+                        lineNumbers: true,
+                        lineWrapping: false,
+                        autoCloseTags: true,
+                        matchBrackets: true,
+                        foldGutter: true,
+                        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+                        extraKeys: {
+                            'Ctrl-F': 'findPersistent',
+                            'Ctrl-H': 'replace',
+                            'Ctrl-Z': 'undo',
+                            'Ctrl-Y': 'redo'
+                        }
+                    });
+                    document.getElementById('ssCodeEditor').style.display = 'none';
+                    // Set height
+                    ssEditor.setSize(null, '500px');
+                } else {
+                    ssEditor.setValue(res.content || '');
+                }
+                ssEditor.clearHistory();
+                $('#ssEditorStatus').text('');
+                $('#ssEditModal').modal('show');
+                setTimeout(function () { ssEditor.refresh(); }, 300);
+            });
+        });
+
+        // Format XML
+        $('#btnSsFormatXml').on('click', function () {
+            if (!ssEditor) return;
+            try {
+                var raw = ssEditor.getValue();
+                var formatted = ssFormatXml(raw);
+                ssEditor.setValue(formatted);
+                $('#ssEditorStatus').text('Formatted.');
+            } catch (e) {
+                $('#ssEditorStatus').text('Could not format.');
+            }
+        });
+
+        // Word wrap toggle
+        $('#btnSsWordWrap').on('click', function () {
+            ssWordWrap = !ssWordWrap;
+            if (ssEditor) ssEditor.setOption('lineWrapping', ssWordWrap);
+            $(this).toggleClass('active', ssWordWrap);
+        });
+
+        // Save stylesheet
+        $('#btnSaveStylesheet').on('click', function () {
+            if (!ssEditor) return;
+            var content = ssEditor.getValue();
+            var remarks = $('#ssEditRemarks').val();
+            $.post('/Maintenance/SaveStylesheetContent',
+                { id: ssCurrentId, content: content, remarks: remarks },
+                function (res) {
+                    if (res.status) {
+                        ssShowMsg('#ssEditMsg', 'success', 'Saved successfully.');
+                        // Update remarks in table row
+                        var row = $('#ssTableBody tr[data-id="' + ssCurrentId + '"]');
+                        row.find('td:eq(5)').text(remarks || '-');
+                    } else {
+                        ssShowMsg('#ssEditMsg', 'danger', res.message || 'Save failed.');
+                    }
+                }
+            ).fail(function () { ssShowMsg('#ssEditMsg', 'danger', 'Server error.'); });
+        });
+
+        // Delete stylesheet
+        $(document).on('click', '.btnDeleteSS', function () {
+            var id = $(this).data('id');
+            var row = $(this).closest('tr');
+            var name = row.find('td:eq(0)').text();
+            if (!confirm('Delete stylesheet "' + name + '"?\nThis cannot be undone.')) return;
+            $.post('/Maintenance/DeleteStylesheet', { id: id }, function (res) {
+                if (res.status) {
+                    row.fadeOut(300, function () { $(this).remove(); });
+                } else {
+                    alert('Delete failed.');
+                }
+            }).fail(function () { alert('Server error.'); });
         });
 
     </script>

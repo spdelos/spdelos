@@ -36,6 +36,9 @@ namespace CSDBPortal.Business
                 maintenanceViewModel.Issues = await _db.IssueNos.ToListAsync();
                 maintenanceViewModel.Icnformats = await _db.Icnformats.ToListAsync();
                 maintenanceViewModel.InformationCodeSets = await _db.InformationCodeSets.ToListAsync();
+                maintenanceViewModel.Stylesheets = await _db.Stylesheets
+                    .OrderByDescending(s => s.UploadedOn)
+                    .ToListAsync();
 
                 var lcresult = await (from lc in _db.LocationCodes
                                 join lcs in _db.LocationCodeSets on lc.LocationCodeSetId equals lcs.Id
