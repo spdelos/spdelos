@@ -2,15 +2,17 @@
 @{
     ViewData["Title"] = "Manage";
 
-    bool hasSNS     = User.HasClaim("Permission", Features.SNSAdministration);
-    bool hasProject = User.HasClaim("Permission", Features.ProjectAdministration);
-    bool hasDMC     = User.HasClaim("Permission", Features.DMCAdministration);
+    bool hasSNS        = User.HasClaim("Permission", Features.SNSAdministration);
+    bool hasProject    = User.HasClaim("Permission", Features.ProjectAdministration);
+    bool hasDMC        = User.HasClaim("Permission", Features.DMCAdministration);
+    bool hasAllocation = User.HasClaim("Permission", Features.AllocationAdministration);
 
     bool _m = true;
-    bool snsFirst     = _m && hasSNS;     if (hasSNS)     _m = false;
-    bool projectFirst = _m && hasProject; if (hasProject) _m = false;
-    bool dmcFirst     = _m && hasDMC;     if (hasDMC)     _m = false;
-    bool ssFirst      = _m;               _m = false;
+    bool snsFirst        = _m && hasSNS;        if (hasSNS)        _m = false;
+    bool projectFirst    = _m && hasProject;    if (hasProject)    _m = false;
+    bool dmcFirst        = _m && hasDMC;        if (hasDMC)        _m = false;
+    bool allocationFirst = _m && hasAllocation; if (hasAllocation) _m = false;
+    bool ssFirst         = _m;                  _m = false;
 }
 
 <div class="alert" style="display:none" id="mainAlert">
@@ -50,6 +52,14 @@
                    data-bs-toggle="tab" href="#pills-7" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-file-code"></i></span>
                     <span>DMC</span>
+                </a>
+            }
+            @if (hasAllocation)
+            {
+                <a class="maint-nav-item @(allocationFirst ? "active" : "")" id="pills-tab-10"
+                   data-bs-toggle="tab" href="#pills-10" role="tab">
+                    <span class="mni-icon"><i class="fa-solid fa-people-arrows"></i></span>
+                    <span>Allocation</span>
                 </a>
             }
             <a class="maint-nav-item" id="pills-tab-8"
@@ -319,6 +329,108 @@
 
                 <!-- /. tab-5 end -->
             }
+            @if (hasAllocation)
+            {
+                <!-- tab-10 Allocation start -->
+                <div class="tab-pane fade @(allocationFirst ? "show active" : "")" id="pills-10" role="tabpanel" aria-labelledby="pills-tab-10">
+                    <div class="card mb-3" style="padding:15px;">
+                        <label class="input-title">Select Project</label>
+                        <select class="form-select form-control" id="allocProjectDrop">
+                            <option value="">-- Select a Project --</option>
+                            @foreach (var proj in Model.Projects)
+                            {
+                                <option value="@proj.Id">@proj.Title</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div id="allocContent" style="display:none;">
+                        <ul class="nav nav-pills tab-header mb-3" id="allocTabs" role="tablist">
+                            <li class="nav-item item-one" role="presentation">
+                                <a class="nav-link active" id="alloc-tab-1" data-bs-toggle="pill" href="#alloc-1" role="tab">
+                                    <i class="fa-solid fa-users"></i> Users
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="alloc-tab-2" data-bs-toggle="pill" href="#alloc-2" role="tab">
+                                    <i class="fa-solid fa-file-code"></i> Authoring
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="alloc-tab-3" data-bs-toggle="pill" href="#alloc-3" role="tab">
+                                    <i class="fa-solid fa-images"></i> Illustration
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="allocTabContent">
+
+                            <!-- Alloc Tab 1: Users -->
+                            <div class="tab-pane fade show active" id="alloc-1" role="tabpanel">
+                                <div class="card" style="padding:15px;">
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label class="input-title">Filter by Role</label>
+                                            <select class="form-select form-control" id="allocRoleFilter">
+                                                <option value="">All Roles</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive table-striped">
+                                        <table class="table table-bordered" id="allocUsersTable">
+                                            <thead class="thead">
+                                                <tr>
+                                                    <th style="width:40px;"></th>
+                                                    <th>User Name</th>
+                                                    <th>Email</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="allocUsersBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alloc Tab 2: Authoring (DMCs) -->
+                            <div class="tab-pane fade" id="alloc-2" role="tabpanel">
+                                <div class="card" style="padding:15px;">
+                                    <div class="table-responsive table-striped">
+                                        <table class="table table-bordered" id="allocDMCTable">
+                                            <thead class="thead">
+                                                <tr>
+                                                    <th width="70%">DMC</th>
+                                                    <th width="30%">Assigned To</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="allocDMCBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alloc Tab 3: Illustration (ICNs) -->
+                            <div class="tab-pane fade" id="alloc-3" role="tabpanel">
+                                <div class="card" style="padding:15px;">
+                                    <div class="table-responsive table-striped">
+                                        <table class="table table-bordered" id="allocICNTable">
+                                            <thead class="thead">
+                                                <tr>
+                                                    <th width="70%">ICN</th>
+                                                    <th width="30%">Assigned To</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="allocICNBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- /. tab-10 Allocation end -->
+            }
+
             <div class="tab-pane fade @(ssFirst ? "show active" : "")" id="pills-8" role="tabpanel" aria-labelledby="pills-tab-8">
                 <div class="card" style="padding:20px;">
                     <p class="text-muted mb-0">Stylesheet management coming soon.</p>
@@ -1983,5 +2095,140 @@
             });
 
         });
+
+        // ── Allocation tab ────────────────────────────────────────────────────
+
+        var allocSelectedUsers = [];   // [{ id, userName }] checked in Users tab
+        var allocDMCData       = [];   // raw DMC list from server
+        var allocICNData       = [];   // raw ICN list from server
+
+        function buildUserOptions(includeBlank) {
+            var html = includeBlank ? '<option value="">-- Unassigned --</option>' : '';
+            allocSelectedUsers.forEach(function (u) {
+                html += '<option value="' + u.id + '">' + escHtml(u.userName) + '</option>';
+            });
+            return html;
+        }
+
+        function escHtml(s) {
+            return $('<div>').text(s || '').html();
+        }
+
+        function rebuildAssignmentDropdowns() {
+            var opts = buildUserOptions(true);
+            $('#allocDMCBody .alloc-dmc-dd').each(function () {
+                var cur = $(this).val();
+                $(this).html(opts);
+                $(this).val(cur);
+            });
+            $('#allocICNBody .alloc-icn-dd').each(function () {
+                var cur = $(this).val();
+                $(this).html(opts);
+                $(this).val(cur);
+            });
+        }
+
+        function renderUsersTable(users) {
+            var tbody = $('#allocUsersBody').empty();
+            users.forEach(function (u) {
+                var checked = allocSelectedUsers.some(function (s) { return s.id === u.id; }) ? 'checked' : '';
+                tbody.append(
+                    '<tr>' +
+                    '<td class="text-center"><input type="checkbox" class="alloc-user-chk" ' +
+                    'data-user-id="' + u.id + '" data-user-name="' + escHtml(u.userName) + '" ' + checked + '></td>' +
+                    '<td>' + escHtml(u.userName) + '</td>' +
+                    '<td>' + escHtml(u.email || '') + '</td>' +
+                    '</tr>'
+                );
+            });
+        }
+
+        function renderDMCTable(dmcs) {
+            var tbody = $('#allocDMCBody').empty();
+            var opts  = buildUserOptions(true);
+            dmcs.forEach(function (d) {
+                var dd = '<select class="form-select form-control alloc-dmc-dd" data-dmc-id="' + d.id + '">' + opts + '</select>';
+                tbody.append('<tr><td>' + escHtml(d.dmc || '') + '</td><td>' + dd + '</td></tr>');
+            });
+            // Restore saved assignments
+            dmcs.forEach(function (d) {
+                if (d.assignedTo)
+                    $('[data-dmc-id="' + d.id + '"]').val(d.assignedTo);
+            });
+        }
+
+        function renderICNTable(icns) {
+            var tbody = $('#allocICNBody').empty();
+            var opts  = buildUserOptions(true);
+            icns.forEach(function (i) {
+                var dd = '<select class="form-select form-control alloc-icn-dd" data-icn-id="' + i.id + '">' + opts + '</select>';
+                tbody.append('<tr><td>' + escHtml(i.number || '') + '</td><td>' + dd + '</td></tr>');
+            });
+            icns.forEach(function (i) {
+                if (i.assignedTo)
+                    $('[data-icn-id="' + i.id + '"]').val(i.assignedTo);
+            });
+        }
+
+        $('#allocProjectDrop').change(function () {
+            var projectId = $(this).val();
+            if (!projectId) { $('#allocContent').hide(); return; }
+
+            allocSelectedUsers = [];
+
+            // Load roles for filter dropdown
+            $.get('/Maintenance/GetAllocationRoles', function (roles) {
+                var sel = $('#allocRoleFilter').html('<option value="">All Roles</option>');
+                roles.forEach(function (r) {
+                    sel.append('<option value="' + r.id + '">' + escHtml(r.name) + '</option>');
+                });
+            });
+
+            // Load all users
+            $.get('/Maintenance/GetAllocationUsers', function (users) {
+                renderUsersTable(users);
+            });
+
+            // Load DMCs
+            $.get('/Maintenance/GetDMCsForAllocation', { projectId: projectId }, function (dmcs) {
+                allocDMCData = dmcs;
+                renderDMCTable(dmcs);
+            });
+
+            // Load ICNs
+            $.get('/Maintenance/GetICNsForAllocation', { projectId: projectId }, function (icns) {
+                allocICNData = icns;
+                renderICNTable(icns);
+            });
+
+            $('#allocContent').show();
+        });
+
+        $('#allocRoleFilter').change(function () {
+            $.get('/Maintenance/GetAllocationUsers', { roleId: $(this).val() }, function (users) {
+                renderUsersTable(users);
+            });
+        });
+
+        $(document).on('change', '.alloc-user-chk', function () {
+            var id   = $(this).data('user-id');
+            var name = $(this).data('user-name');
+            if ($(this).is(':checked')) {
+                if (!allocSelectedUsers.some(function (u) { return u.id === id; }))
+                    allocSelectedUsers.push({ id: id, userName: name });
+            } else {
+                allocSelectedUsers = allocSelectedUsers.filter(function (u) { return u.id !== id; });
+            }
+            rebuildAssignmentDropdowns();
+        });
+
+        $(document).on('change', '.alloc-dmc-dd', function () {
+            $.post('/Maintenance/SaveDMCAssignment', { dmcId: $(this).data('dmc-id'), userId: $(this).val() });
+        });
+
+        $(document).on('change', '.alloc-icn-dd', function () {
+            $.post('/Maintenance/SaveICNAssignment', { icnId: $(this).data('icn-id'), userId: $(this).val() });
+        });
+
     </script>
 }

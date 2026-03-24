@@ -21,5 +21,6 @@
         public static string StylesheetAdministration = "Stylesheet Administration";
         public static string ImagesAdministration = "Images Administration";
         public static string UserAndRoleAdministration = "User and Role Administration";
+        public static string AllocationAdministration = "Allocation Administration";
     }
 }

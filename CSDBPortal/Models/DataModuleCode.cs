@@ -31,6 +31,7 @@ namespace CSDBPortal.Models
         public string? CheckedOutBy { get; set; }
         public DateTime? CheckedOutOn { get; set; }
         public string? OriginalXml { get; set; }
+        public string? AssignedTo { get; set; }
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
         public string? UpdatedBy { get; set; }

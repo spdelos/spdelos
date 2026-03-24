@@ -2,6 +2,7 @@ using CSDBPortal.Business;
 using CSDBPortal.Data;
 using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic.FileIO;
@@ -19,19 +20,25 @@ namespace CSDBPortal.Controllers
         private readonly BaseManager _baseManager;
         private readonly MaintenanceManager _maintenanceManager;
         private readonly BrexValidationEngine _brexValidationEngine;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public MaintenanceController(
             ApplicationDbContext db,
             IWebHostEnvironment appEnvironment,
             BaseManager baseManager,
             MaintenanceManager maintenanceManager,
-            BrexValidationEngine brexValidationEngine)
+            BrexValidationEngine brexValidationEngine,
+            UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             _db = db;
             _appEnvironment = appEnvironment;
             _baseManager = baseManager;
             _maintenanceManager = maintenanceManager;
             _brexValidationEngine = brexValidationEngine;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<IActionResult> Index()
@@ -689,6 +696,76 @@ namespace CSDBPortal.Controllers
         {
             var (passed, message) = await _brexValidationEngine.ValidateAsync(dmcId, User.Identity.Name);
             return Json(new { status = passed, message });
+        }
+
+        // ── Allocation endpoints ───────────────────────────────────────────────
+
+        public JsonResult GetAllocationRoles()
+        {
+            var roles = _roleManager.Roles
+                .Select(r => new { r.Id, r.Name })
+                .OrderBy(r => r.Name)
+                .ToList();
+            return Json(roles);
+        }
+
+        public async Task<JsonResult> GetAllocationUsers(string roleId = null)
+        {
+            IList<IdentityUser> users;
+            if (!string.IsNullOrEmpty(roleId))
+            {
+                var role = await _roleManager.FindByIdAsync(roleId);
+                users = role != null
+                    ? await _userManager.GetUsersInRoleAsync(role.Name)
+                    : new List<IdentityUser>();
+            }
+            else
+            {
+                users = _userManager.Users.OrderBy(u => u.UserName).ToList();
+            }
+            return Json(users.Select(u => new { u.Id, u.UserName, u.Email }));
+        }
+
+        public async Task<JsonResult> GetDMCsForAllocation(int projectId)
+        {
+            var dmcs = await _db.DataModuleCodes
+                .Where(d => d.ProjectId == projectId && !d.IsDeleted && !d.IsBrexXml)
+                .Select(d => new { d.Id, d.DMC, d.AssignedTo })
+                .ToListAsync();
+            return Json(dmcs);
+        }
+
+        public async Task<JsonResult> GetICNsForAllocation(int projectId)
+        {
+            var icns = await _db.IcnNumbers
+                .Where(i => i.ProjectId == projectId)
+                .Select(i => new { i.Id, i.Number, i.AssignedTo })
+                .ToListAsync();
+            return Json(icns);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SaveDMCAssignment(int dmcId, string userId)
+        {
+            var dmc = await _db.DataModuleCodes.FirstOrDefaultAsync(d => d.Id == dmcId);
+            if (dmc == null) return Json(new { status = false });
+            dmc.AssignedTo = string.IsNullOrEmpty(userId) ? null : userId;
+            dmc.UpdatedBy = User.Identity.Name;
+            dmc.UpdatedOn = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Json(new { status = true });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SaveICNAssignment(int icnId, string userId)
+        {
+            var icn = await _db.IcnNumbers.FirstOrDefaultAsync(i => i.Id == icnId);
+            if (icn == null) return Json(new { status = false });
+            icn.AssignedTo = string.IsNullOrEmpty(userId) ? null : userId;
+            icn.UpdatedBy = User.Identity.Name;
+            icn.UpdatedOn = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Json(new { status = true });
         }
 
         private void SetXmlNodeInnerText(XmlDocument doc, XmlNamespaceManager xMan, string xpath, string value)

@@ -29,7 +29,9 @@ namespace CSDBPortal.Models
         public int SeqNo { get; set; }
         [Column("VarCode")] 
         public string VarCode { get; set; }
-        [Column("IssueNo")] 
+        [Column("IssueNo")]
         public int IssueNo { get; set; }
+        [Column("AssignedTo")]
+        public string? AssignedTo { get; set; }
     }
 }
