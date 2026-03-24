@@ -52,9 +52,9 @@ namespace CSDBPortal.Business
                 var defaults = new List<CSDBPortal.Models.QuickAccessItem>
                 {
                     new() { Title="Generate ICN",   Href="ICN",                    IconClass="fa-solid fa-hashtag",         IconColor="#2563eb", SortOrder=1,  IsActive=true  },
-                    new() { Title="Manage",          Href="Maintenance",            IconClass="fa-solid fa-file-circle-plus",IconColor="#16a34a", SortOrder=2,  IsActive=true  },
+                    new() { Title="Manage",          Href="Manage",            IconClass="fa-solid fa-file-circle-plus",IconColor="#16a34a", SortOrder=2,  IsActive=true  },
                     new() { Title="Configure",       Href="Configuration",          IconClass="fa-solid fa-sliders",         IconColor="#7c3aed", SortOrder=3,  IsActive=true  },
-                    new() { Title="BREX Rules",      Href="Maintenance?tab=projects",IconClass="fa-solid fa-code",           IconColor="#d97706", SortOrder=4,  IsActive=true  },
+                    new() { Title="BREX Rules",      Href="Manage?tab=projects",IconClass="fa-solid fa-code",           IconColor="#d97706", SortOrder=4,  IsActive=true  },
                     new() { Title="Workflow",        Href="Workflow",               IconClass="fa-solid fa-diagram-project", IconColor="#0891b2", SortOrder=5,  IsActive=true  },
                     new() { Title="Task",            Href="Task",                   IconClass="fa-solid fa-list-check",      IconColor="#64748b", SortOrder=6,  IsActive=false },
                     new() { Title="Publisher",       Href="Publisher",              IconClass="fa-solid fa-print",           IconColor="#dc2626", SortOrder=7,  IsActive=false },

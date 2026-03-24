@@ -1530,7 +1530,7 @@
         locationCodeSet.Description = $('#txtLocSetDescription').val();
         $.ajax({
             type: "POST",
-            url: "Maintenance/CreateLocationCodeSet",
+            url: "Manage/CreateLocationCodeSet",
             data: { locationCodeSet: locationCodeSet },
             dataType: "json",
             success: function (data) {
@@ -1560,7 +1560,7 @@
         $.confirmModal('Are you sure to delete this record?', function (el) {
             $.ajax({
                 type: "POST",
-                url: "Maintenance/DeleteLocationCodeSet",
+                url: "Manage/DeleteLocationCodeSet",
                 data: { id: Id },
                 dataType: "json",
                 success: function (data) {
@@ -1608,7 +1608,7 @@
         locationCode.Code = $('#txtLocCode').val();
         $.ajax({
             type: "POST",
-            url: "Maintenance/CreateLocationCode",
+            url: "Manage/CreateLocationCode",
             data: { locationCode: locationCode },
             dataType: "json",
             success: function (data) {
@@ -1642,7 +1642,7 @@
         $.confirmModal('Are you sure to delete this record?', function (el) {
             $.ajax({
                 type: "POST",
-                url: "Maintenance/DeleteLocationCode",
+                url: "Manage/DeleteLocationCode",
                 data: { id: Id },
                 dataType: "json",
                 success: function (data) {
@@ -1680,7 +1680,7 @@
         rpc.OrginatorCage = $('#txtOrginatorCage').val();
         $.ajax({
             type: "POST",
-            url: "Maintenance/CreateRPC",
+            url: "Manage/CreateRPC",
             data: { rpc: rpc },
             dataType: "json",
             success: function (data) {
@@ -1714,7 +1714,7 @@
         $.confirmModal('Are you sure to delete this record?', function (el) {
             $.ajax({
                 type: "POST",
-                url: "Maintenance/DeleteRPC",
+                url: "Manage/DeleteRPC",
                 data: { id: Id },
                 dataType: "json",
                 success: function (data) {
@@ -1750,7 +1750,7 @@
         dataModuleType.FileName = $('#txtDataTypeFileName').val();
         $.ajax({
             type: "POST",
-            url: "Maintenance/CreateDataTypeModule",
+            url: "Manage/CreateDataTypeModule",
             data: { dataModuleType: dataModuleType },
             dataType: "json",
             success: function (data) {
@@ -1782,7 +1782,7 @@
         $.confirmModal('Are you sure to delete this record?', function (el) {
             $.ajax({
                 type: "POST",
-                url: "Maintenance/DeleteDataTypeModule",
+                url: "Manage/DeleteDataTypeModule",
                 data: { id: Id },
                 dataType: "json",
                 success: function (data) {

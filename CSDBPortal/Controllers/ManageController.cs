@@ -13,21 +13,21 @@ using Project = CSDBPortal.Models.Project;
 
 namespace CSDBPortal.Controllers
 {
-    public class MaintenanceController : BaseController
+    public class ManageController : BaseController
     {
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _appEnvironment;
         private readonly BaseManager _baseManager;
-        private readonly MaintenanceManager _maintenanceManager;
+        private readonly ManageManager _manageManager;
         private readonly BrexValidationEngine _brexValidationEngine;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public MaintenanceController(
+        public ManageController(
             ApplicationDbContext db,
             IWebHostEnvironment appEnvironment,
             BaseManager baseManager,
-            MaintenanceManager maintenanceManager,
+            ManageManager manageManager,
             BrexValidationEngine brexValidationEngine,
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager)
@@ -35,7 +35,7 @@ namespace CSDBPortal.Controllers
             _db = db;
             _appEnvironment = appEnvironment;
             _baseManager = baseManager;
-            _maintenanceManager = maintenanceManager;
+            _manageManager = manageManager;
             _brexValidationEngine = brexValidationEngine;
             _userManager = userManager;
             _roleManager = roleManager;
@@ -45,7 +45,7 @@ namespace CSDBPortal.Controllers
         {
             try
             {
-                return View(await _maintenanceManager.GetMaintenanceDetailInfoAsync());
+                return View(await _manageManager.GetManageDetailInfoAsync());
             }
             catch { }
             return View();
@@ -62,7 +62,7 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                if (await _maintenanceManager.CheckLocationCodeAsync(locationCode) > 0)
+                if (await _manageManager.CheckLocationCodeAsync(locationCode) > 0)
                     return Json("Duplicate");
                 mode = "Add";
             }
@@ -86,7 +86,7 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                if (await _maintenanceManager.CheckLocationCodeSetAsync(locationCodeSet) > 0)
+                if (await _manageManager.CheckLocationCodeSetAsync(locationCodeSet) > 0)
                     return Json("Duplicate");
                 mode = "Add";
             }
@@ -108,7 +108,7 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                if (await _maintenanceManager.CheckRPCAsync(rpc) > 0)
+                if (await _manageManager.CheckRPCAsync(rpc) > 0)
                     return Json("Duplicate");
                 mode = "Add";
             }
@@ -131,7 +131,7 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                if (await _maintenanceManager.CheckDataModuleTypeAsync(dataModuleType) > 0)
+                if (await _manageManager.CheckDataModuleTypeAsync(dataModuleType) > 0)
                     return Json("Duplicate");
                 mode = "Add";
             }
@@ -148,7 +148,7 @@ namespace CSDBPortal.Controllers
         {
             project.CreatedBy = User.Identity.Name;
             string mode;
-            var (recordCount, brexTemplate) = await _maintenanceManager.CheckProjectAsync(project);
+            var (recordCount, brexTemplate) = await _manageManager.CheckProjectAsync(project);
 
             if (project.Id > 0)
             {
@@ -176,7 +176,7 @@ namespace CSDBPortal.Controllers
 
             bool projectCreated = await _baseManager.CreateOrUpdateRecordAsync(project, mode);
             if (projectCreated && mode == "Add")
-                await _maintenanceManager.CopySNSAsync(project, User.Identity.Name);
+                await _manageManager.CopySNSAsync(project, User.Identity.Name);
 
             return Json(projectCreated);
         }
@@ -198,7 +198,7 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                if (await _maintenanceManager.CheckSnsAsync(sns) > 0)
+                if (await _manageManager.CheckSnsAsync(sns) > 0)
                     return Json("Duplicate");
                 mode = "Add";
                 sns.CreatedBy = User.Identity.Name;
@@ -229,7 +229,7 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                if (await _maintenanceManager.CheckProjectSnsAsync(projectSns) > 0)
+                if (await _manageManager.CheckProjectSnsAsync(projectSns) > 0)
                     return Json("Duplicate");
                 mode = "Add";
                 projectSns.CreatedBy = User.Identity.Name;
@@ -269,7 +269,7 @@ namespace CSDBPortal.Controllers
             }
             else
             {
-                if (await _maintenanceManager.CheckDMCAsync(dataModuleCode) > 0)
+                if (await _manageManager.CheckDMCAsync(dataModuleCode) > 0)
                     return Json("Duplicate");
                 mode = "Add";
                 dataModuleCode.CreatedBy = User.Identity.Name;
@@ -328,41 +328,41 @@ namespace CSDBPortal.Controllers
         }
 
         public async Task<JsonResult> GetBrexRules(int projectId)
-            => Json(await _maintenanceManager.GetBrexRulesAsync(projectId));
+            => Json(await _manageManager.GetBrexRulesAsync(projectId));
 
         public async Task<JsonResult> GetProjectNavigationTree(int projectId)
-            => Json(await _maintenanceManager.GetProjectNavigationTreeAsync(projectId));
+            => Json(await _manageManager.GetProjectNavigationTreeAsync(projectId));
 
         public async Task<JsonResult> SaveProjectNavigationTree(int projectId, string navigationTreeDataJson)
         {
             List<NavigationTreeData>? navigationTreeData = JsonSerializer.Deserialize<List<NavigationTreeData>>(navigationTreeDataJson);
-            await _maintenanceManager.SaveProjectNavigationTreeAsync(projectId, navigationTreeData.ToArray(), User.Identity.Name);
-            return Json(await _maintenanceManager.GetProjectNavigationTreeAsync(projectId));
+            await _manageManager.SaveProjectNavigationTreeAsync(projectId, navigationTreeData.ToArray(), User.Identity.Name);
+            return Json(await _manageManager.GetProjectNavigationTreeAsync(projectId));
         }
 
         public async Task<JsonResult> GetProjectNavigation(int projectId)
-            => Json(await _maintenanceManager.GetProjectNavigationAsync(projectId));
+            => Json(await _manageManager.GetProjectNavigationAsync(projectId));
 
         public async Task<JsonResult> GetProjectSns(int projectId)
-            => Json(await _maintenanceManager.GetProjectSnsAsync(projectId));
+            => Json(await _manageManager.GetProjectSnsAsync(projectId));
 
         public async Task<JsonResult> GetDataModuleCodes(string dmc, int projectId)
         {
-            var codes = await _maintenanceManager.GetDataModuleCodesAsync(projectId);
+            var codes = await _manageManager.GetDataModuleCodesAsync(projectId);
             return Json(codes.Select(c => new { id = c.Id, dmc = c.DMC, infoName = c.InfoName, techName = c.TechName }));
         }
 
         public async Task<JsonResult> GetLocationCodes(int projectId)
-            => Json(await _maintenanceManager.GetLocationCodesAsync(projectId));
+            => Json(await _manageManager.GetLocationCodesAsync(projectId));
 
         public async Task<JsonResult> GetInformationCodes(int projectId)
-            => Json(await _maintenanceManager.GetInformationCodesAsync(projectId));
+            => Json(await _manageManager.GetInformationCodesAsync(projectId));
 
         public async Task<JsonResult> GetProject(int projectId)
-            => Json(await _maintenanceManager.GetProjectAsync(projectId));
+            => Json(await _manageManager.GetProjectAsync(projectId));
 
         public async Task<JsonResult> GetSnsCode(int snsId, int projectId)
-            => Json(await _maintenanceManager.GetSnsCodeAsync(snsId, projectId));
+            => Json(await _manageManager.GetSnsCodeAsync(snsId, projectId));
 
         public async Task<JsonResult> GetIssueTypeFiles(int projectId)
         {
@@ -432,7 +432,7 @@ namespace CSDBPortal.Controllers
             }
             await _db.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Maintenance");
+            return RedirectToAction("Index", "Manage");
         }
 
         // Opens the XML inline in a new browser tab (default XML viewer / Notepad fallback).

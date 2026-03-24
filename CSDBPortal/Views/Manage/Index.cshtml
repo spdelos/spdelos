@@ -1,4 +1,4 @@
-﻿@model CSDBPortal.ViewModels.MaintenanceViewModel
+﻿@model CSDBPortal.ViewModels.ManageViewModel
 @{
     ViewData["Title"] = "Manage";
 
@@ -205,10 +205,10 @@
                                 <a href="#" class="btn" id="btnCreateDMC">
                                     <i class="fas fa-plus"></i> Create New
                                 </a>
-                                <a href="/Maintenance/DownloadDMCTemplate" class="btn" id="btnDownloadDMCTemplate">
+                                <a href="/Manage/DownloadDMCTemplate" class="btn" id="btnDownloadDMCTemplate">
                                     Download Template
                                 </a>
-                                <form class="d-inline" asp-action="UploadDMC" asp-controller="Maintenance" method="post" enctype="multipart/form-data">
+                                <form class="d-inline" asp-action="UploadDMC" asp-controller="Manage" method="post" enctype="multipart/form-data">
                                     <input id="upload" name="upload" style="display:none" type="file" onchange="this.form.submit();" />
                                     <a class="btn" id="btnUploadDMC" name="uploadbutton">Upload</a>
                                 </form>
@@ -496,7 +496,7 @@
                                             <td>@(ss.Remarks ?? "-")</td>
                                             <td class="text-nowrap">
                                                 <button class="btn btn-sm btn-outline-primary me-1 btnEditSS" data-id="@ss.Id" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadStylesheet/@ss.Id" title="Download"><i class="fa-solid fa-download"></i></a>
+                                                <a class="btn btn-sm btn-outline-secondary me-1" href="/Manage/DownloadStylesheet/@ss.Id" title="Download"><i class="fa-solid fa-download"></i></a>
                                                 <button class="btn btn-sm btn-outline-danger btnDeleteSS" data-id="@ss.Id" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -556,7 +556,7 @@
                                     <div class="col-6 col-md-3 col-lg-2 img-card" data-id="@img.Id">
                                         <div class="card h-100 text-center" style="cursor:pointer;">
                                             <div class="card-body p-2">
-                                                <img src="/Maintenance/ViewImageAsset/@img.Id" alt="@img.Name"
+                                                <img src="/Manage/ViewImageAsset/@img.Id" alt="@img.Name"
                                                      class="img-fluid img-thumbnail mb-2 imgThumb"
                                                      style="max-height:100px; object-fit:contain;"
                                                      data-id="@img.Id" />
@@ -570,7 +570,7 @@
                                             </div>
                                             <div class="card-footer p-1 d-flex justify-content-center gap-1">
                                                 <button class="btn btn-xs btn-outline-primary btnViewImg" data-id="@img.Id" title="Preview"><i class="fa-solid fa-eye"></i></button>
-                                                <a class="btn btn-xs btn-outline-secondary" href="/Maintenance/DownloadImageAsset/@img.Id" title="Download"><i class="fa-solid fa-download"></i></a>
+                                                <a class="btn btn-xs btn-outline-secondary" href="/Manage/DownloadImageAsset/@img.Id" title="Download"><i class="fa-solid fa-download"></i></a>
                                                 <button class="btn btn-xs btn-outline-danger btnDeleteImg" data-id="@img.Id" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                             </div>
                                         </div>
@@ -603,7 +603,7 @@
                                         {
                                             <tr data-id="@img.Id">
                                                 <td class="text-center">
-                                                    <img src="/Maintenance/ViewImageAsset/@img.Id" alt="@img.Name"
+                                                    <img src="/Manage/ViewImageAsset/@img.Id" alt="@img.Name"
                                                          style="max-height:40px; max-width:50px; object-fit:contain;" />
                                                 </td>
                                                 <td>@img.Name</td>
@@ -613,7 +613,7 @@
                                                 <td class="img-remarks-cell">@(img.Remarks ?? "-")</td>
                                                 <td class="text-nowrap">
                                                     <button class="btn btn-sm btn-outline-primary me-1 btnViewImg" data-id="@img.Id" title="Preview"><i class="fa-solid fa-eye"></i></button>
-                                                    <a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadImageAsset/@img.Id" title="Download"><i class="fa-solid fa-download"></i></a>
+                                                    <a class="btn btn-sm btn-outline-secondary me-1" href="/Manage/DownloadImageAsset/@img.Id" title="Download"><i class="fa-solid fa-download"></i></a>
                                                     <button class="btn btn-sm btn-outline-danger btnDeleteImg" data-id="@img.Id" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                                 </td>
                                             </tr>
@@ -1350,7 +1350,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/DeleteSns",
+                    url: "Manage/DeleteSns",
                     data: { id: id },
                     dataType: "json",
                     success: function (data) {
@@ -1387,7 +1387,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/SaveProjectNavigationTree",
+                    url: "Manage/SaveProjectNavigationTree",
                     data: { projectId: selectedProject, navigationTreeDataJson: navigationTreeData },
                     dataType: "json",
                     success: function (result) {
@@ -1628,7 +1628,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/CreateProject",
+                    url: "Manage/CreateProject",
                     data: { project: project },
                     dataType: "json",
                     success: function (data) {
@@ -1677,7 +1677,7 @@
                 var selectedItem = $('option:selected', this).val();
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetProject",
+                    url: "Manage/GetProject",
                     data: { projectId: selectedItem },
                     dataType: "json",
                     success: function (data) {
@@ -1688,7 +1688,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetLocationCodes",
+                    url: "Manage/GetLocationCodes",
                     data: { projectId: selectedItem },
                     dataType: "json",
                     success: function (data) {
@@ -1705,7 +1705,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetInformationCodes",
+                    url: "Manage/GetInformationCodes",
                     data: { projectId: selectedItem },
                     dataType: "json",
                     success: function (data) {
@@ -1722,7 +1722,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetProjectSns",
+                    url: "Manage/GetProjectSns",
                     data: { projectId: selectedItem },
                     dataType: "json",
                     success: function (data) {
@@ -1745,7 +1745,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetIssueTypeFiles",
+                    url: "Manage/GetIssueTypeFiles",
                     data: { projectId: selectedItem },
                     dataType: "json",
                     success: function (data) {
@@ -1771,7 +1771,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetSnsCode",
+                    url: "Manage/GetSnsCode",
                     data: {
                         snsId: selectedItem,
                         projectId: $('#DMCProjectDropDown').val()
@@ -1887,7 +1887,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/CreateDMC",
+                    url: "Manage/CreateDMC",
                     data: { dataModuleCode: dataModuleCode },
                     dataType: "json",
                     success: function (data) {
@@ -1907,7 +1907,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GenerateBrexXml",
+                    url: "Manage/GenerateBrexXml",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (result) {
@@ -1947,7 +1947,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GetProjectSns",
+                    url: "Manage/GetProjectSns",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (result) {
@@ -2021,7 +2021,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/Maintenance/SaveBrexRule",
+                    url: "/Manage/SaveBrexRule",
                     data: { brexRule: brexRule },
                     dataType: "json",
                     success: function (data) {
@@ -2093,7 +2093,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/Maintenance/GetBrexRules",
+                    url: "/Manage/GetBrexRules",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (data) {
@@ -2119,7 +2119,7 @@
 
                 //$("#projectNavigationTreeDmcDropDown").select2({
                 //    ajax: {
-                //        url: "/Maintenance/GetDataModuleCodes",
+                //        url: "/Manage/GetDataModuleCodes",
                 //        dataType: "json",
                 //        type: "POST",
                 //        delay: 150,
@@ -2151,7 +2151,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/Maintenance/GetDataModuleCodes",
+                    url: "/Manage/GetDataModuleCodes",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (data) {
@@ -2175,7 +2175,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/Maintenance/GetProjectNavigationTree",
+                    url: "/Manage/GetProjectNavigationTree",
                     data: { projectId: selectedProject },
                     dataType: "json",
                     success: function (result) {
@@ -2208,7 +2208,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/GenerateDMCXml",
+                    url: "Manage/GenerateDMCXml",
                     data: { dmcId: id },
                     dataType: "json",
                     success: function (data) {
@@ -2220,7 +2220,7 @@
             $('#tableDMC tbody').on('click', '.view_dmc_xml', function () {
                 var rowobj = $(this).closest("tr");
                 var id = rowobj.find("td:eq(0)").text();
-                window.open('/Maintenance/ViewDMCXml?dmcId=' + id, '_blank');
+                window.open('/Manage/ViewDMCXml?dmcId=' + id, '_blank');
             });
 
             $('#tableDMC tbody').on('click', '.checkout_dmc_xml', function () {
@@ -2229,13 +2229,13 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/Maintenance/CheckoutDMC",
+                    url: "/Manage/CheckoutDMC",
                     data: { dmcId: id },
                     dataType: "json",
                     success: function (data) {
                         if (data.status) {
                             // Trigger download and then refresh to show updated status
-                            window.location.href = '/Maintenance/DownloadDMCXml?dmcId=' + id;
+                            window.location.href = '/Manage/DownloadDMCXml?dmcId=' + id;
                             setTimeout(function () { location.reload(); }, 1000);
                         } else {
                             alert(data.message || 'Checkout failed.');
@@ -2275,7 +2275,7 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: '/Maintenance/CheckinDMC',
+                    url: '/Manage/CheckinDMC',
                     data: formData,
                     processData: false,
                     contentType: false,
@@ -2302,7 +2302,7 @@
                 var id = rowobj.find("td:eq(0)").text();
                 $.ajax({
                     type: "POST",
-                    url: "/Maintenance/ValidateDMC",
+                    url: "/Manage/ValidateDMC",
                     data: { dmcId: id },
                     dataType: "json",
                     success: function (data) {
@@ -2321,7 +2321,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "Maintenance/DeleteDMC",
+                    url: "Manage/DeleteDMC",
                     data: { dmcId: id },
                     dataType: "json",
                     success: function (data) {
@@ -2400,7 +2400,7 @@
 
                     $.ajax({
                         type: "POST",
-                        url: "Maintenance/CreateProjectSns",
+                        url: "Manage/CreateProjectSns",
                         data: { projectSns: projectSns },
                         dataType: "json",
                         success: function (data) {
@@ -2424,7 +2424,7 @@
 
                     $.ajax({
                         type: "POST",
-                        url: "Maintenance/CreateSns",
+                        url: "Manage/CreateSns",
                         data: { sns: sns },
                         dataType: "json",
                         success: function (data) {
@@ -2522,7 +2522,7 @@
             allocSelectedUsers = [];
 
             // Load roles for filter dropdown
-            $.get('/Maintenance/GetAllocationRoles', function (roles) {
+            $.get('/Manage/GetAllocationRoles', function (roles) {
                 var sel = $('#allocRoleFilter').html('<option value="">All Roles</option>');
                 roles.forEach(function (r) {
                     sel.append('<option value="' + r.id + '">' + escHtml(r.name) + '</option>');
@@ -2530,18 +2530,18 @@
             });
 
             // Load all users
-            $.get('/Maintenance/GetAllocationUsers', function (users) {
+            $.get('/Manage/GetAllocationUsers', function (users) {
                 renderUsersTable(users);
             });
 
             // Load DMCs
-            $.get('/Maintenance/GetDMCsForAllocation', { projectId: projectId }, function (dmcs) {
+            $.get('/Manage/GetDMCsForAllocation', { projectId: projectId }, function (dmcs) {
                 allocDMCData = dmcs;
                 renderDMCTable(dmcs);
             });
 
             // Load ICNs
-            $.get('/Maintenance/GetICNsForAllocation', { projectId: projectId }, function (icns) {
+            $.get('/Manage/GetICNsForAllocation', { projectId: projectId }, function (icns) {
                 allocICNData = icns;
                 renderICNTable(icns);
             });
@@ -2550,7 +2550,7 @@
         });
 
         $('#allocRoleFilter').change(function () {
-            $.get('/Maintenance/GetAllocationUsers', { roleId: $(this).val() }, function (users) {
+            $.get('/Manage/GetAllocationUsers', { roleId: $(this).val() }, function (users) {
                 renderUsersTable(users);
             });
         });
@@ -2568,11 +2568,11 @@
         });
 
         $(document).on('change', '.alloc-dmc-dd', function () {
-            $.post('/Maintenance/SaveDMCAssignment', { dmcId: $(this).data('dmc-id'), userId: $(this).val() });
+            $.post('/Manage/SaveDMCAssignment', { dmcId: $(this).data('dmc-id'), userId: $(this).val() });
         });
 
         $(document).on('change', '.alloc-icn-dd', function () {
-            $.post('/Maintenance/SaveICNAssignment', { icnId: $(this).data('icn-id'), userId: $(this).val() });
+            $.post('/Manage/SaveICNAssignment', { icnId: $(this).data('icn-id'), userId: $(this).val() });
         });
 
         // ── Images tab ─────────────────────────────────────────────────────────
@@ -2596,7 +2596,7 @@
                 + '</div>'
                 + '<div class="card-footer p-1 d-flex justify-content-center gap-1">'
                 + '<button class="btn btn-xs btn-outline-primary btnViewImg" data-id="' + img.id + '" title="Preview"><i class="fa-solid fa-eye"></i></button>'
-                + '<a class="btn btn-xs btn-outline-secondary" href="/Maintenance/DownloadImageAsset/' + img.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
+                + '<a class="btn btn-xs btn-outline-secondary" href="/Manage/DownloadImageAsset/' + img.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
                 + '<button class="btn btn-xs btn-outline-danger btnDeleteImg" data-id="' + img.id + '" title="Delete"><i class="fa-solid fa-trash"></i></button>'
                 + '</div></div></div>';
             $('#imgGrid').prepend(card);
@@ -2613,7 +2613,7 @@
                 + '<td class="img-remarks-cell">' + $('<span>').text(img.remarks || '-').html() + '</td>'
                 + '<td class="text-nowrap">'
                 + '<button class="btn btn-sm btn-outline-primary me-1 btnViewImg" data-id="' + img.id + '" title="Preview"><i class="fa-solid fa-eye"></i></button>'
-                + '<a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadImageAsset/' + img.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
+                + '<a class="btn btn-sm btn-outline-secondary me-1" href="/Manage/DownloadImageAsset/' + img.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
                 + '<button class="btn btn-sm btn-outline-danger btnDeleteImg" data-id="' + img.id + '" title="Delete"><i class="fa-solid fa-trash"></i></button>'
                 + '</td></tr>';
             $('#imgTableBody').prepend(row);
@@ -2644,7 +2644,7 @@
             fd.append('file', file);
 
             $.ajax({
-                url: '/Maintenance/UploadImageAsset',
+                url: '/Manage/UploadImageAsset',
                 type: 'POST',
                 data: fd,
                 processData: false,
@@ -2671,8 +2671,8 @@
             imgCurrentId = id;
             var name = $(this).closest('[data-id]').find('.fw-semibold, td:eq(1)').first().text() || 'Image';
             $('#imgPreviewName').text(name);
-            $('#imgPreviewImg').attr('src', '/Maintenance/ViewImageAsset/' + id);
-            $('#imgPreviewDownload').attr('href', '/Maintenance/DownloadImageAsset/' + id);
+            $('#imgPreviewImg').attr('src', '/Manage/ViewImageAsset/' + id);
+            $('#imgPreviewDownload').attr('href', '/Manage/DownloadImageAsset/' + id);
             $('#imgPreviewMsg').hide();
             // Load current remarks
             var row = $('#imgTableBody tr[data-id="' + id + '"]');
@@ -2684,7 +2684,7 @@
         // Save remarks from preview modal
         $('#btnSaveImgRemarks').on('click', function () {
             var remarks = $('#imgPreviewRemarks').val().trim();
-            $.post('/Maintenance/UpdateImageRemarks', { id: imgCurrentId, remarks: remarks }, function (res) {
+            $.post('/Manage/UpdateImageRemarks', { id: imgCurrentId, remarks: remarks }, function (res) {
                 if (res.status) {
                     imgShowMsg('#imgPreviewMsg', 'success', 'Remarks saved.');
                     // Update table and grid
@@ -2700,7 +2700,7 @@
             var id = $(this).data('id');
             var name = $(this).closest('[data-id]').find('.fw-semibold, td:eq(1)').first().text() || 'this image';
             if (!confirm('Delete image "' + name + '"?\nThis cannot be undone.')) return;
-            $.post('/Maintenance/DeleteImageAsset', { id: id }, function (res) {
+            $.post('/Manage/DeleteImageAsset', { id: id }, function (res) {
                 if (res.status) {
                     $('[data-id="' + id + '"]').fadeOut(300, function () { $(this).remove(); });
                     if ($('#imgGrid .img-card').length === 0) $('#imgGridEmpty').show();
@@ -2733,7 +2733,7 @@
                 + '<td>' + $('<span>').text(ss.remarks || '-').html() + '</td>'
                 + '<td class="text-nowrap">'
                 + '<button class="btn btn-sm btn-outline-primary me-1 btnEditSS" data-id="' + ss.id + '" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>'
-                + '<a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadStylesheet/' + ss.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
+                + '<a class="btn btn-sm btn-outline-secondary me-1" href="/Manage/DownloadStylesheet/' + ss.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
                 + '<button class="btn btn-sm btn-outline-danger btnDeleteSS" data-id="' + ss.id + '" title="Delete"><i class="fa-solid fa-trash"></i></button>'
                 + '</td></tr>';
             $('#ssTableBody').prepend(row);
@@ -2766,7 +2766,7 @@
             fd.append('file', file);
 
             $.ajax({
-                url: '/Maintenance/UploadStylesheet',
+                url: '/Manage/UploadStylesheet',
                 type: 'POST',
                 data: fd,
                 processData: false,
@@ -2791,7 +2791,7 @@
             var id = $(this).data('id');
             ssCurrentId = id;
             $('#ssEditMsg').hide();
-            $.get('/Maintenance/GetStylesheetContent', { id: id }, function (res) {
+            $.get('/Manage/GetStylesheetContent', { id: id }, function (res) {
                 if (!res.status) { alert('Could not load stylesheet.'); return; }
                 $('#ssEditName').val(res.name);
                 $('#ssEditRemarks').val(res.remarks || '');
@@ -2853,7 +2853,7 @@
             if (!ssEditor) return;
             var content = ssEditor.getValue();
             var remarks = $('#ssEditRemarks').val();
-            $.post('/Maintenance/SaveStylesheetContent',
+            $.post('/Manage/SaveStylesheetContent',
                 { id: ssCurrentId, content: content, remarks: remarks },
                 function (res) {
                     if (res.status) {
@@ -2874,7 +2874,7 @@
             var row = $(this).closest('tr');
             var name = row.find('td:eq(0)').text();
             if (!confirm('Delete stylesheet "' + name + '"?\nThis cannot be undone.')) return;
-            $.post('/Maintenance/DeleteStylesheet', { id: id }, function (res) {
+            $.post('/Manage/DeleteStylesheet', { id: id }, function (res) {
                 if (res.status) {
                     row.fadeOut(300, function () { $(this).remove(); });
                 } else {
@@ -2899,7 +2899,7 @@
                 $('#idmSummary').text('');
                 $('#idmLegend').show();
 
-                $.getJSON('/Maintenance/GetIdManagerData?projectId=' + projectId, function (rows) {
+                $.getJSON('/Manage/GetIdManagerData?projectId=' + projectId, function (rows) {
                     if ($.fn.DataTable.isDataTable('#idmTable')) { $('#idmTable').DataTable().destroy(); }
                     idmTable = null;
 
@@ -2921,7 +2921,7 @@
                                 badge = '<span class="badge bg-danger">Duplicate</span>';
                                 dupCount++;
                                 dmcCell = r.occurrences.map(function (o) {
-                                    return '<a href="/Maintenance/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
+                                    return '<a href="/Manage/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
                                            '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
                                 }).join('');
                             } else {

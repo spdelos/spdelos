@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 namespace CSDBPortal.ViewModels
 {
-    public class MaintenanceViewModel
+    public class ManageViewModel
     {
         public List<CustomLocationCode>? LocationCodes { get; set; }
         public List<LocationCodeSet>? LocationCodesSets { get; set; }

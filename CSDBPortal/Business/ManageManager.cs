@@ -8,38 +8,38 @@ using Project = CSDBPortal.Models.Project;
 
 namespace CSDBPortal.Business
 {
-    public class MaintenanceManager
+    public class ManageManager
     {
         private readonly ApplicationDbContext _db;
 
-        public MaintenanceManager(ApplicationDbContext db)
+        public ManageManager(ApplicationDbContext db)
         {
             _db = db;
         }
 
-        public async Task<MaintenanceViewModel> GetMaintenanceDetailInfoAsync()
+        public async Task<ManageViewModel> GetManageDetailInfoAsync()
         {
-            MaintenanceViewModel maintenanceViewModel = new MaintenanceViewModel();
+            ManageViewModel manageViewModel = new ManageViewModel();
             try
             {
-                maintenanceViewModel.LocationCodes = new List<CustomLocationCode>();
-                maintenanceViewModel.LocationCodesSets = new List<LocationCodeSet>();
-                maintenanceViewModel.ResponsiblePartnerCodes = new List<ResponsiblePartnerCode>();
-                maintenanceViewModel.DataModuleTypes = new List<DataModuleType>();
-                maintenanceViewModel.Issues = new List<IssueNo>();
-                maintenanceViewModel.Icnformats = new List<Icnformat>();
-                maintenanceViewModel.InformationCodeSets = new List<InformationCodeSet>();
+                manageViewModel.LocationCodes = new List<CustomLocationCode>();
+                manageViewModel.LocationCodesSets = new List<LocationCodeSet>();
+                manageViewModel.ResponsiblePartnerCodes = new List<ResponsiblePartnerCode>();
+                manageViewModel.DataModuleTypes = new List<DataModuleType>();
+                manageViewModel.Issues = new List<IssueNo>();
+                manageViewModel.Icnformats = new List<Icnformat>();
+                manageViewModel.InformationCodeSets = new List<InformationCodeSet>();
 
-                maintenanceViewModel.LocationCodesSets = await _db.LocationCodeSets.ToListAsync();
-                maintenanceViewModel.ResponsiblePartnerCodes = await _db.ResponsiblePartnerCodes.ToListAsync();
-                maintenanceViewModel.DataModuleTypes = await _db.DataModuleTypes.ToListAsync();
-                maintenanceViewModel.Issues = await _db.IssueNos.ToListAsync();
-                maintenanceViewModel.Icnformats = await _db.Icnformats.ToListAsync();
-                maintenanceViewModel.InformationCodeSets = await _db.InformationCodeSets.ToListAsync();
-                maintenanceViewModel.Stylesheets = await _db.Stylesheets
+                manageViewModel.LocationCodesSets = await _db.LocationCodeSets.ToListAsync();
+                manageViewModel.ResponsiblePartnerCodes = await _db.ResponsiblePartnerCodes.ToListAsync();
+                manageViewModel.DataModuleTypes = await _db.DataModuleTypes.ToListAsync();
+                manageViewModel.Issues = await _db.IssueNos.ToListAsync();
+                manageViewModel.Icnformats = await _db.Icnformats.ToListAsync();
+                manageViewModel.InformationCodeSets = await _db.InformationCodeSets.ToListAsync();
+                manageViewModel.Stylesheets = await _db.Stylesheets
                     .OrderByDescending(s => s.UploadedOn)
                     .ToListAsync();
-                maintenanceViewModel.ImageAssets = await _db.ImageAssets
+                manageViewModel.ImageAssets = await _db.ImageAssets
                     .OrderByDescending(i => i.UploadedOn)
                     .Select(i => new ImageAsset
                     {
@@ -57,7 +57,7 @@ namespace CSDBPortal.Business
 
                 foreach (var lc in lcresult)
                 {
-                    maintenanceViewModel.LocationCodes.Add(new CustomLocationCode
+                    manageViewModel.LocationCodes.Add(new CustomLocationCode
                     {
                         Id = lc.Id,
                         Code = lc.Code,
@@ -82,10 +82,10 @@ namespace CSDBPortal.Business
                                   ICNDescription = icn.Description
                               }).ToListAsync();
 
-                maintenanceViewModel.Projects = new List<CustomProjet>();
+                manageViewModel.Projects = new List<CustomProjet>();
                 foreach (var item in result)
                 {
-                    maintenanceViewModel.Projects.Add(new CustomProjet
+                    manageViewModel.Projects.Add(new CustomProjet
                     {
                         Id = item.Id, EndItem = item.EndItem, Name = item.Name, Title = item.Title,
                         IssueNoId = item.IssueNoId, IcnformatId = item.IcnformatId, SNSSetId = item.SNSSetId,
@@ -106,10 +106,10 @@ namespace CSDBPortal.Business
                                  from s2 in s3.DefaultIfEmpty()
                                  select new { s1.Id, s1.Code, s1.Description, s1.CreatedBy, s1.CreatedOn, s1.ParentId, s1.UpdatedBy, s1.UpdatedOn, ParentCode = s2.Code }).ToListAsync();
 
-                maintenanceViewModel.StandardNumberingSystems = new List<CustomStandardNumberingSystem>();
+                manageViewModel.StandardNumberingSystems = new List<CustomStandardNumberingSystem>();
                 foreach (var item in snsResult)
                 {
-                    maintenanceViewModel.StandardNumberingSystems.Add(new CustomStandardNumberingSystem()
+                    manageViewModel.StandardNumberingSystems.Add(new CustomStandardNumberingSystem()
                     {
                         Id = item.Id, Code = item.Code, Description = item.Description,
                         CreatedBy = item.CreatedBy, CreatedOn = item.CreatedOn, ParentCode = item.ParentCode,
@@ -118,15 +118,15 @@ namespace CSDBPortal.Business
                     });
                 }
 
-                AssignLevel(maintenanceViewModel.StandardNumberingSystems);
+                AssignLevel(manageViewModel.StandardNumberingSystems);
 
                 List<CustomStandardNumberingSystem> newStandardNumbers = new List<CustomStandardNumberingSystem>();
-                IEnumerable<CustomStandardNumberingSystem> rootElements = maintenanceViewModel.StandardNumberingSystems.Where(s => s.parent_id == 0);
+                IEnumerable<CustomStandardNumberingSystem> rootElements = manageViewModel.StandardNumberingSystems.Where(s => s.parent_id == 0);
                 foreach (CustomStandardNumberingSystem sns in rootElements)
                 {
-                    newStandardNumbers.AddRange(OrderTree(sns, maintenanceViewModel.StandardNumberingSystems));
+                    newStandardNumbers.AddRange(OrderTree(sns, manageViewModel.StandardNumberingSystems));
                 }
-                maintenanceViewModel.StandardNumberingSystems = newStandardNumbers;
+                manageViewModel.StandardNumberingSystems = newStandardNumbers;
 
                 var dataModuleCodes = await (from dmc in _db.DataModuleCodes
                                 join p in _db.Projects on dmc.ProjectId equals p.Id
@@ -149,10 +149,10 @@ namespace CSDBPortal.Business
                                     dmc.CheckedOutOn
                                 }).ToListAsync();
 
-                maintenanceViewModel.DataModuleCodes = new List<CustomDataModuleCode>();
+                manageViewModel.DataModuleCodes = new List<CustomDataModuleCode>();
                 foreach (var dataModuleCode in dataModuleCodes)
                 {
-                    maintenanceViewModel.DataModuleCodes.Add(new CustomDataModuleCode()
+                    manageViewModel.DataModuleCodes.Add(new CustomDataModuleCode()
                     {
                         CreatedBy = dataModuleCode.CreatedBy, CreatedOn = dataModuleCode.CreatedOn,
                         DCV = dataModuleCode.DCV, DMC = dataModuleCode.DMC, ICV = dataModuleCode.ICV,
@@ -175,7 +175,7 @@ namespace CSDBPortal.Business
                     });
                 }
 
-                return maintenanceViewModel;
+                return manageViewModel;
             }
             catch
             {

@@ -792,23 +792,23 @@ a:hover { text-decoration: none !important; }
 }
 
 /* ════════════════════════════════════════════
-   MAINTENANCE — specific
+   MANAGE — specific
    ════════════════════════════════════════════ */
-.maintenance-wrapper .tab-header .nav-item .nav-link {
+.manage-wrapper .tab-header .nav-item .nav-link {
     font-size: 12.5px;
     padding: 7px 14px;
 }
 
-.maintenance-wrapper .actions .btn { font-size: 13px; }
+.manage-wrapper .actions .btn { font-size: 13px; }
 
 .tab_project-table .table th,
 .tab_project-table .table td {
     padding: 8px 12px !important;
 }
 
-.maintenance-wrapper .table-bordered td { border-left: 1px solid #f3f4f6 !important; }
-.maintenance-wrapper .table-bordered td:first-child { border-left: 0 !important; }
-.maintenance-wrapper .table-bordered td:last-child  { border-right: 0 !important; }
+.manage-wrapper .table-bordered td { border-left: 1px solid #f3f4f6 !important; }
+.manage-wrapper .table-bordered td:first-child { border-left: 0 !important; }
+.manage-wrapper .table-bordered td:last-child  { border-right: 0 !important; }
 
 /* ════════════════════════════════════════════
    CONFIGURATION — specific
@@ -1041,7 +1041,7 @@ a:hover { text-decoration: none !important; }
 .main-content { padding: 0; }
 .content-wrapper { background: var(--bg); }
 .configuration-wrapper,
-.maintenance-wrapper,
+.manage-wrapper,
 .icn-wrapper,
 .data_module-wrapper { padding-top: 0; }
 
@@ -1199,10 +1199,10 @@ a:hover { text-decoration: none !important; }
 .vtab-content .actions.mb-3 { margin-bottom: 16px !important; }
 
 /* ════════════════════════════════════════════
-   MAINTENANCE — secondary panel layout
+   MANAGE — secondary panel layout
    ════════════════════════════════════════════ */
 
-/* Make app-content edge-to-edge for maintenance split-pane */
+/* Make app-content edge-to-edge for manage split-pane */
 .app-content:has(.maint-shell) {
     padding: 0;
     overflow: hidden;
@@ -1301,7 +1301,7 @@ a:hover { text-decoration: none !important; }
     min-height: 100%;
 }
 
-/* Alert bar inside maintenance */
+/* Alert bar inside manage */
 .maint-content .alert {
     position: relative !important;
 }

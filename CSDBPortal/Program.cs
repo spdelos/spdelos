@@ -51,7 +51,7 @@ builder.Services.AddControllersWithViews()
 
 // Register managers as Scoped so they share the request-scoped DbContext
 builder.Services.AddScoped<BaseManager>();
-builder.Services.AddScoped<MaintenanceManager>();
+builder.Services.AddScoped<ManageManager>();
 builder.Services.AddScoped<AdministrationManager>();
 builder.Services.AddScoped<ConfigurationsManager>();
 builder.Services.AddScoped<ICNManager>();
