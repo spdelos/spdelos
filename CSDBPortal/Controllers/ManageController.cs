@@ -994,72 +994,73 @@ namespace CSDBPortal.Controllers
         [HttpGet]
         public async Task<JsonResult> GetIdManagerData(int projectId)
         {
-            var dmcs = await _db.DataModuleCodes
-                .Where(d => d.ProjectId == projectId && !d.IsDeleted && d.xml != null)
-                .Select(d => new { d.Id, d.DMC, d.xml })
-                .ToListAsync();
-
-            // Step 1 – collect every xml:id / id attribute from every DMC
-            var allEntries = new List<(string IdVal, int DmcId, string DmcCode)>();
-            foreach (var dmc in dmcs)
+            try
             {
-                try
-                {
-                    var doc = new XmlDocument();
-                    doc.LoadXml(dmc.xml!);
-                    // Match both plain "id" and XML-namespaced "xml:id"
-                    var ns = new XmlNamespaceManager(doc.NameTable);
-                    ns.AddNamespace("xml", "http://www.w3.org/XML/1998/namespace");
-                    foreach (XmlNode node in doc.SelectNodes("//*")!)
-                    {
-                        var idVal = node.Attributes?["id"]?.Value
-                                 ?? node.Attributes?["xml:id"]?.Value;
-                        if (!string.IsNullOrWhiteSpace(idVal))
-                            allEntries.Add((idVal, dmc.Id, dmc.DMC ?? ""));
-                    }
-                }
-                catch { }
-            }
+                var dmcs = await _db.DataModuleCodes
+                    .Where(d => d.ProjectId == projectId && !d.IsDeleted && d.xml != null)
+                    .Select(d => new { d.Id, d.DMC, d.xml })
+                    .AsNoTracking()
+                    .ToListAsync();
 
-            // Step 2 – collect all values used in reference attributes
-            string[] refAttrs = { "xrefid", "internalRefId", "refid", "targetId", "applicRefId", "condRefId" };
-            var referencedIds = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var dmc in dmcs)
-            {
-                try
+                string[] refAttrs = { "xrefid", "internalRefId", "refid", "targetId", "applicRefId", "condRefId" };
+
+                // Single pass per DMC: collect id/xml:id declarations and reference attribute values together
+                var allEntries = new List<(string IdVal, int DmcId, string DmcCode)>();
+                var referencedIds = new HashSet<string>(StringComparer.Ordinal);
+
+                foreach (var dmc in dmcs)
                 {
-                    var doc = new XmlDocument();
-                    doc.LoadXml(dmc.xml!);
-                    foreach (var attr in refAttrs)
+                    try
                     {
-                        foreach (XmlNode node in doc.SelectNodes($"//*[@{attr}]")!)
+                        var doc = new XmlDocument();
+                        doc.LoadXml(dmc.xml!);
+
+                        foreach (XmlNode node in doc.SelectNodes("//*")!)
                         {
-                            var val = node.Attributes?[attr]?.Value;
-                            if (!string.IsNullOrEmpty(val)) referencedIds.Add(val);
+                            if (node.Attributes == null) continue;
+
+                            // Collect declared IDs (plain id or xml:id)
+                            var idVal = node.Attributes["id"]?.Value
+                                     ?? node.Attributes["xml:id"]?.Value;
+                            if (!string.IsNullOrWhiteSpace(idVal))
+                                allEntries.Add((idVal, dmc.Id, dmc.DMC ?? ""));
+
+                            // Collect referenced IDs from reference attributes
+                            foreach (var attr in refAttrs)
+                            {
+                                var refVal = node.Attributes[attr]?.Value;
+                                if (!string.IsNullOrEmpty(refVal))
+                                    referencedIds.Add(refVal);
+                            }
                         }
                     }
+                    catch { }
                 }
-                catch { }
-            }
 
-            // Step 3 – group by ID value and classify
-            var rows = allEntries
-                .GroupBy(e => e.IdVal, StringComparer.Ordinal)
-                .Select(g =>
-                {
-                    bool isDup = g.Count() > 1;
-                    bool isRef = referencedIds.Contains(g.Key);
-                    return new
+                // Group by ID value and classify
+                var rows = allEntries
+                    .GroupBy(e => e.IdVal, StringComparer.Ordinal)
+                    .Select(g =>
                     {
-                        idValue    = g.Key,
-                        status     = isDup ? "Duplicate" : isRef ? "Referenced" : "Unused",
-                        occurrences = g.Select(e => new { e.DmcId, e.DmcCode }).ToList()
-                    };
-                })
-                .OrderBy(r => r.idValue)
-                .ToList();
+                        bool isDup = g.Count() > 1;
+                        bool isRef = referencedIds.Contains(g.Key);
+                        return new
+                        {
+                            idValue     = g.Key,
+                            status      = isDup ? "Duplicate" : isRef ? "Referenced" : "Unused",
+                            occurrences = g.Select(e => new { e.DmcId, e.DmcCode }).ToList()
+                        };
+                    })
+                    .OrderBy(r => r.idValue)
+                    .ToList();
 
-            return Json(rows);
+                return Json(rows);
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { error = ex.Message });
+            }
         }
     }
 }
