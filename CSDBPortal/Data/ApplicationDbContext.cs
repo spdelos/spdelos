@@ -47,6 +47,7 @@ namespace CSDBPortal.Data
         public virtual DbSet<ImageAsset> ImageAssets { get; set; } = null!;
         public virtual DbSet<WorkflowInstance> WorkflowInstances { get; set; } = null!;
         public virtual DbSet<WorkflowStep> WorkflowSteps { get; set; } = null!;
+        public virtual DbSet<QuickAccessItem> QuickAccessItems { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -119,6 +120,10 @@ namespace CSDBPortal.Data
             // WorkflowStep — always filtered by WorkflowInstanceId
             modelBuilder.Entity<WorkflowStep>().HasIndex(s => s.WorkflowInstanceId).HasDatabaseName("IX_WorkflowStep_WorkflowInstanceId");
             modelBuilder.Entity<WorkflowStep>().HasIndex(s => new { s.WorkflowInstanceId, s.StepNumber }).HasDatabaseName("IX_WorkflowStep_InstanceId_StepNumber");
+
+            // QuickAccessItem — queried by IsActive and ordered by SortOrder
+            modelBuilder.Entity<QuickAccessItem>().HasIndex(q => q.IsActive).HasDatabaseName("IX_QuickAccessItem_IsActive");
+            modelBuilder.Entity<QuickAccessItem>().HasIndex(q => q.SortOrder).HasDatabaseName("IX_QuickAccessItem_SortOrder");
         }
     }
 }

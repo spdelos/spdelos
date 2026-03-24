@@ -1,7 +1,8 @@
 using CSDBPortal.Business;
-using Microsoft.AspNetCore.Authorization;
+using CSDBPortal.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace CSDBPortal.Controllers
@@ -12,17 +13,20 @@ namespace CSDBPortal.Controllers
         private readonly BaseManager _baseManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDbContext _db;
 
         public AdministrationController(
             AdministrationManager administrationManager,
             BaseManager baseManager,
             UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            ApplicationDbContext db)
         {
             _administrationManager = administrationManager;
             _baseManager = baseManager;
             _userManager = userManager;
             _roleManager = roleManager;
+            _db = db;
         }
 
         public async Task<IActionResult> Index()
@@ -151,6 +155,34 @@ namespace CSDBPortal.Controllers
             return Json(await _userManager.DeleteAsync(userFromDB));
         }
 
+        // ── Quick Access Config ───────────────────────────────────────────
+        [HttpGet]
+        public async Task<JsonResult> GetQuickAccessConfig()
+        {
+            var items = await _administrationManager.GetOrSeedQuickAccessItemsAsync(activeOnly: false);
+            return Json(items);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SaveQuickAccessConfig([FromBody] List<QuickAccessSaveItem> items)
+        {
+            if (items == null || !items.Any())
+                return Json(new { status = false, message = "No items provided." });
+
+            var dbItems = await _db.QuickAccessItems.ToListAsync();
+            foreach (var upd in items)
+            {
+                var row = dbItems.FirstOrDefault(d => d.Id == upd.Id);
+                if (row != null)
+                {
+                    row.IsActive  = upd.IsActive;
+                    row.SortOrder = upd.SortOrder;
+                }
+            }
+            await _db.SaveChangesAsync();
+            return Json(new { status = true });
+        }
+
         private string GetPassword(string header)
         {
             string[] content1 = header.Split(' ');
@@ -159,5 +191,13 @@ namespace CSDBPortal.Controllers
             string[] content2 = decodedTxt.Split(':');
             return content2[1];
         }
+    }
+
+    /// <summary>Payload for SaveQuickAccessConfig.</summary>
+    public class QuickAccessSaveItem
+    {
+        public int Id { get; set; }
+        public bool IsActive { get; set; }
+        public int SortOrder { get; set; }
     }
 }

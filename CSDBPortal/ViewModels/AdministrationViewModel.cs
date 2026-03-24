@@ -11,5 +11,6 @@ namespace CSDBPortal.ViewModels
         public int ProjectCompleted { get; set; }
         public int UserCount { get; set; }
         public int ActiveUsers { get; set; }
+        public List<QuickAccessItem> QuickAccessItems { get; set; } = new();
     }
 }

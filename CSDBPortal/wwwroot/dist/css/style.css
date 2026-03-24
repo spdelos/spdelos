@@ -1377,6 +1377,48 @@ a:hover { text-decoration: none !important; }
 .activity-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
 /* ════════════════════════════════════════════
+   QUICK ACCESS CONFIG LIST (admin modal)
+   ════════════════════════════════════════════ */
+.qa-config-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.qa-config-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: #fff;
+    transition: background var(--transition);
+}
+.qa-config-item:hover { background: #f9fafb; }
+.qa-config-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.qa-config-arrows { display: flex; gap: 4px; }
+
+/* ════════════════════════════════════════════
+   ISSUE 2 — Collapsed sidebar profile dropdown
+   Pin the dropdown to the right of the sidebar
+   so it is never obscured by the main content.
+   ════════════════════════════════════════════ */
+.app-sidebar.collapsed .sidebar-user-dropdown.show {
+    position: fixed !important;
+    left: calc(var(--sidebar-w-collapsed) + 6px) !important;
+    bottom: 16px !important;
+    top: auto !important;
+    transform: none !important;
+    z-index: 2000 !important;
+    min-width: 200px;
+}
+
+/* ════════════════════════════════════════════
    WORKFLOW MODULE
    ════════════════════════════════════════════ */
 
