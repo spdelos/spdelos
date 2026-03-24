@@ -72,6 +72,11 @@
                 <span class="mni-icon"><i class="fa-solid fa-images"></i></span>
                 <span>Images</span>
             </a>
+            <a class="maint-nav-item" id="pills-tab-11"
+               data-bs-toggle="tab" href="#pills-11" role="tab">
+                <span class="mni-icon"><i class="fa-solid fa-fingerprint"></i></span>
+                <span>ID Manager</span>
+            </a>
         </nav>
     </aside>
 
@@ -621,6 +626,60 @@
                 </div>
             </div>
             <!-- /. tab-9 Images end -->
+
+            <!-- tab-11 ID Manager start -->
+            <div class="tab-pane fade" id="pills-11" role="tabpanel" aria-labelledby="pills-tab-11">
+
+                <div class="card mb-3" style="padding:20px;">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <label class="fw-semibold mb-0" style="white-space:nowrap;">
+                            <i class="fa-solid fa-folder-open me-1 text-primary"></i>Project
+                        </label>
+                        <select id="idmProjectSelect" class="form-select" style="max-width:360px;">
+                            <option value="">-- Select a project --</option>
+                            @if (Model?.Projects != null)
+                            {
+                                foreach (var p in Model.Projects)
+                                {
+                                    <option value="@p.Id">@p.Name — @p.Title</option>
+                                }
+                            }
+                        </select>
+                        <button id="idmAnalyse" class="btn btn-primary btn-sm" disabled>
+                            <i class="fa-solid fa-magnifying-glass me-1"></i>Analyse
+                        </button>
+                        <span id="idmSpinner" class="spinner-border spinner-border-sm text-primary ms-1" style="display:none;" role="status"></span>
+                        <span id="idmSummary" class="ms-auto small text-muted"></span>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="d-flex gap-3 mb-2 small ms-1" id="idmLegend" style="display:none !important;">
+                    <span><span class="badge bg-success">&nbsp;</span> Referenced</span>
+                    <span><span class="badge" style="background:#6c757d;">&nbsp;</span> Unused</span>
+                    <span><span class="badge bg-danger">&nbsp;</span> Duplicate</span>
+                </div>
+
+                <div class="card" style="padding:15px;">
+                    <div class="table-responsive">
+                        <table id="idmTable" class="table table-sm table-hover" style="width:100%">
+                            <thead class="thead">
+                                <tr>
+                                    <th>ID Value</th>
+                                    <th style="width:180px;">Status</th>
+                                    <th>DMC(s)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="idmTbody">
+                                <tr><td colspan="3" class="text-center text-muted py-4">Select a project and click Analyse.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /. tab-11 ID Manager end -->
+
         </div>
     </div>
     <!-- /. maint-content -->
@@ -2823,6 +2882,85 @@
                 }
             }).fail(function () { alert('Server error.'); });
         });
+
+        // ── ID Manager ──────────────────────────────────────────────────────
+        (function () {
+            var idmTable = null;
+
+            $('#idmProjectSelect').on('change', function () {
+                $('#idmAnalyse').prop('disabled', !$(this).val());
+            });
+
+            $('#idmAnalyse').on('click', function () {
+                var projectId = $('#idmProjectSelect').val();
+                if (!projectId) return;
+                $('#idmSpinner').show();
+                $('#idmAnalyse').prop('disabled', true);
+                $('#idmSummary').text('');
+                $('#idmLegend').show();
+
+                $.getJSON('/Maintenance/GetIdManagerData?projectId=' + projectId, function (rows) {
+                    if (idmTable) { idmTable.destroy(); idmTable = null; }
+
+                    var html = '';
+                    if (!rows || rows.length === 0) {
+                        html = '<tr><td colspan="3" class="text-center text-muted py-3">No IDs found in this project\'s DMCs.</td></tr>';
+                    } else {
+                        var refCount = 0, unusedCount = 0, dupCount = 0;
+                        rows.forEach(function (r) {
+                            var badge = '', dmcCell = '';
+                            if (r.status === 'Referenced') {
+                                badge = '<span class="badge bg-success">Referenced</span>';
+                                refCount++;
+                                // For referenced — show first DMC only (no clickable link needed)
+                                dmcCell = r.occurrences.map(function (o) {
+                                    return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
+                                }).join('<br>');
+                            } else if (r.status === 'Duplicate') {
+                                badge = '<span class="badge bg-danger">Duplicate</span>';
+                                dupCount++;
+                                dmcCell = r.occurrences.map(function (o) {
+                                    return '<a href="/Maintenance/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
+                                           '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
+                                }).join('');
+                            } else {
+                                badge = '<span class="text-muted small">Unused</span>';
+                                unusedCount++;
+                                dmcCell = r.occurrences.map(function (o) {
+                                    return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
+                                }).join('<br>');
+                            }
+                            html += '<tr><td class="font-monospace small">' + escHtml(r.idValue) + '</td>' +
+                                    '<td>' + badge + '</td>' +
+                                    '<td>' + dmcCell + '</td></tr>';
+                        });
+                        $('#idmSummary').html(
+                            '<span class="text-success fw-semibold">' + refCount + ' referenced</span> &nbsp; ' +
+                            '<span class="text-secondary">' + unusedCount + ' unused</span> &nbsp; ' +
+                            '<span class="text-danger fw-semibold">' + dupCount + ' duplicate</span>'
+                        );
+                    }
+
+                    $('#idmTbody').html(html);
+
+                    idmTable = $('#idmTable').DataTable({
+                        pageLength: 25,
+                        order: [[1, 'asc'], [0, 'asc']],
+                        columnDefs: [{ orderable: false, targets: 2 }],
+                        language: { search: 'Filter:' }
+                    });
+                }).fail(function () {
+                    $('#idmTbody').html('<tr><td colspan="3" class="text-danger text-center py-3">Failed to load data. Please try again.</td></tr>');
+                }).always(function () {
+                    $('#idmSpinner').hide();
+                    $('#idmAnalyse').prop('disabled', false);
+                });
+            });
+
+            function escHtml(s) {
+                return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
+        }());
 
     </script>
 }
