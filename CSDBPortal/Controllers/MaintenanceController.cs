@@ -1010,7 +1010,7 @@ namespace CSDBPortal.Controllers
                     // Match both plain "id" and XML-namespaced "xml:id"
                     var ns = new XmlNamespaceManager(doc.NameTable);
                     ns.AddNamespace("xml", "http://www.w3.org/XML/1998/namespace");
-                    foreach (XmlNode node in doc.SelectNodes("//*") ?? Enumerable.Empty<XmlNode>().Cast<XmlNode>().ToArray())
+                    foreach (XmlNode node in doc.SelectNodes("//*")!)
                     {
                         var idVal = node.Attributes?["id"]?.Value
                                  ?? node.Attributes?["xml:id"]?.Value;
@@ -1032,7 +1032,7 @@ namespace CSDBPortal.Controllers
                     doc.LoadXml(dmc.xml!);
                     foreach (var attr in refAttrs)
                     {
-                        foreach (XmlNode node in doc.SelectNodes($"//*[@{attr}]") ?? Enumerable.Empty<XmlNode>().Cast<XmlNode>().ToArray())
+                        foreach (XmlNode node in doc.SelectNodes($"//*[@{attr}]")!)
                         {
                             var val = node.Attributes?[attr]?.Value;
                             if (!string.IsNullOrEmpty(val)) referencedIds.Add(val);
