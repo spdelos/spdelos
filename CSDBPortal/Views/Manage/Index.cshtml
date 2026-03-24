@@ -2915,8 +2915,13 @@
                             $('#idmTbody').html('<tr><td colspan="3" class="text-danger text-center py-3">Error: ' + escHtml(rows.error) + '</td></tr>');
                             return;
                         }
-                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#idmTable')) { $('#idmTable').DataTable().destroy(); }
+                        // Replace the entire table element so DataTables always gets a clean DOM
                         idmTable = null;
+                        $('#idmTable').replaceWith(
+                            '<table id="idmTable" class="table table-sm table-hover" style="width:100%">' +
+                            '<thead class="thead"><tr><th>ID Value</th><th style="width:180px;">Status</th><th>DMC(s)</th></tr></thead>' +
+                            '<tbody id="idmTbody"></tbody></table>'
+                        );
 
                         var html = '';
                         if (!rows || rows.length === 0) {
