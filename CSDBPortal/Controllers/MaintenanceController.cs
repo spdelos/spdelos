@@ -898,5 +898,96 @@ namespace CSDBPortal.Controllers
             var bytes = Encoding.UTF8.GetBytes(ss.Content ?? string.Empty);
             return File(bytes, "application/xml", ss.FileName);
         }
+
+        // ── Image Asset endpoints ──────────────────────────────────────────────
+
+        private static readonly HashSet<string> _allowedImageMimes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "image/jpeg", "image/png", "image/gif", "image/svg+xml",
+            "image/webp", "image/bmp", "image/tiff"
+        };
+
+        [HttpPost]
+        public async Task<JsonResult> UploadImageAsset(string name, string? remarks, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return Json(new { status = false, message = "No file selected." });
+
+            var mimeType = file.ContentType?.ToLowerInvariant() ?? string.Empty;
+            if (!_allowedImageMimes.Contains(mimeType))
+                return Json(new { status = false, message = "Unsupported file type. Accepted: JPEG, PNG, GIF, SVG, WebP, BMP, TIFF." });
+
+            byte[] bytes;
+            using (var ms = new MemoryStream())
+            {
+                await file.CopyToAsync(ms);
+                bytes = ms.ToArray();
+            }
+
+            var asset = new Models.ImageAsset
+            {
+                Name       = name?.Trim() ?? Path.GetFileNameWithoutExtension(file.FileName),
+                FileName   = file.FileName,
+                MimeType   = mimeType,
+                Data       = Convert.ToBase64String(bytes),
+                Remarks    = remarks?.Trim(),
+                UploadedBy = User.Identity!.Name ?? string.Empty,
+                UploadedOn = DateTime.UtcNow
+            };
+
+            _db.ImageAssets.Add(asset);
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                status     = true,
+                id         = asset.Id,
+                name       = asset.Name,
+                fileName   = asset.FileName,
+                mimeType   = asset.MimeType,
+                remarks    = asset.Remarks,
+                uploadedBy = asset.UploadedBy,
+                uploadedOn = asset.UploadedOn.ToString("yyyy-MM-dd HH:mm"),
+                dataUrl    = $"data:{asset.MimeType};base64,{asset.Data}"
+            });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateImageRemarks(int id, string? remarks)
+        {
+            var asset = await _db.ImageAssets.FindAsync(id);
+            if (asset == null) return Json(new { status = false });
+            asset.Remarks   = remarks?.Trim();
+            asset.UpdatedBy = User.Identity!.Name;
+            asset.UpdatedOn = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Json(new { status = true });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteImageAsset(int id)
+        {
+            var asset = await _db.ImageAssets.FindAsync(id);
+            if (asset == null) return Json(new { status = false });
+            _db.ImageAssets.Remove(asset);
+            await _db.SaveChangesAsync();
+            return Json(new { status = true });
+        }
+
+        public async Task<IActionResult> DownloadImageAsset(int id)
+        {
+            var asset = await _db.ImageAssets.FindAsync(id);
+            if (asset == null) return NotFound();
+            var bytes = Convert.FromBase64String(asset.Data ?? string.Empty);
+            return File(bytes, asset.MimeType, asset.FileName);
+        }
+
+        public async Task<IActionResult> ViewImageAsset(int id)
+        {
+            var asset = await _db.ImageAssets.FindAsync(id);
+            if (asset == null) return NotFound();
+            var bytes = Convert.FromBase64String(asset.Data ?? string.Empty);
+            return File(bytes, asset.MimeType);
+        }
     }
 }

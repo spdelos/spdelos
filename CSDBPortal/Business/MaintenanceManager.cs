@@ -39,6 +39,17 @@ namespace CSDBPortal.Business
                 maintenanceViewModel.Stylesheets = await _db.Stylesheets
                     .OrderByDescending(s => s.UploadedOn)
                     .ToListAsync();
+                maintenanceViewModel.ImageAssets = await _db.ImageAssets
+                    .OrderByDescending(i => i.UploadedOn)
+                    .Select(i => new ImageAsset
+                    {
+                        Id = i.Id, Name = i.Name, FileName = i.FileName,
+                        MimeType = i.MimeType, Remarks = i.Remarks,
+                        UploadedBy = i.UploadedBy, UploadedOn = i.UploadedOn,
+                        UpdatedBy = i.UpdatedBy, UpdatedOn = i.UpdatedOn
+                        // Data intentionally omitted from list load (potentially large)
+                    })
+                    .ToListAsync();
 
                 var lcresult = await (from lc in _db.LocationCodes
                                 join lcs in _db.LocationCodeSets on lc.LocationCodeSetId equals lcs.Id

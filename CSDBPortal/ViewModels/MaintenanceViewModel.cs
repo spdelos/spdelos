@@ -15,6 +15,8 @@ namespace CSDBPortal.ViewModels
 
         public List<Stylesheet>? Stylesheets { get; set; }
 
+        public List<ImageAsset>? ImageAssets { get; set; }
+
         public string ProjectNavigationJson { get; set; }
         public List<IssueNo>? Issues { get; set; }
         public List<InformationCodeSet>? InformationCodeSets { get; set;}

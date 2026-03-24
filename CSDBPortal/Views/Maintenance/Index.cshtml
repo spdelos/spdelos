@@ -503,11 +503,124 @@
                 </div>
             </div>
             <!-- /. tab-8 Stylesheet end -->
+            <!-- tab-9 Images start -->
             <div class="tab-pane fade" id="pills-9" role="tabpanel" aria-labelledby="pills-tab-9">
+
+                <!-- Upload card -->
+                <div class="card mb-3" style="padding:20px;">
+                    <h6 class="mb-3"><i class="fa-solid fa-upload me-2"></i>Upload Image</h6>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="imgUploadName" placeholder="e.g. Company Logo" maxlength="256" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">File <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="imgUploadFile" accept="image/jpeg,image/png,image/gif,image/svg+xml,image/webp,image/bmp,image/tiff" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Remarks</label>
+                            <input type="text" class="form-control" id="imgUploadRemarks" placeholder="Optional description" maxlength="1000" />
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn w-100" id="btnUploadImage">
+                                <i class="fas fa-upload me-1"></i> Upload
+                            </button>
+                        </div>
+                    </div>
+                    <div id="imgUploadMsg" class="mt-2" style="display:none;"></div>
+                </div>
+
+                <!-- Image gallery/table card -->
                 <div class="card" style="padding:20px;">
-                    <p class="text-muted mb-0">Images management coming soon.</p>
+                    <h6 class="mb-3"><i class="fa-solid fa-images me-2"></i>Uploaded Images</h6>
+
+                    <!-- View toggle -->
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-sm btn-outline-secondary active" id="btnImgGrid" title="Grid view"><i class="fa-solid fa-grip"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary" id="btnImgList" title="List view"><i class="fa-solid fa-list"></i></button>
+                    </div>
+
+                    <!-- Grid view -->
+                    <div id="imgGridView">
+                        <div class="row g-3" id="imgGrid">
+                            @if (Model?.ImageAssets != null)
+                            {
+                                foreach (var img in Model.ImageAssets)
+                                {
+                                    <div class="col-6 col-md-3 col-lg-2 img-card" data-id="@img.Id">
+                                        <div class="card h-100 text-center" style="cursor:pointer;">
+                                            <div class="card-body p-2">
+                                                <img src="/Maintenance/ViewImageAsset/@img.Id" alt="@img.Name"
+                                                     class="img-fluid img-thumbnail mb-2 imgThumb"
+                                                     style="max-height:100px; object-fit:contain;"
+                                                     data-id="@img.Id" />
+                                                <div class="small fw-semibold text-truncate" title="@img.Name">@img.Name</div>
+                                                <div class="text-muted" style="font-size:0.7rem;">@img.FileName</div>
+                                                <div class="text-muted" style="font-size:0.7rem;">@img.UploadedBy · @img.UploadedOn.ToString("yyyy-MM-dd")</div>
+                                                @if (!string.IsNullOrEmpty(img.Remarks))
+                                                {
+                                                    <div class="text-muted fst-italic" style="font-size:0.7rem;" title="@img.Remarks">@img.Remarks</div>
+                                                }
+                                            </div>
+                                            <div class="card-footer p-1 d-flex justify-content-center gap-1">
+                                                <button class="btn btn-xs btn-outline-primary btnViewImg" data-id="@img.Id" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                                                <a class="btn btn-xs btn-outline-secondary" href="/Maintenance/DownloadImageAsset/@img.Id" title="Download"><i class="fa-solid fa-download"></i></a>
+                                                <button class="btn btn-xs btn-outline-danger btnDeleteImg" data-id="@img.Id" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <p class="text-muted mt-3" id="imgGridEmpty" style="@(Model?.ImageAssets?.Count > 0 ? "display:none;" : "")">No images uploaded yet.</p>
+                    </div>
+
+                    <!-- List view (hidden initially) -->
+                    <div id="imgListView" style="display:none;">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="imgTable" width="100%">
+                                <thead class="thead">
+                                    <tr>
+                                        <th style="width:60px;">Preview</th>
+                                        <th>Name</th>
+                                        <th>File</th>
+                                        <th>Uploaded By</th>
+                                        <th>Uploaded On</th>
+                                        <th>Remarks</th>
+                                        <th style="width:120px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="imgTableBody">
+                                    @if (Model?.ImageAssets != null)
+                                    {
+                                        foreach (var img in Model.ImageAssets)
+                                        {
+                                            <tr data-id="@img.Id">
+                                                <td class="text-center">
+                                                    <img src="/Maintenance/ViewImageAsset/@img.Id" alt="@img.Name"
+                                                         style="max-height:40px; max-width:50px; object-fit:contain;" />
+                                                </td>
+                                                <td>@img.Name</td>
+                                                <td>@img.FileName</td>
+                                                <td>@img.UploadedBy</td>
+                                                <td>@img.UploadedOn.ToString("yyyy-MM-dd HH:mm")</td>
+                                                <td class="img-remarks-cell">@(img.Remarks ?? "-")</td>
+                                                <td class="text-nowrap">
+                                                    <button class="btn btn-sm btn-outline-primary me-1 btnViewImg" data-id="@img.Id" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                                                    <a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadImageAsset/@img.Id" title="Download"><i class="fa-solid fa-download"></i></a>
+                                                    <button class="btn btn-sm btn-outline-danger btnDeleteImg" data-id="@img.Id" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <!-- /. tab-9 Images end -->
         </div>
     </div>
     <!-- /. maint-content -->
@@ -879,6 +992,37 @@
                     <button id="saveProjectNavigationTree" class="btn btn-primary" value="Save">Save</button>
                     <button type="button" class="btn btn-default modelCancelProjectNavigationTree" data-bs-dismiss="modal">Cancel</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Image Preview Modal ── -->
+<div class="modal fade" id="imgPreviewModal" tabindex="-1" aria-labelledby="imgPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imgPreviewModalLabel"><i class="fa-solid fa-image me-2"></i><span id="imgPreviewName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imgPreviewImg" src="" alt="" class="img-fluid" style="max-height:60vh;" />
+                <div class="mt-3">
+                    <div class="row g-2 justify-content-center">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Remarks</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="imgPreviewRemarks" maxlength="1000" placeholder="Add remarks..." />
+                                <button class="btn btn-primary" id="btnSaveImgRemarks"><i class="fas fa-save"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="imgPreviewMsg" class="mt-2" style="display:none;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="imgPreviewDownload" class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-download me-1"></i>Download</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -2360,6 +2504,141 @@
 
         $(document).on('change', '.alloc-icn-dd', function () {
             $.post('/Maintenance/SaveICNAssignment', { icnId: $(this).data('icn-id'), userId: $(this).val() });
+        });
+
+        // ── Images tab ─────────────────────────────────────────────────────────
+
+        var imgCurrentId = 0;
+
+        function imgShowMsg(selector, type, text) {
+            $(selector).removeClass('alert alert-success alert-danger')
+                .addClass('alert alert-' + type).text(text).show();
+        }
+
+        function imgAddGridCard(img) {
+            var card = '<div class="col-6 col-md-3 col-lg-2 img-card" data-id="' + img.id + '">'
+                + '<div class="card h-100 text-center" style="cursor:pointer;">'
+                + '<div class="card-body p-2">'
+                + '<img src="' + img.dataUrl + '" alt="' + $('<span>').text(img.name).html() + '" class="img-fluid img-thumbnail mb-2 imgThumb" style="max-height:100px;object-fit:contain;" data-id="' + img.id + '" />'
+                + '<div class="small fw-semibold text-truncate" title="' + $('<span>').text(img.name).html() + '">' + $('<span>').text(img.name).html() + '</div>'
+                + '<div class="text-muted" style="font-size:0.7rem;">' + $('<span>').text(img.fileName).html() + '</div>'
+                + '<div class="text-muted" style="font-size:0.7rem;">' + $('<span>').text(img.uploadedBy).html() + ' · ' + img.uploadedOn.substring(0, 10) + '</div>'
+                + (img.remarks ? '<div class="text-muted fst-italic" style="font-size:0.7rem;">' + $('<span>').text(img.remarks).html() + '</div>' : '')
+                + '</div>'
+                + '<div class="card-footer p-1 d-flex justify-content-center gap-1">'
+                + '<button class="btn btn-xs btn-outline-primary btnViewImg" data-id="' + img.id + '" title="Preview"><i class="fa-solid fa-eye"></i></button>'
+                + '<a class="btn btn-xs btn-outline-secondary" href="/Maintenance/DownloadImageAsset/' + img.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
+                + '<button class="btn btn-xs btn-outline-danger btnDeleteImg" data-id="' + img.id + '" title="Delete"><i class="fa-solid fa-trash"></i></button>'
+                + '</div></div></div>';
+            $('#imgGrid').prepend(card);
+            $('#imgGridEmpty').hide();
+        }
+
+        function imgAddTableRow(img) {
+            var row = '<tr data-id="' + img.id + '">'
+                + '<td class="text-center"><img src="' + img.dataUrl + '" style="max-height:40px;max-width:50px;object-fit:contain;" /></td>'
+                + '<td>' + $('<span>').text(img.name).html() + '</td>'
+                + '<td>' + $('<span>').text(img.fileName).html() + '</td>'
+                + '<td>' + $('<span>').text(img.uploadedBy).html() + '</td>'
+                + '<td>' + img.uploadedOn + '</td>'
+                + '<td class="img-remarks-cell">' + $('<span>').text(img.remarks || '-').html() + '</td>'
+                + '<td class="text-nowrap">'
+                + '<button class="btn btn-sm btn-outline-primary me-1 btnViewImg" data-id="' + img.id + '" title="Preview"><i class="fa-solid fa-eye"></i></button>'
+                + '<a class="btn btn-sm btn-outline-secondary me-1" href="/Maintenance/DownloadImageAsset/' + img.id + '" title="Download"><i class="fa-solid fa-download"></i></a>'
+                + '<button class="btn btn-sm btn-outline-danger btnDeleteImg" data-id="' + img.id + '" title="Delete"><i class="fa-solid fa-trash"></i></button>'
+                + '</td></tr>';
+            $('#imgTableBody').prepend(row);
+        }
+
+        // Grid/List toggle
+        $('#btnImgGrid').on('click', function () {
+            $('#imgGridView').show(); $('#imgListView').hide();
+            $('#btnImgGrid').addClass('active'); $('#btnImgList').removeClass('active');
+        });
+        $('#btnImgList').on('click', function () {
+            $('#imgListView').show(); $('#imgGridView').hide();
+            $('#btnImgList').addClass('active'); $('#btnImgGrid').removeClass('active');
+        });
+
+        // Upload image
+        $('#btnUploadImage').on('click', function () {
+            var name    = $('#imgUploadName').val().trim();
+            var file    = $('#imgUploadFile')[0].files[0];
+            var remarks = $('#imgUploadRemarks').val().trim();
+
+            if (!name) { imgShowMsg('#imgUploadMsg', 'danger', 'Please enter a name.'); return; }
+            if (!file)  { imgShowMsg('#imgUploadMsg', 'danger', 'Please select a file.'); return; }
+
+            var fd = new FormData();
+            fd.append('name', name);
+            fd.append('remarks', remarks);
+            fd.append('file', file);
+
+            $.ajax({
+                url: '/Maintenance/UploadImageAsset',
+                type: 'POST',
+                data: fd,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.status) {
+                        imgShowMsg('#imgUploadMsg', 'success', 'Image uploaded successfully.');
+                        imgAddGridCard(res);
+                        imgAddTableRow(res);
+                        $('#imgUploadName').val('');
+                        $('#imgUploadFile').val('');
+                        $('#imgUploadRemarks').val('');
+                    } else {
+                        imgShowMsg('#imgUploadMsg', 'danger', res.message || 'Upload failed.');
+                    }
+                },
+                error: function () { imgShowMsg('#imgUploadMsg', 'danger', 'Server error. Please try again.'); }
+            });
+        });
+
+        // Preview image
+        $(document).on('click', '.btnViewImg', function () {
+            var id = $(this).data('id');
+            imgCurrentId = id;
+            var name = $(this).closest('[data-id]').find('.fw-semibold, td:eq(1)').first().text() || 'Image';
+            $('#imgPreviewName').text(name);
+            $('#imgPreviewImg').attr('src', '/Maintenance/ViewImageAsset/' + id);
+            $('#imgPreviewDownload').attr('href', '/Maintenance/DownloadImageAsset/' + id);
+            $('#imgPreviewMsg').hide();
+            // Load current remarks
+            var row = $('#imgTableBody tr[data-id="' + id + '"]');
+            var remarks = row.find('.img-remarks-cell').text();
+            $('#imgPreviewRemarks').val(remarks === '-' ? '' : remarks);
+            $('#imgPreviewModal').modal('show');
+        });
+
+        // Save remarks from preview modal
+        $('#btnSaveImgRemarks').on('click', function () {
+            var remarks = $('#imgPreviewRemarks').val().trim();
+            $.post('/Maintenance/UpdateImageRemarks', { id: imgCurrentId, remarks: remarks }, function (res) {
+                if (res.status) {
+                    imgShowMsg('#imgPreviewMsg', 'success', 'Remarks saved.');
+                    // Update table and grid
+                    $('#imgTableBody tr[data-id="' + imgCurrentId + '"] .img-remarks-cell').text(remarks || '-');
+                } else {
+                    imgShowMsg('#imgPreviewMsg', 'danger', 'Save failed.');
+                }
+            }).fail(function () { imgShowMsg('#imgPreviewMsg', 'danger', 'Server error.'); });
+        });
+
+        // Delete image
+        $(document).on('click', '.btnDeleteImg', function () {
+            var id = $(this).data('id');
+            var name = $(this).closest('[data-id]').find('.fw-semibold, td:eq(1)').first().text() || 'this image';
+            if (!confirm('Delete image "' + name + '"?\nThis cannot be undone.')) return;
+            $.post('/Maintenance/DeleteImageAsset', { id: id }, function (res) {
+                if (res.status) {
+                    $('[data-id="' + id + '"]').fadeOut(300, function () { $(this).remove(); });
+                    if ($('#imgGrid .img-card').length === 0) $('#imgGridEmpty').show();
+                } else {
+                    alert('Delete failed.');
+                }
+            }).fail(function () { alert('Server error.'); });
         });
 
         // ── Stylesheet tab ──────────────────────────────────────────────────────
