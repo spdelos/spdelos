@@ -655,8 +655,10 @@
 
                 <!-- Legend -->
                 <div class="d-flex gap-3 mb-2 small ms-1" id="idmLegend" style="display:none;">
-                    <span><span class="badge bg-success">&nbsp;</span> Unique</span>
+                    <span><span class="badge bg-success">&nbsp;</span> Used</span>
+                    <span><span class="badge bg-secondary">&nbsp;</span> Unused</span>
                     <span><span class="badge bg-danger">&nbsp;</span> Duplicate</span>
+                    <span><span class="badge bg-warning text-dark">&nbsp;</span> Broken Reference</span>
                 </div>
 
                 <div class="card" style="padding:15px;">
@@ -2915,7 +2917,7 @@
                     if (!rows || rows.length === 0) {
                         html = '<tr><td colspan="3" class="text-center text-muted py-3">No IDs found in this project\'s DMCs.</td></tr>';
                     } else {
-                        var uniqueCount = 0, dupCount = 0;
+                        var usedCount = 0, unusedCount = 0, dupCount = 0, brokenCount = 0;
                         rows.forEach(function (r) {
                             var badge = '', dmcCell = '';
                             if (r.status === 'Duplicate') {
@@ -2925,20 +2927,35 @@
                                     return '<a href="/Manage/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
                                            '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
                                 }).join('');
-                            } else {
-                                badge = '<span class="badge bg-success">Unique</span>';
-                                uniqueCount++;
+                            } else if (r.status === 'Used') {
+                                badge = '<span class="badge bg-success">Used</span>';
+                                usedCount++;
                                 dmcCell = r.occurrences.map(function (o) {
                                     return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
                                 }).join('<br>');
+                            } else if (r.status === 'Unused') {
+                                badge = '<span class="badge bg-secondary">Unused</span>';
+                                unusedCount++;
+                                dmcCell = r.occurrences.map(function (o) {
+                                    return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
+                                }).join('<br>');
+                            } else {
+                                badge = '<span class="badge bg-warning text-dark">Broken Reference</span>';
+                                brokenCount++;
+                                dmcCell = r.occurrences.map(function (o) {
+                                    return '<a href="/Manage/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
+                                           '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
+                                }).join('');
                             }
                             html += '<tr><td class="font-monospace small">' + escHtml(r.idValue) + '</td>' +
                                     '<td>' + badge + '</td>' +
                                     '<td>' + dmcCell + '</td></tr>';
                         });
                         $('#idmSummary').html(
-                            '<span class="text-success fw-semibold">' + uniqueCount + ' unique</span> &nbsp; ' +
-                            '<span class="text-danger fw-semibold">' + dupCount + ' duplicate</span>'
+                            '<span class="text-success fw-semibold">' + usedCount + ' used</span> &nbsp; ' +
+                            '<span class="text-secondary">' + unusedCount + ' unused</span> &nbsp; ' +
+                            '<span class="text-danger fw-semibold">' + dupCount + ' duplicate</span> &nbsp; ' +
+                            '<span class="text-warning fw-semibold">' + brokenCount + ' broken reference</span>'
                         );
                     }
 

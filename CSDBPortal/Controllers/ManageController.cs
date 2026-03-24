@@ -1002,8 +1002,10 @@ namespace CSDBPortal.Controllers
                     .AsNoTracking()
                     .ToListAsync();
 
-                // Collect all id attribute values across DMCs
-                var allEntries = new List<(string IdVal, int DmcId, string DmcCode)>();
+                // Collect declared id attributes and reference attribute values in a single pass
+                var declaredIds = new List<(string IdVal, int DmcId, string DmcCode)>();
+                var references  = new List<(string RefVal, int DmcId, string DmcCode)>();
+                string[] refAttrs = { "xrefid", "internalRefId", "refid", "targetId", "applicRefId", "condRefId" };
 
                 foreach (var dmc in dmcs)
                 {
@@ -1022,24 +1024,51 @@ namespace CSDBPortal.Controllers
                         foreach (XmlNode node in doc.SelectNodes("//*")!)
                         {
                             if (node.Attributes == null) continue;
+
                             var idVal = node.Attributes["id"]?.Value;
                             if (!string.IsNullOrWhiteSpace(idVal))
-                                allEntries.Add((idVal, dmc.Id, dmc.DMC ?? ""));
+                                declaredIds.Add((idVal, dmc.Id, dmc.DMC ?? ""));
+
+                            foreach (var attr in refAttrs)
+                            {
+                                var refVal = node.Attributes[attr]?.Value;
+                                if (!string.IsNullOrEmpty(refVal))
+                                    references.Add((refVal, dmc.Id, dmc.DMC ?? ""));
+                            }
                         }
                     }
                     catch { }
                 }
 
-                // Group by id value: flag duplicates (same id declared more than once across the project)
-                var rows = allEntries
+                var declaredIdSet   = new HashSet<string>(declaredIds.Select(e => e.IdVal),  StringComparer.Ordinal);
+                var referencedIdSet = new HashSet<string>(references.Select(r => r.RefVal),  StringComparer.Ordinal);
+
+                // Declared ID rows — Duplicate / Used / Unused
+                var declaredRows = declaredIds
                     .GroupBy(e => e.IdVal, StringComparer.Ordinal)
                     .Select(g => new
                     {
                         idValue     = g.Key,
-                        status      = g.Count() > 1 ? "Duplicate" : "Unique",
-                        occurrences = g.Select(e => new { e.DmcId, e.DmcCode }).ToList()
-                    })
-                    .OrderBy(r => r.idValue)
+                        status      = g.Count() > 1                   ? "Duplicate"
+                                    : referencedIdSet.Contains(g.Key) ? "Used"
+                                    : "Unused",
+                        occurrences = g.Select(e => new { dmcId = e.DmcId, dmcCode = e.DmcCode }).ToList()
+                    });
+
+                // Broken-reference rows — reference value has no matching declared id
+                var brokenRows = references
+                    .Where(r => !declaredIdSet.Contains(r.RefVal))
+                    .GroupBy(r => r.RefVal, StringComparer.Ordinal)
+                    .Select(g => new
+                    {
+                        idValue     = g.Key,
+                        status      = "Broken Reference",
+                        occurrences = g.Select(r => new { dmcId = r.DmcId, dmcCode = r.DmcCode }).ToList()
+                    });
+
+                var rows = declaredRows.Concat(brokenRows)
+                    .OrderBy(r => r.status)
+                    .ThenBy(r => r.idValue)
                     .ToList();
 
                 return Json(rows);
