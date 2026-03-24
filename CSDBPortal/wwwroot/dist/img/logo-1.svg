@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 15336 2664"
-     width="213" height="37"
+     viewBox="0 0 16200 2664"
+     width="225" height="37"
      preserveAspectRatio="xMidYMid meet"
      style="background:transparent">
 <g transform="translate(0,2664) scale(7.2,-7.2)" fill="#1985C8" stroke="none">
@@ -26,4 +26,5 @@ c77 -94 100 -113 124 -103 8 3 47 46 88 95 l74 91 3 -85 c3 -88 15 -116 47
 -43 -66 -82 -70 -86 -4 -5 -38 30 -75 77 -47 59 -76 86 -90 86 -15 0 -45 -31
 -103 -105z"/>
 </g>
+<text x="14220" y="820" font-family="Arial,Helvetica,sans-serif" font-size="980" font-weight="600" fill="#1985C8">®</text>
 </svg>
