@@ -107,13 +107,39 @@ namespace CSDBPortal.Business
                 var result = await (from icn in _db.IcnNumbers
                                     join p in _db.Projects on icn.ProjectId equals p.Id
                                     where icn.ProjectId == projectid
-                                    select new { icn.Id, icn.Number, icn.UpdatedBy, icn.ProjectId, p.Name }).ToListAsync();
+                                    select new
+                                    {
+                                        icn.Id, icn.Number, icn.UpdatedBy, icn.ProjectId,
+                                        p.Name, icn.ImagePath, icn.DataModuleId
+                                    }).ToListAsync();
+
+                // Collect DataModuleIds that are referenced and still active
+                var referencedDmcIds = result
+                    .Where(r => r.DataModuleId > 0)
+                    .Select(r => r.DataModuleId)
+                    .Distinct()
+                    .ToList();
+
+                var validDmcIds = new HashSet<int>(
+                    await _db.DataModuleCodes
+                        .Where(d => referencedDmcIds.Contains(d.Id) && !d.IsDeleted)
+                        .Select(d => d.Id)
+                        .ToListAsync());
+
                 foreach (var obj in result)
                 {
+                    string icnStatus = string.Empty;
+                    if (!string.IsNullOrEmpty(obj.ImagePath))
+                    {
+                        icnStatus = (obj.DataModuleId > 0 && validDmcIds.Contains(obj.DataModuleId))
+                            ? "Validated"
+                            : "Available";
+                    }
+
                     customICNNumberList.Add(new CustomICNNumber
                     {
                         Id = obj.Id, Number = obj.Number, UpdatedBy = obj.UpdatedBy,
-                        ProjectId = obj.ProjectId, ProjectName = obj.Name
+                        ProjectId = obj.ProjectId, ProjectName = obj.Name, IcnStatus = icnStatus
                     });
                 }
             }
@@ -250,5 +276,6 @@ namespace CSDBPortal.Business
     public class CustomICNNumber : IcnNumber
     {
         public string ProjectName { set; get; }
+        public string IcnStatus { get; set; }
     }
 }

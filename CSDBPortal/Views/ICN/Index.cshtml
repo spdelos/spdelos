@@ -105,9 +105,9 @@
                                 <table class="table table-bordered" width="100%" id="viewICNNumberTable">
                                     <thead class="thead">
                                         <tr>
-
                                             <th>Project</th>
                                             <th>ICN</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="icnViewBody">
@@ -173,9 +173,16 @@
                         $('#viewICNNumberTable').DataTable().clear();
                         var tr;
                         for (var i = 0; i < result.length; i++) {
-                            tr = $("<tr style='background:#fff'><td>" + result[i].projectName + "</td><td>" + result[i].number + "</td></tr>");
-                        ICNNumberTable.row.add(tr[0]).draw();
-                    }
+                            var status = result[i].icnStatus || '';
+                            var badge = '';
+                            if (status === 'Validated') {
+                                badge = '<span class="badge bg-primary">Validated</span>';
+                            } else if (status === 'Available') {
+                                badge = '<span class="badge bg-success">Available</span>';
+                            }
+                            tr = $("<tr style='background:#fff'><td>" + result[i].projectName + "</td><td>" + result[i].number + "</td><td>" + badge + "</td></tr>");
+                            ICNNumberTable.row.add(tr[0]).draw();
+                        }
                 }
             });
                 updateSequenceNumber(selectedVal);
