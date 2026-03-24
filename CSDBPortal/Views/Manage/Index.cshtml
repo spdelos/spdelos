@@ -2906,67 +2906,77 @@
                     dataType: 'json',
                     timeout: 120000
                 }).done(function (rows) {
-                    if (rows && rows.error) {
-                        $('#idmTbody').html('<tr><td colspan="3" class="text-danger text-center py-3">Error: ' + escHtml(rows.error) + '</td></tr>');
-                        return;
+                    // Guard: hide spinner immediately so any JS error below never leaves it stuck
+                    $('#idmSpinner').hide();
+                    $('#idmAnalyse').prop('disabled', false);
+
+                    try {
+                        if (rows && rows.error) {
+                            $('#idmTbody').html('<tr><td colspan="3" class="text-danger text-center py-3">Error: ' + escHtml(rows.error) + '</td></tr>');
+                            return;
+                        }
+                        if ($.fn.DataTable && $.fn.DataTable.isDataTable('#idmTable')) { $('#idmTable').DataTable().destroy(); }
+                        idmTable = null;
+
+                        var html = '';
+                        if (!rows || rows.length === 0) {
+                            html = '<tr><td colspan="3" class="text-center text-muted py-3">No IDs found in this project\'s DMCs.</td></tr>';
+                        } else {
+                            var usedCount = 0, unusedCount = 0, dupCount = 0, brokenCount = 0;
+                            rows.forEach(function (r) {
+                                var badge = '', dmcCell = '';
+                                if (r.status === 'Duplicate') {
+                                    badge = '<span class="badge bg-danger">Duplicate</span>';
+                                    dupCount++;
+                                    dmcCell = r.occurrences.map(function (o) {
+                                        return '<a href="/Manage/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
+                                               '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
+                                    }).join('');
+                                } else if (r.status === 'Used') {
+                                    badge = '<span class="badge bg-success">Used</span>';
+                                    usedCount++;
+                                    dmcCell = r.occurrences.map(function (o) {
+                                        return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
+                                    }).join('<br>');
+                                } else if (r.status === 'Unused') {
+                                    badge = '<span class="badge bg-secondary">Unused</span>';
+                                    unusedCount++;
+                                    dmcCell = r.occurrences.map(function (o) {
+                                        return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
+                                    }).join('<br>');
+                                } else {
+                                    badge = '<span class="badge bg-warning text-dark">Broken Reference</span>';
+                                    brokenCount++;
+                                    dmcCell = r.occurrences.map(function (o) {
+                                        return '<a href="/Manage/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
+                                               '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
+                                    }).join('');
+                                }
+                                html += '<tr><td class="font-monospace small">' + escHtml(r.idValue) + '</td>' +
+                                        '<td>' + badge + '</td>' +
+                                        '<td>' + dmcCell + '</td></tr>';
+                            });
+                            $('#idmSummary').html(
+                                '<span class="text-success fw-semibold">' + usedCount + ' used</span> &nbsp; ' +
+                                '<span class="text-secondary">' + unusedCount + ' unused</span> &nbsp; ' +
+                                '<span class="text-danger fw-semibold">' + dupCount + ' duplicate</span> &nbsp; ' +
+                                '<span class="text-warning fw-semibold">' + brokenCount + ' broken reference</span>'
+                            );
+                        }
+
+                        $('#idmTbody').html(html);
+
+                        if ($.fn.DataTable) {
+                            idmTable = $('#idmTable').DataTable({
+                                pageLength: 25,
+                                order: [[1, 'asc'], [0, 'asc']],
+                                columnDefs: [{ orderable: false, targets: 2 }],
+                                language: { search: 'Filter:' }
+                            });
+                        }
+                    } catch (e) {
+                        $('#idmTbody').html('<tr><td colspan="3" class="text-danger text-center py-3">Render error: ' + escHtml(String(e)) + '</td></tr>');
                     }
-                    if ($.fn.DataTable.isDataTable('#idmTable')) { $('#idmTable').DataTable().destroy(); }
-                    idmTable = null;
-
-                    var html = '';
-                    if (!rows || rows.length === 0) {
-                        html = '<tr><td colspan="3" class="text-center text-muted py-3">No IDs found in this project\'s DMCs.</td></tr>';
-                    } else {
-                        var usedCount = 0, unusedCount = 0, dupCount = 0, brokenCount = 0;
-                        rows.forEach(function (r) {
-                            var badge = '', dmcCell = '';
-                            if (r.status === 'Duplicate') {
-                                badge = '<span class="badge bg-danger">Duplicate</span>';
-                                dupCount++;
-                                dmcCell = r.occurrences.map(function (o) {
-                                    return '<a href="/Manage/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
-                                           '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
-                                }).join('');
-                            } else if (r.status === 'Used') {
-                                badge = '<span class="badge bg-success">Used</span>';
-                                usedCount++;
-                                dmcCell = r.occurrences.map(function (o) {
-                                    return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
-                                }).join('<br>');
-                            } else if (r.status === 'Unused') {
-                                badge = '<span class="badge bg-secondary">Unused</span>';
-                                unusedCount++;
-                                dmcCell = r.occurrences.map(function (o) {
-                                    return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
-                                }).join('<br>');
-                            } else {
-                                badge = '<span class="badge bg-warning text-dark">Broken Reference</span>';
-                                brokenCount++;
-                                dmcCell = r.occurrences.map(function (o) {
-                                    return '<a href="/Manage/DownloadDMCXml?dmcId=' + o.dmcId + '" target="_blank" title="Open XML for ' + escHtml(o.dmcCode) + '" class="d-block small">' +
-                                           '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
-                                }).join('');
-                            }
-                            html += '<tr><td class="font-monospace small">' + escHtml(r.idValue) + '</td>' +
-                                    '<td>' + badge + '</td>' +
-                                    '<td>' + dmcCell + '</td></tr>';
-                        });
-                        $('#idmSummary').html(
-                            '<span class="text-success fw-semibold">' + usedCount + ' used</span> &nbsp; ' +
-                            '<span class="text-secondary">' + unusedCount + ' unused</span> &nbsp; ' +
-                            '<span class="text-danger fw-semibold">' + dupCount + ' duplicate</span> &nbsp; ' +
-                            '<span class="text-warning fw-semibold">' + brokenCount + ' broken reference</span>'
-                        );
-                    }
-
-                    $('#idmTbody').html(html);
-
-                    idmTable = $('#idmTable').DataTable({
-                        pageLength: 25,
-                        order: [[1, 'asc'], [0, 'asc']],
-                        columnDefs: [{ orderable: false, targets: 2 }],
-                        language: { search: 'Filter:' }
-                    });
                 }).fail(function () {
                     $('#idmTbody').html('<tr><td colspan="3" class="text-danger text-center py-3">Failed to load data. Please try again.</td></tr>');
                 }).always(function () {
