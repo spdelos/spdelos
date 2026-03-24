@@ -1,0 +1,549 @@
+@model CSDBPortal.ViewModels.WorkflowViewModel
+@{
+    ViewData["Title"] = "Workflow";
+}
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title"><i class="fa-solid fa-diagram-project me-2" style="color:var(--primary-light)"></i>Workflow</div>
+        <div class="page-subtitle">Track the end-to-end content lifecycle from project creation through to publish.</div>
+    </div>
+    <button class="btn btn-primary btn-sm" id="btnNewWorkflow">
+        <i class="fa-solid fa-plus me-1"></i> New Workflow
+    </button>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid mb-4">
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fa-solid fa-diagram-project"></i></div>
+        <div><div class="stat-value" id="statTotal">@Model.TotalCount</div><div class="stat-label">Total</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#ecfdf5;color:#16a34a"><i class="fa-solid fa-rotate"></i></div>
+        <div><div class="stat-value" id="statActive">@Model.ActiveCount</div><div class="stat-label">Active</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="stat-value" id="statCompleted">@Model.CompletedCount</div><div class="stat-label">Completed</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#fef2f2;color:#dc2626"><i class="fa-solid fa-ban"></i></div>
+        <div><div class="stat-value" id="statCancelled">@Model.CancelledCount</div><div class="stat-label">Cancelled</div></div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav tab-header" id="wfTabs" role="tablist">
+    <li class="nav-item item-one" role="presentation">
+        <a class="nav-link active" data-bs-toggle="tab" href="#panel-workflows" role="tab">
+            <i class="fa-solid fa-list me-1"></i> Workflows
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" data-bs-toggle="tab" href="#panel-reports" role="tab">
+            <i class="fa-solid fa-chart-bar me-1"></i> Reports
+        </a>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    <!-- ═══════════════════════════════════
+         WORKFLOWS TAB
+         ═══════════════════════════════════ -->
+    <div class="tab-pane fade show active" id="panel-workflows">
+        <div class="card mt-3">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableWorkflows" width="100%">
+                    <thead class="thead">
+                        <tr>
+                            <th style="display:none"></th><!-- Id -->
+                            <th>Title</th>
+                            <th>Project</th>
+                            <th width="20%">Progress</th>
+                            <th width="9%">Status</th>
+                            <th width="12%">Created By</th>
+                            <th width="14%">Created On</th>
+                            <th width="10%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var w in Model.Workflows)
+                        {
+                            <tr>
+                                <td style="display:none">@w.Id</td>
+                                <td><a href="#" class="wf-detail-link fw-semibold">@w.Title</a></td>
+                                <td>@(w.ProjectName ?? "—")</td>
+                                <td>
+                                    <div class="wf-progress-bar-wrap">
+                                        <div class="wf-progress-bar" style="width:@(Math.Round(w.CompletedStepsCount / 7.0 * 100))%"></div>
+                                    </div>
+                                    <div class="wf-progress-label">
+                                        Step @w.CurrentStep / 7 — @w.CurrentStepName
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (w.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else if (w.Status == "Completed")
+                                    {
+                                        <span class="badge bg-primary">Completed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Cancelled</span>
+                                    }
+                                </td>
+                                <td>@w.CreatedBy</td>
+                                <td>@w.CreatedOn.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+                                <td>
+                                    <a href="#" class="btn edit_button btn-sm wf-detail-link">View</a>
+                                    @if (w.Status == "Active")
+                                    {
+                                        <a href="#" class="btn btn-sm btn-outline-danger wf-cancel-btn ms-1">Cancel</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         REPORTS TAB
+         ═══════════════════════════════════ -->
+    <div class="tab-pane fade" id="panel-reports">
+        <!-- Filter bar -->
+        <div class="card mt-3 mb-3" style="padding:16px;">
+            <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label" style="font-size:12px;font-weight:600;">Status</label>
+                    <select class="form-select form-select-sm" id="rptStatus" style="min-width:120px;">
+                        <option value="All">All</option>
+                        <option value="Active">Active</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label" style="font-size:12px;font-weight:600;">Project</label>
+                    <select class="form-select form-select-sm" id="rptProject" style="min-width:160px;">
+                        <option value="">All Projects</option>
+                        @foreach (var p in Model.Projects)
+                        {
+                            <option value="@p.Id">@p.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label" style="font-size:12px;font-weight:600;">From</label>
+                    <input type="date" class="form-control form-control-sm" id="rptDateFrom" style="min-width:140px;" />
+                </div>
+                <div class="col-auto">
+                    <label class="form-label" style="font-size:12px;font-weight:600;">To</label>
+                    <input type="date" class="form-control form-control-sm" id="rptDateTo" style="min-width:140px;" />
+                </div>
+                <div class="col-auto ms-auto d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" id="btnRunReport">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i> Run Report
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" id="btnExportCsv">
+                        <i class="fa-solid fa-file-csv me-1"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results table -->
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableReport" width="100%">
+                    <thead class="thead">
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Project</th>
+                            <th width="8%">Status</th>
+                            <th width="10%">Created By</th>
+                            <th width="12%">Created On</th>
+                            <th width="13%" class="text-center">1. Project Creation</th>
+                            <th width="13%" class="text-center">2. DMC Creation</th>
+                            <th width="13%" class="text-center">3. Author Assignment</th>
+                            <th width="13%" class="text-center">4. ICN Creation</th>
+                            <th width="13%" class="text-center">5. Illustrator Assign.</th>
+                            <th width="13%" class="text-center">6. Review</th>
+                            <th width="13%" class="text-center">7. Publish</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody">
+                        <tr><td colspan="13" class="text-center text-muted py-4">Run a report to see results.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WORKFLOW DETAIL MODAL
+     ══════════════════════════════════════ -->
+<div class="modal fade" id="workflowDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-0" id="detailModalTitle">Workflow Detail</h5>
+                    <div class="text-muted" style="font-size:12px;" id="detailModalMeta"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="detailModalBody">
+                <div class="text-center py-5 text-muted">Loading…</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     COMPLETE STEP MODAL
+     ══════════════════════════════════════ -->
+<div class="modal fade" id="completeStepModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="completeStepTitle">Complete Step</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="csWorkflowId" />
+                <input type="hidden" id="csStepNumber" />
+                <input type="hidden" id="csReferenceType" />
+
+                <!-- Project dropdown — shown for step 1 -->
+                <div id="csProjectGroup" style="display:none;" class="mb-3">
+                    <label class="form-label" style="font-size:12px;font-weight:600;">Link Project <span class="text-muted">(optional)</span></label>
+                    <select class="form-select" id="csProjectId">
+                        <option value="">— Select project —</option>
+                        @foreach (var p in Model.Projects)
+                        {
+                            <option value="@p.Id">@p.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Reference text — shown for steps 2–5 -->
+                <div id="csRefGroup" style="display:none;" class="mb-3">
+                    <label class="form-label" style="font-size:12px;font-weight:600;" id="csRefLabel">Reference</label>
+                    <input type="text" class="form-control" id="csRefValue" placeholder="Enter value…" />
+                </div>
+
+                <!-- Notes — always shown -->
+                <div class="mb-2">
+                    <label class="form-label" style="font-size:12px;font-weight:600;">Notes <span class="text-muted">(optional)</span></label>
+                    <textarea class="form-control" id="csNotes" rows="3" placeholder="Add any relevant notes…"></textarea>
+                </div>
+
+                <div id="csMessage" class="mt-2 small" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnCompleteStepSubmit">Mark as Complete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     CREATE WORKFLOW MODAL
+     ══════════════════════════════════════ -->
+<div class="modal fade" id="createWorkflowModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Workflow</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" style="font-size:12px;font-weight:600;">Workflow Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="newWfTitle" placeholder="e.g. Chapter 1 – System Description" />
+                <div id="createWfMessage" class="mt-2 small" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnCreateWfSubmit">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// ── Step definitions (mirrors server) ──────────────────────────────────────
+var WF_STEPS = [
+    { n:1, name:"Project Creation",          refType:"Project",  refLabel:"Project"       },
+    { n:2, name:"DMC Creation",              refType:"DMC",      refLabel:"DMC Number"     },
+    { n:3, name:"Assignment to Author",      refType:"User",     refLabel:"Author Username"},
+    { n:4, name:"ICN Creation",              refType:"ICN",      refLabel:"ICN Number"     },
+    { n:5, name:"Assignment to Illustrator", refType:"User",     refLabel:"Illustrator Username"},
+    { n:6, name:"Review after Check In",     refType:"",         refLabel:""               },
+    { n:7, name:"Publish",                   refType:"",         refLabel:""               },
+];
+
+function fmtDate(d) {
+    if (!d) return '—';
+    var dt = new Date(d);
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return ('0'+dt.getDate()).slice(-2)+' '+months[dt.getMonth()]+' '+dt.getFullYear()+' '
+         + ('0'+dt.getHours()).slice(-2)+':'+('0'+dt.getMinutes()).slice(-2);
+}
+
+// ── CREATE WORKFLOW ─────────────────────────────────────────────────────────
+$('#btnNewWorkflow').on('click', function () {
+    $('#newWfTitle').val('');
+    $('#createWfMessage').hide().text('');
+    $('#btnCreateWfSubmit').prop('disabled', false).text('Create');
+    $('#createWorkflowModal').modal('show');
+});
+
+$('#btnCreateWfSubmit').on('click', function () {
+    var title = $('#newWfTitle').val().trim();
+    if (!title) {
+        $('#createWfMessage').show().removeClass('text-success').addClass('text-danger').text('Please enter a title.');
+        return;
+    }
+    $('#btnCreateWfSubmit').prop('disabled', true).text('Creating…');
+    $.post('/Workflow/Create', { title: title }, function (data) {
+        if (data.status) {
+            $('#createWorkflowModal').modal('hide');
+            location.reload();
+        } else {
+            $('#createWfMessage').show().removeClass('text-success').addClass('text-danger').text(data.message || 'Error creating workflow.');
+            $('#btnCreateWfSubmit').prop('disabled', false).text('Create');
+        }
+    }, 'json').fail(function () {
+        $('#createWfMessage').show().addClass('text-danger').text('An error occurred.');
+        $('#btnCreateWfSubmit').prop('disabled', false).text('Create');
+    });
+});
+
+// ── OPEN DETAIL ─────────────────────────────────────────────────────────────
+var currentDetailWfId = null;
+
+$(document).on('click', '.wf-detail-link', function (e) {
+    e.preventDefault();
+    var row = $(this).closest('tr');
+    var wfId = row.find('td:eq(0)').text();
+    openWorkflowDetail(wfId);
+});
+
+function openWorkflowDetail(wfId) {
+    currentDetailWfId = wfId;
+    $('#detailModalBody').html('<div class="text-center py-5 text-muted"><i class="fa-solid fa-spinner fa-spin me-1"></i> Loading…</div>');
+    $('#workflowDetailModal').modal('show');
+    $.get('/Workflow/GetDetail', { workflowId: wfId }, function (data) {
+        if (!data.status) { $('#detailModalBody').html('<div class="text-center text-danger py-4">' + data.message + '</div>'); return; }
+        var statusBadge = data.wfStatus === 'Active'
+            ? '<span class="badge bg-success ms-2">Active</span>'
+            : data.wfStatus === 'Completed'
+                ? '<span class="badge bg-primary ms-2">Completed</span>'
+                : '<span class="badge bg-secondary ms-2">Cancelled</span>';
+        $('#detailModalTitle').html(data.title + statusBadge);
+        $('#detailModalMeta').html(
+            'Project: <strong>' + (data.projectName || '—') + '</strong> &nbsp;|&nbsp; ' +
+            'Created by <strong>' + data.createdBy + '</strong> on ' + data.createdOn
+        );
+        renderStepTimeline(data.steps, data.wfStatus);
+    }, 'json');
+}
+
+function renderStepTimeline(steps, wfStatus) {
+    var html = '<ul class="wf-timeline">';
+    $.each(steps, function (_, s) {
+        var done = s.isCompleted;
+        var isCurrent = !done && (steps.filter(function(x){return !x.isCompleted;})[0] === s);
+        var iconClass = done ? 'wf-step-icon done' : (isCurrent ? 'wf-step-icon current' : 'wf-step-icon pending');
+        var icon      = done ? 'fa-circle-check' : (isCurrent ? 'fa-circle-dot' : 'fa-circle');
+        var ref = '';
+        if (s.referenceType && s.notes) ref = '<div class="wf-step-ref"><i class="fa-solid fa-link fa-xs"></i> ' + s.notes + '</div>';
+        else if (s.notes)               ref = '<div class="wf-step-ref"><i class="fa-solid fa-note-sticky fa-xs"></i> ' + s.notes + '</div>';
+
+        var action = '';
+        if (!done && wfStatus === 'Active') {
+            action = '<button class="btn btn-sm btn-outline-primary wf-complete-step-btn ms-2" '
+                   + 'data-step="' + s.stepNumber + '" data-reftype="' + (WF_STEPS[s.stepNumber-1].refType||'') + '">'
+                   + '<i class="fa-solid fa-check me-1"></i>Complete</button>';
+        }
+
+        html += '<li class="wf-timeline-item">'
+             + '<div class="' + iconClass + '"><i class="fa-solid ' + icon + '"></i></div>'
+             + '<div class="wf-step-body">'
+             + '<div class="wf-step-title">'
+             + '<span class="wf-step-num">' + s.stepNumber + '</span> ' + s.stepName + action
+             + '</div>';
+        if (done) {
+            html += '<div class="wf-step-meta">'
+                 + '<i class="fa-solid fa-user-check fa-xs"></i> ' + (s.completedBy || '—')
+                 + ' &nbsp;·&nbsp; <i class="fa-solid fa-clock fa-xs"></i> ' + fmtDate(s.completedOn)
+                 + '</div>';
+        } else {
+            html += '<div class="wf-step-meta text-muted">Pending</div>';
+        }
+        html += ref + '</div></li>';
+    });
+    html += '</ul>';
+    $('#detailModalBody').html(html);
+}
+
+// ── COMPLETE STEP ────────────────────────────────────────────────────────────
+$(document).on('click', '.wf-complete-step-btn', function () {
+    var step = parseInt($(this).data('step'));
+    var refType = $(this).data('reftype');
+    var stepDef = WF_STEPS[step - 1];
+
+    $('#csWorkflowId').val(currentDetailWfId);
+    $('#csStepNumber').val(step);
+    $('#csReferenceType').val(refType);
+    $('#completeStepTitle').text('Complete Step ' + step + ' – ' + stepDef.name);
+    $('#csNotes').val('');
+    $('#csRefValue').val('');
+    $('#csProjectId').val('');
+    $('#csMessage').hide().text('').removeClass('text-success text-danger');
+    $('#btnCompleteStepSubmit').prop('disabled', false).text('Mark as Complete');
+
+    // Show relevant reference field
+    $('#csProjectGroup').hide();
+    $('#csRefGroup').hide();
+    if (step === 1) {
+        $('#csProjectGroup').show();
+    } else if (refType && refType !== '') {
+        $('#csRefLabel').text(stepDef.refLabel);
+        $('#csRefGroup').show();
+    }
+
+    $('#workflowDetailModal').modal('hide');
+    $('#completeStepModal').modal('show');
+});
+
+$('#completeStepModal').on('hidden.bs.modal', function () {
+    if (currentDetailWfId) openWorkflowDetail(currentDetailWfId);
+});
+
+$('#btnCompleteStepSubmit').on('click', function () {
+    var wfId      = $('#csWorkflowId').val();
+    var stepNum   = $('#csStepNumber').val();
+    var refType   = $('#csReferenceType').val();
+    var notes     = $('#csNotes').val().trim();
+    var refId     = null;
+    var refLabel  = '';
+
+    if (parseInt(stepNum) === 1) {
+        var selProject = $('#csProjectId').val();
+        if (selProject) { refId = parseInt(selProject); }
+    } else if (refType && refType !== '') {
+        refLabel = $('#csRefValue').val().trim();
+        // Embed ref label into notes if provided
+        if (refLabel) notes = (notes ? notes + '\n' : '') + WF_STEPS[parseInt(stepNum)-1].refLabel + ': ' + refLabel;
+    }
+
+    $('#btnCompleteStepSubmit').prop('disabled', true).text('Saving…');
+
+    $.post('/Workflow/CompleteStep', {
+        workflowId:     wfId,
+        stepNumber:     stepNum,
+        notes:          notes || null,
+        referenceId:    refId,
+        referenceType:  refType || null,
+    }, function (data) {
+        if (data.status) {
+            $('#completeStepModal').modal('hide');
+            location.reload();
+        } else {
+            $('#csMessage').show().removeClass('text-success').addClass('text-danger').text(data.message || 'Error.');
+            $('#btnCompleteStepSubmit').prop('disabled', false).text('Mark as Complete');
+        }
+    }, 'json').fail(function () {
+        $('#csMessage').show().addClass('text-danger').text('An error occurred.');
+        $('#btnCompleteStepSubmit').prop('disabled', false).text('Mark as Complete');
+    });
+});
+
+// ── CANCEL WORKFLOW ──────────────────────────────────────────────────────────
+$(document).on('click', '.wf-cancel-btn', function (e) {
+    e.preventDefault();
+    if (!confirm('Cancel this workflow? This cannot be undone.')) return;
+    var row  = $(this).closest('tr');
+    var wfId = row.find('td:eq(0)').text();
+    $.post('/Workflow/CancelWorkflow', { workflowId: wfId }, function (data) {
+        if (data.status) location.reload();
+        else alert(data.message || 'Failed to cancel.');
+    }, 'json');
+});
+
+// ── REPORTS ──────────────────────────────────────────────────────────────────
+function stepCell(on, by) {
+    if (!on) return '<td class="text-center"><span class="badge bg-light text-secondary">Pending</span></td>';
+    return '<td class="text-center"><div style="font-size:11px;font-weight:600;color:#16a34a">' + fmtDate(on) + '</div>'
+         + '<div style="font-size:10px;color:var(--text-muted)">' + (by || '') + '</div></td>';
+}
+
+$('#btnRunReport').on('click', runReport);
+
+function runReport() {
+    $('#reportBody').html('<tr><td colspan="13" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</td></tr>');
+    $.get('/Workflow/GetReport', {
+        status:   $('#rptStatus').val(),
+        projectId:$('#rptProject').val(),
+        dateFrom: $('#rptDateFrom').val(),
+        dateTo:   $('#rptDateTo').val(),
+    }, function (data) {
+        if (!data.status || !data.data.length) {
+            $('#reportBody').html('<tr><td colspan="13" class="text-center text-muted py-4">No results found.</td></tr>');
+            return;
+        }
+        var html = '';
+        $.each(data.data, function (i, r) {
+            var statusBadge = r.status === 'Active'
+                ? '<span class="badge bg-success">Active</span>'
+                : r.status === 'Completed'
+                    ? '<span class="badge bg-primary">Completed</span>'
+                    : '<span class="badge bg-secondary">Cancelled</span>';
+            html += '<tr>'
+                + '<td>' + r.id + '</td>'
+                + '<td>' + r.title + '</td>'
+                + '<td>' + (r.projectName || '—') + '</td>'
+                + '<td>' + statusBadge + '</td>'
+                + '<td style="font-size:11px">' + (r.createdBy||'') + '</td>'
+                + '<td style="font-size:11px">' + fmtDate(r.createdOn) + '</td>'
+                + stepCell(r.step1On, r.step1By)
+                + stepCell(r.step2On, r.step2By)
+                + stepCell(r.step3On, r.step3By)
+                + stepCell(r.step4On, r.step4By)
+                + stepCell(r.step5On, r.step5By)
+                + stepCell(r.step6On, r.step6By)
+                + stepCell(r.step7On, r.step7By)
+                + '</tr>';
+        });
+        $('#reportBody').html(html);
+    }, 'json');
+}
+
+$('#btnExportCsv').on('click', function () {
+    var params = $.param({
+        status:   $('#rptStatus').val(),
+        projectId:$('#rptProject').val(),
+        dateFrom: $('#rptDateFrom').val(),
+        dateTo:   $('#rptDateTo').val(),
+    });
+    window.location.href = '/Workflow/ExportCsv?' + params;
+});
+</script>
+}

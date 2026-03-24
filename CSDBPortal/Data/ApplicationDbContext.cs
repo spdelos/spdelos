@@ -45,6 +45,8 @@ namespace CSDBPortal.Data
         public virtual DbSet<DataModuleCode> DataModuleCodes { get; set; } = null!;
         public virtual DbSet<Stylesheet> Stylesheets { get; set; } = null!;
         public virtual DbSet<ImageAsset> ImageAssets { get; set; } = null!;
+        public virtual DbSet<WorkflowInstance> WorkflowInstances { get; set; } = null!;
+        public virtual DbSet<WorkflowStep> WorkflowSteps { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -108,6 +110,15 @@ namespace CSDBPortal.Data
 
             // ICNFormatField — joined and ordered by ICNFormatId
             modelBuilder.Entity<ICNFormatField>().HasIndex(i => i.ICNFormatId).HasDatabaseName("IX_ICNFormatField_ICNFormatId");
+
+            // WorkflowInstance — filtered by Status, ProjectId, and ordered by CreatedOn
+            modelBuilder.Entity<WorkflowInstance>().HasIndex(w => w.Status).HasDatabaseName("IX_WorkflowInstance_Status");
+            modelBuilder.Entity<WorkflowInstance>().HasIndex(w => w.ProjectId).HasDatabaseName("IX_WorkflowInstance_ProjectId");
+            modelBuilder.Entity<WorkflowInstance>().HasIndex(w => w.CreatedOn).HasDatabaseName("IX_WorkflowInstance_CreatedOn");
+
+            // WorkflowStep — always filtered by WorkflowInstanceId
+            modelBuilder.Entity<WorkflowStep>().HasIndex(s => s.WorkflowInstanceId).HasDatabaseName("IX_WorkflowStep_WorkflowInstanceId");
+            modelBuilder.Entity<WorkflowStep>().HasIndex(s => new { s.WorkflowInstanceId, s.StepNumber }).HasDatabaseName("IX_WorkflowStep_InstanceId_StepNumber");
         }
     }
 }
