@@ -1002,11 +1002,8 @@ namespace CSDBPortal.Controllers
                     .AsNoTracking()
                     .ToListAsync();
 
-                string[] refAttrs = { "xrefid", "internalRefId", "refid", "targetId", "applicRefId", "condRefId" };
-
-                // Single pass per DMC: collect id/xml:id declarations and reference attribute values together
+                // Collect all id attribute values across DMCs
                 var allEntries = new List<(string IdVal, int DmcId, string DmcCode)>();
-                var referencedIds = new HashSet<string>(StringComparer.Ordinal);
 
                 foreach (var dmc in dmcs)
                 {
@@ -1025,38 +1022,22 @@ namespace CSDBPortal.Controllers
                         foreach (XmlNode node in doc.SelectNodes("//*")!)
                         {
                             if (node.Attributes == null) continue;
-
-                            // Collect declared IDs (plain id or xml:id)
-                            var idVal = node.Attributes["id"]?.Value
-                                     ?? node.Attributes["xml:id"]?.Value;
+                            var idVal = node.Attributes["id"]?.Value;
                             if (!string.IsNullOrWhiteSpace(idVal))
                                 allEntries.Add((idVal, dmc.Id, dmc.DMC ?? ""));
-
-                            // Collect referenced IDs from reference attributes
-                            foreach (var attr in refAttrs)
-                            {
-                                var refVal = node.Attributes[attr]?.Value;
-                                if (!string.IsNullOrEmpty(refVal))
-                                    referencedIds.Add(refVal);
-                            }
                         }
                     }
                     catch { }
                 }
 
-                // Group by ID value and classify
+                // Group by id value: flag duplicates (same id declared more than once across the project)
                 var rows = allEntries
                     .GroupBy(e => e.IdVal, StringComparer.Ordinal)
-                    .Select(g =>
+                    .Select(g => new
                     {
-                        bool isDup = g.Count() > 1;
-                        bool isRef = referencedIds.Contains(g.Key);
-                        return new
-                        {
-                            idValue     = g.Key,
-                            status      = isDup ? "Duplicate" : isRef ? "Referenced" : "Unused",
-                            occurrences = g.Select(e => new { e.DmcId, e.DmcCode }).ToList()
-                        };
+                        idValue     = g.Key,
+                        status      = g.Count() > 1 ? "Duplicate" : "Unique",
+                        occurrences = g.Select(e => new { e.DmcId, e.DmcCode }).ToList()
                     })
                     .OrderBy(r => r.idValue)
                     .ToList();

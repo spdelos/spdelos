@@ -654,9 +654,8 @@
                 </div>
 
                 <!-- Legend -->
-                <div class="d-flex gap-3 mb-2 small ms-1" id="idmLegend" style="display:none !important;">
-                    <span><span class="badge bg-success">&nbsp;</span> Referenced</span>
-                    <span><span class="badge" style="background:#6c757d;">&nbsp;</span> Unused</span>
+                <div class="d-flex gap-3 mb-2 small ms-1" id="idmLegend" style="display:none;">
+                    <span><span class="badge bg-success">&nbsp;</span> Unique</span>
                     <span><span class="badge bg-danger">&nbsp;</span> Duplicate</span>
                 </div>
 
@@ -2916,17 +2915,10 @@
                     if (!rows || rows.length === 0) {
                         html = '<tr><td colspan="3" class="text-center text-muted py-3">No IDs found in this project\'s DMCs.</td></tr>';
                     } else {
-                        var refCount = 0, unusedCount = 0, dupCount = 0;
+                        var uniqueCount = 0, dupCount = 0;
                         rows.forEach(function (r) {
                             var badge = '', dmcCell = '';
-                            if (r.status === 'Referenced') {
-                                badge = '<span class="badge bg-success">Referenced</span>';
-                                refCount++;
-                                // For referenced — show first DMC only (no clickable link needed)
-                                dmcCell = r.occurrences.map(function (o) {
-                                    return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
-                                }).join('<br>');
-                            } else if (r.status === 'Duplicate') {
+                            if (r.status === 'Duplicate') {
                                 badge = '<span class="badge bg-danger">Duplicate</span>';
                                 dupCount++;
                                 dmcCell = r.occurrences.map(function (o) {
@@ -2934,8 +2926,8 @@
                                            '<i class="fa-solid fa-file-code me-1"></i>' + escHtml(o.dmcCode) + '</a>';
                                 }).join('');
                             } else {
-                                badge = '<span class="text-muted small">Unused</span>';
-                                unusedCount++;
+                                badge = '<span class="badge bg-success">Unique</span>';
+                                uniqueCount++;
                                 dmcCell = r.occurrences.map(function (o) {
                                     return '<span class="text-muted small">' + escHtml(o.dmcCode) + '</span>';
                                 }).join('<br>');
@@ -2945,8 +2937,7 @@
                                     '<td>' + dmcCell + '</td></tr>';
                         });
                         $('#idmSummary').html(
-                            '<span class="text-success fw-semibold">' + refCount + ' referenced</span> &nbsp; ' +
-                            '<span class="text-secondary">' + unusedCount + ' unused</span> &nbsp; ' +
+                            '<span class="text-success fw-semibold">' + uniqueCount + ' unique</span> &nbsp; ' +
                             '<span class="text-danger fw-semibold">' + dupCount + ' duplicate</span>'
                         );
                     }
