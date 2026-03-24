@@ -209,12 +209,14 @@
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
-                                        <th width="15%">Project Name</th>
-                                        <th width="36%">DMC</th>
-                                        <th width="11%">XML</th>
-                                        <th width="7%">BREX</th>
-                                        <th width="10%">Status</th>
-                                        <th width="21%">Actions</th>
+                                        <th width="13%">Project Name</th>
+                                        <th width="27%">DMC</th>
+                                        <th width="10%">XML</th>
+                                        <th width="6%">BREX</th>
+                                        <th width="8%">Status</th>
+                                        <th width="11%">Owner</th>
+                                        <th width="11%">Check Out Date</th>
+                                        <th width="14%">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -226,11 +228,11 @@
                                             <td style="display:none">@p.InformationCodeId</td>
                                             <td style="display:none">@p.LocationCodeId</td>
 
-                                            <td width="15%">@p.ProjectName</td>
-                                            <td width="36%">@p.DMC</td>
+                                            <td width="13%">@p.ProjectName</td>
+                                            <td width="27%">@p.DMC</td>
                                             @if (p.xml != null)
                                             {
-                                                <td width="11%">
+                                                <td width="10%">
                                                     <div class="btn-group btn-group-sm" role="group">
                                                         <a href="#" class="btn edit_button view_dmc_xml" title="Open XML in viewer">View</a>
                                                         @if (p.CheckoutStatus == "CheckedOut")
@@ -246,9 +248,9 @@
                                             }
                                             else
                                             {
-                                                <td width="11%"><a href="#" class="btn edit_button generate_DMC">Generate</a></td>
+                                                <td width="10%"><a href="#" class="btn edit_button generate_DMC">Generate</a></td>
                                             }
-                                            <td width="7%">
+                                            <td width="6%">
                                                 @if (p.ValidationStatus == true)
                                                 {
                                                     <span class="badge bg-success" title="@p.ValidationMessage">Pass</span>
@@ -262,21 +264,23 @@
                                                     <span class="badge bg-secondary">—</span>
                                                 }
                                             </td>
-                                            <td width="10%">
+                                            <td width="8%">
                                                 @if (p.xml == null)
                                                 {
                                                     <span class="badge bg-secondary">—</span>
                                                 }
                                                 else if (p.CheckoutStatus == "CheckedOut")
                                                 {
-                                                    <span class="badge bg-warning text-dark" title="Checked out by @p.CheckedOutBy">Checked Out</span>
+                                                    <span class="badge bg-warning text-dark">Checked Out</span>
                                                 }
                                                 else
                                                 {
                                                     <span class="badge bg-success">Available</span>
                                                 }
                                             </td>
-                                            <td width="21%">
+                                            <td width="11%">@(p.CheckedOutBy ?? "—")</td>
+                                            <td width="11%">@(p.CheckedOutOn.HasValue ? p.CheckedOutOn.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm") : "—")</td>
+                                            <td width="14%">
                                                 @if (p.xml != null)
                                                 {
                                                     <a href="#" class="btn edit_button validate_DMC">Validate</a>

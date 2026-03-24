@@ -131,7 +131,8 @@ namespace CSDBPortal.Business
                                     ValidationStatus = (bool?)xv.UploadStatus,
                                     ValidationMessage = xv.Message,
                                     dmc.CheckoutStatus,
-                                    dmc.CheckedOutBy
+                                    dmc.CheckedOutBy,
+                                    dmc.CheckedOutOn
                                 }).ToListAsync();
 
                 maintenanceViewModel.DataModuleCodes = new List<CustomDataModuleCode>();
@@ -155,7 +156,8 @@ namespace CSDBPortal.Business
                         ValidationStatus = dataModuleCode.ValidationStatus,
                         ValidationMessage = dataModuleCode.ValidationMessage,
                         CheckoutStatus = dataModuleCode.CheckoutStatus,
-                        CheckedOutBy = dataModuleCode.CheckedOutBy
+                        CheckedOutBy = dataModuleCode.CheckedOutBy,
+                        CheckedOutOn = dataModuleCode.CheckedOutOn
                     });
                 }
 
