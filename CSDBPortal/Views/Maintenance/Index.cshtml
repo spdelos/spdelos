@@ -233,7 +233,14 @@
                                                 <td width="11%">
                                                     <div class="btn-group btn-group-sm" role="group">
                                                         <a href="#" class="btn edit_button view_dmc_xml" title="Open XML in viewer">View</a>
-                                                        <a href="#" class="btn edit_button checkout_dmc_xml" title="Download and check out">Check Out</a>
+                                                        @if (p.CheckoutStatus == "CheckedOut")
+                                                        {
+                                                            <a href="#" class="btn edit_button checkin_dmc" title="Upload and check in">Check In</a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="#" class="btn edit_button checkout_dmc_xml" title="Download and check out">Check Out</a>
+                                                        }
                                                     </div>
                                                 </td>
                                             }
@@ -273,10 +280,6 @@
                                                 @if (p.xml != null)
                                                 {
                                                     <a href="#" class="btn edit_button validate_DMC">Validate</a>
-                                                }
-                                                @if (p.xml != null && p.CheckoutStatus == "CheckedOut")
-                                                {
-                                                    <a href="#" class="btn edit_button checkin_dmc">Check In</a>
                                                 }
                                                 <a href="#" class="btn edit_button delete_DMC">Delete</a>
                                             </td>

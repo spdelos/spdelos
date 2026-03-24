@@ -129,7 +129,9 @@ namespace CSDBPortal.Business
                                     ProjectName = p.Title, InformationCodeDesc = ic.Code,
                                     dmc.xml, LocationCodeDesc = lc.Code,
                                     ValidationStatus = (bool?)xv.UploadStatus,
-                                    ValidationMessage = xv.Message
+                                    ValidationMessage = xv.Message,
+                                    dmc.CheckoutStatus,
+                                    dmc.CheckedOutBy
                                 }).ToListAsync();
 
                 maintenanceViewModel.DataModuleCodes = new List<CustomDataModuleCode>();
@@ -151,7 +153,9 @@ namespace CSDBPortal.Business
                         SDC = dataModuleCode.SDC, xml = dataModuleCode.xml,
                         UpdatedBy = dataModuleCode.UpdatedBy, UpdatedOn = dataModuleCode.UpdatedOn,
                         ValidationStatus = dataModuleCode.ValidationStatus,
-                        ValidationMessage = dataModuleCode.ValidationMessage
+                        ValidationMessage = dataModuleCode.ValidationMessage,
+                        CheckoutStatus = dataModuleCode.CheckoutStatus,
+                        CheckedOutBy = dataModuleCode.CheckedOutBy
                     });
                 }
 
