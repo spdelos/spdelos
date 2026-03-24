@@ -1012,8 +1012,15 @@ namespace CSDBPortal.Controllers
                 {
                     try
                     {
-                        var doc = new XmlDocument();
-                        doc.LoadXml(dmc.xml!);
+                        var settings = new System.Xml.XmlReaderSettings
+                        {
+                            DtdProcessing = System.Xml.DtdProcessing.Ignore,
+                            XmlResolver   = null
+                        };
+                        var doc = new XmlDocument { XmlResolver = null };
+                        using var reader = System.Xml.XmlReader.Create(
+                            new System.IO.StringReader(dmc.xml!), settings);
+                        doc.Load(reader);
 
                         foreach (XmlNode node in doc.SelectNodes("//*")!)
                         {
