@@ -1007,31 +1007,32 @@ namespace CSDBPortal.Controllers
                 var references  = new List<(string RefVal, int DmcId, string DmcCode)>();
                 string[] refAttrs = { "xrefid", "internalRefId", "refid", "targetId", "applicRefId", "condRefId" };
 
+                var xmlSettings = new System.Xml.XmlReaderSettings
+                {
+                    DtdProcessing          = System.Xml.DtdProcessing.Ignore,
+                    XmlResolver            = null,
+                    IgnoreComments         = true,
+                    IgnoreProcessingInstructions = true,
+                    IgnoreWhitespace       = true
+                };
+
                 foreach (var dmc in dmcs)
                 {
                     try
                     {
-                        var settings = new System.Xml.XmlReaderSettings
+                        using var xr = System.Xml.XmlReader.Create(
+                            new System.IO.StringReader(dmc.xml!), xmlSettings);
+                        while (xr.Read())
                         {
-                            DtdProcessing = System.Xml.DtdProcessing.Ignore,
-                            XmlResolver   = null
-                        };
-                        var doc = new XmlDocument { XmlResolver = null };
-                        using var reader = System.Xml.XmlReader.Create(
-                            new System.IO.StringReader(dmc.xml!), settings);
-                        doc.Load(reader);
+                            if (xr.NodeType != System.Xml.XmlNodeType.Element || !xr.HasAttributes) continue;
 
-                        foreach (XmlNode node in doc.SelectNodes("//*")!)
-                        {
-                            if (node.Attributes == null) continue;
-
-                            var idVal = node.Attributes["id"]?.Value;
+                            var idVal = xr.GetAttribute("id");
                             if (!string.IsNullOrWhiteSpace(idVal))
                                 declaredIds.Add((idVal, dmc.Id, dmc.DMC ?? ""));
 
                             foreach (var attr in refAttrs)
                             {
-                                var refVal = node.Attributes[attr]?.Value;
+                                var refVal = xr.GetAttribute(attr);
                                 if (!string.IsNullOrEmpty(refVal))
                                     references.Add((refVal, dmc.Id, dmc.DMC ?? ""));
                             }
