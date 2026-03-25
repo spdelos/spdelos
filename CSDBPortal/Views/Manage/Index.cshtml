@@ -1501,7 +1501,8 @@
                 });
 
 
-            $('.table').DataTable();
+            // Only initialise #tableDMC here; #tableProject is initialised below with its own call
+            $('#tableDMC').DataTable();
             $("#adminlink").removeClass("active");
             $("#configlink").removeClass("active");
             $("#mainlink").addClass("active");
@@ -2372,7 +2373,7 @@
                 $("#projectModel").modal('show');
             });
 
-            var snsTable = $('#snsTable').DataTable();
+            var snsTable = $('#snsTable').length ? $('#snsTable').DataTable() : null;
             $("#btnCreateSNS").click(function () {
                 $('#hdnSnsId').val('0');
                 $('#txtSnsCode').val('');
