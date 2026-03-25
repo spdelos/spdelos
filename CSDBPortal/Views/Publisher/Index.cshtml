@@ -1,22 +1,474 @@
+@model CSDBPortal.ViewModels.PublisherViewModel
 @{
     ViewData["Title"] = "Publisher";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="card" style="padding:20px;">
-            <h5 class="card-title">Publisher</h5>
-            <p class="text-muted mb-0">Publisher management coming soon.</p>
+<div class="pub-shell">
+
+    <!-- ── Page header ── -->
+    <div class="pub-header">
+        <div class="pub-header-title">
+            <i class="fa-solid fa-rocket me-2 text-primary"></i>Publisher
         </div>
+        <div class="pub-header-sub">Generate and publish IETP and PDF packages</div>
     </div>
-</div>
+
+    <!-- ── Project selector ── -->
+    <div class="pub-project-bar">
+        <label class="pub-label" for="pubProjectSelect">
+            <i class="fa-solid fa-folder-open me-1"></i>Project
+        </label>
+        <select id="pubProjectSelect" class="form-select pub-project-select">
+            <option value="">— Select a project —</option>
+            @foreach (var p in Model.Projects)
+            {
+                <option value="@p.Id">@p.Name — @p.Title</option>
+            }
+        </select>
+    </div>
+
+    <!-- ── Output-type tabs ── -->
+    <div class="pub-body">
+
+        <ul class="nav nav-tabs pub-tabs mb-0" id="pubTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-ietp" data-bs-toggle="tab"
+                        data-bs-target="#pane-ietp" type="button" role="tab"
+                        aria-controls="pane-ietp" aria-selected="true">
+                    <i class="fa-solid fa-globe me-1"></i>IETP
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-pdf" data-bs-toggle="tab"
+                        data-bs-target="#pane-pdf" type="button" role="tab"
+                        aria-controls="pane-pdf" aria-selected="false">
+                    <i class="fa-solid fa-file-pdf me-1"></i>PDF
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content pub-tab-content" id="pubTabContent">
+
+            <!-- ══════════════════ IETP TAB ══════════════════ -->
+            <div class="tab-pane fade show active" id="pane-ietp" role="tabpanel" aria-labelledby="tab-ietp">
+
+                <div class="pub-section-grid">
+
+                    <!-- ── OEM Logo ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-image me-1"></i>OEM Logo
+                        </div>
+                        <div class="d-flex align-items-start gap-3 flex-wrap">
+                            <div class="flex-grow-1" style="max-width:360px;">
+                                <select id="ietpLogoSelect" class="form-select">
+                                    <option value="">— No logo —</option>
+                                    @foreach (var img in Model.PngLogos)
+                                    {
+                                        <option value="@img.Id" data-name="@img.Name">@img.Name (@img.FileName)</option>
+                                    }
+                                </select>
+                                <div class="form-text">PNG images from Manage → Images</div>
+                            </div>
+                            <!-- Logo preview -->
+                            <div id="ietpLogoPreview" class="pub-logo-preview" style="display:none;">
+                                <img id="ietpLogoImg" src="" alt="Logo preview" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Security ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-lock me-1"></i>Security
+                        </div>
+                        <div class="d-flex gap-4">
+                            <div class="form-check pub-radio-card" id="secureCard">
+                                <input class="form-check-input" type="radio" name="ietpSecurity"
+                                       id="ietpSecured" value="Secured" checked>
+                                <label class="form-check-label" for="ietpSecured">
+                                    <i class="fa-solid fa-lock me-1 text-warning"></i>
+                                    <span class="fw-semibold">Secured</span>
+                                    <div class="pub-radio-desc">NAV file will be access-controlled</div>
+                                </label>
+                            </div>
+                            <div class="form-check pub-radio-card" id="unsecureCard">
+                                <input class="form-check-input" type="radio" name="ietpSecurity"
+                                       id="ietpUnsecured" value="Unsecured">
+                                <label class="form-check-label" for="ietpUnsecured">
+                                    <i class="fa-solid fa-lock-open me-1 text-success"></i>
+                                    <span class="fw-semibold">Unsecured</span>
+                                    <div class="pub-radio-desc">NAV file will be openly accessible</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Publication Status ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-tag me-1"></i>Publication Status
+                        </div>
+                        <div class="d-flex gap-4">
+                            <div class="form-check pub-radio-card" id="draftCard">
+                                <input class="form-check-input" type="radio" name="ietpStatus"
+                                       id="ietpDraft" value="Draft" checked>
+                                <label class="form-check-label" for="ietpDraft">
+                                    <i class="fa-solid fa-pencil me-1 text-secondary"></i>
+                                    <span class="fw-semibold">Draft</span>
+                                    <div class="pub-radio-desc">Marked as a work-in-progress issue</div>
+                                </label>
+                            </div>
+                            <div class="form-check pub-radio-card" id="finalCard">
+                                <input class="form-check-input" type="radio" name="ietpStatus"
+                                       id="ietpFinal" value="Final">
+                                <label class="form-check-label" for="ietpFinal">
+                                    <i class="fa-solid fa-circle-check me-1 text-success"></i>
+                                    <span class="fw-semibold">Final</span>
+                                    <div class="pub-radio-desc">Marked as an approved final release</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Cover Page (HTML) ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-file-code me-1"></i>Cover Page
+                        </div>
+
+                        <!-- Option 1: Upload -->
+                        <div class="pub-html-option @("active")" id="htmlOptUpload">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="ietpHtmlSource"
+                                       id="htmlSrcUpload" value="upload" checked>
+                                <label class="form-check-label fw-semibold" for="htmlSrcUpload">
+                                    Upload HTML page
+                                </label>
+                            </div>
+                            <div id="htmlUploadPanel" class="pub-html-panel ps-4">
+                                <div class="mb-3">
+                                    <label class="form-label small">HTML file <span class="text-danger">*</span></label>
+                                    <input type="file" id="ietpHtmlFile" class="form-control form-control-sm"
+                                           accept=".html,.htm">
+                                    <div class="form-text">Single .html or .htm file</div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small">Associated images / assets</label>
+                                    <input type="file" id="ietpHtmlAssets" class="form-control form-control-sm"
+                                           accept="image/*,.css,.js" multiple>
+                                    <div class="form-text">PNG, JPG, GIF, SVG, CSS, or JS files referenced by the HTML</div>
+                                </div>
+                                <!-- Asset list preview -->
+                                <div id="ietpAssetList" class="pub-asset-list" style="display:none;">
+                                    <div class="pub-asset-list-title">Attached files</div>
+                                    <ul id="ietpAssetItems" class="list-unstyled mb-0"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Template -->
+                        <div class="pub-html-option mt-3" id="htmlOptTemplate">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="ietpHtmlSource"
+                                       id="htmlSrcTemplate" value="template">
+                                <label class="form-check-label fw-semibold" for="htmlSrcTemplate">
+                                    Use HTML template
+                                </label>
+                            </div>
+                            <div id="htmlTemplatePanel" class="pub-html-panel ps-4" style="display:none;">
+                                <div class="pub-coming-soon">
+                                    <i class="fa-solid fa-clock me-2 text-muted"></i>
+                                    Template generation will be available in a future update.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /pub-section-grid -->
+
+                <!-- ── Publish action ── -->
+                <div class="pub-actions">
+                    <div id="pubIetpAlert" class="pub-alert" style="display:none;"></div>
+                    <button id="btnPublishIetp" class="btn btn-primary btn-publish" disabled>
+                        <i class="fa-solid fa-rocket me-2"></i>Publish IETP
+                    </button>
+                    <span id="pubIetpSpinner" class="spinner-border spinner-border-sm text-primary ms-2"
+                          style="display:none;" role="status"></span>
+                </div>
+
+            </div><!-- /pane-ietp -->
+
+            <!-- ══════════════════ PDF TAB ══════════════════ -->
+            <div class="tab-pane fade" id="pane-pdf" role="tabpanel" aria-labelledby="tab-pdf">
+                <div class="pub-section">
+                    <div class="pub-coming-soon" style="padding:40px 0;">
+                        <i class="fa-solid fa-file-pdf fa-2x mb-3 d-block text-muted"></i>
+                        PDF publishing options coming soon.
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /tab-content -->
+    </div><!-- /pub-body -->
+
+</div><!-- /pub-shell -->
 
 @section Scripts {
+<style>
+/* ── Publisher shell ── */
+.pub-shell {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+}
+
+.pub-header { margin-bottom: 24px; }
+.pub-header-title { font-size: 20px; font-weight: 700; color: var(--text); }
+.pub-header-sub   { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Project bar ── */
+.pub-project-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+}
+.pub-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.pub-project-select { max-width: 460px; }
+
+/* ── Tabs ── */
+.pub-tabs .nav-link { font-size: 14px; font-weight: 500; }
+.pub-body {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.pub-tab-content { padding: 24px; }
+
+/* ── Section ── */
+.pub-section-grid { display: flex; flex-direction: column; gap: 28px; }
+.pub-section { }
+.pub-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ── Radio cards ── */
+.pub-radio-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    min-width: 180px;
+}
+.pub-radio-card:has(.form-check-input:checked) {
+    border-color: var(--primary-light);
+    background: #eff6ff;
+}
+.pub-radio-card .form-check-input { margin-top: 3px; }
+.pub-radio-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Logo preview ── */
+.pub-logo-preview {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    background: #f9fafb;
+    width: 120px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.pub-logo-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ── HTML options ── */
+.pub-html-option { }
+.pub-html-panel { margin-top: 8px; }
+
+/* ── Asset list ── */
+.pub-asset-list {
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+.pub-asset-list-title { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.pub-asset-list li { font-size: 12px; padding: 2px 0; display: flex; align-items: center; gap: 8px; }
+.pub-asset-list li .fa-times { cursor: pointer; color: var(--danger); }
+
+/* ── Coming soon ── */
+.pub-coming-soon {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 20px 0;
+}
+
+/* ── Actions ── */
+.pub-actions {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.btn-publish { min-width: 160px; }
+.pub-alert {
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 6px;
+}
+.pub-alert.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.pub-alert.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+</style>
+
 <script type="text/javascript">
-    $("#adminlink").removeClass("active");
-    $("#configlink").removeClass("active");
-    $("#mainlink").removeClass("active");
-    $("#icnlink").removeClass("active");
+
+    // ── Nav link ──
+    $("#adminlink, #configlink, #mainlink, #icnlink").removeClass("active");
     $("#publisherlink").addClass("active");
+
+    // ── Enable Publish button only when a project is selected ──
+    $("#pubProjectSelect").on("change", function () {
+        var hasProject = !!$(this).val();
+        $("#btnPublishIetp").prop("disabled", !hasProject);
+    });
+
+    // ── OEM Logo preview ──
+    $("#ietpLogoSelect").on("change", function () {
+        var id = $(this).val();
+        if (!id) {
+            $("#ietpLogoPreview").hide();
+            $("#ietpLogoImg").attr("src", "");
+            return;
+        }
+        $("#ietpLogoImg").attr("src", "/Manage/ViewImageAsset?id=" + id);
+        $("#ietpLogoPreview").show();
+    });
+
+    // ── HTML source toggle ──
+    $("input[name='ietpHtmlSource']").on("change", function () {
+        var val = $(this).val();
+        $("#htmlUploadPanel").toggle(val === "upload");
+        $("#htmlTemplatePanel").toggle(val === "template");
+    });
+
+    // ── Asset file list ──
+    $("#ietpHtmlAssets").on("change", function () {
+        var files = this.files;
+        var $list = $("#ietpAssetItems").empty();
+        if (!files || !files.length) {
+            $("#ietpAssetList").hide();
+            return;
+        }
+        $.each(files, function (i, f) {
+            $list.append(
+                '<li><i class="fa-solid fa-paperclip text-muted"></i>' +
+                '<span>' + $("<span>").text(f.name).html() + '</span>' +
+                '<span class="text-muted ms-auto">(' + _fmtSize(f.size) + ')</span></li>'
+            );
+        });
+        $("#ietpAssetList").show();
+    });
+
+    function _fmtSize(bytes) {
+        if (bytes < 1024)       return bytes + ' B';
+        if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // ── Publish IETP ──
+    $("#btnPublishIetp").on("click", function () {
+        var projectId = $("#pubProjectSelect").val();
+        if (!projectId) {
+            _showPubAlert("error", "Please select a project before publishing.");
+            return;
+        }
+
+        var htmlSource = $("input[name='ietpHtmlSource']:checked").val();
+        if (htmlSource === "upload") {
+            var htmlFile = $("#ietpHtmlFile")[0].files;
+            if (!htmlFile || !htmlFile.length) {
+                _showPubAlert("error", "Please select an HTML file to upload.");
+                return;
+            }
+        }
+
+        _showPubAlert("", "");
+        $("#pubIetpSpinner").show();
+        $("#btnPublishIetp").prop("disabled", true);
+
+        var formData = new FormData();
+        formData.append("projectId",  projectId);
+        formData.append("logoId",     $("#ietpLogoSelect").val() || "");
+        formData.append("security",   $("input[name='ietpSecurity']:checked").val());
+        formData.append("status",     $("input[name='ietpStatus']:checked").val());
+        formData.append("htmlSource", htmlSource);
+
+        if (htmlSource === "upload") {
+            formData.append("htmlFile", $("#ietpHtmlFile")[0].files[0]);
+            $.each($("#ietpHtmlAssets")[0].files, function (i, f) {
+                formData.append("assets", f);
+            });
+        }
+
+        $.ajax({
+            type:        "POST",
+            url:         "/Publisher/PublishIetp",
+            data:        formData,
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result && result.success) {
+                    _showPubAlert("success", result.message || "Published successfully.");
+                } else {
+                    _showPubAlert("error", (result && result.message) || "Publish failed.");
+                }
+            },
+            error: function () {
+                _showPubAlert("error", "An error occurred. Please try again.");
+            },
+            complete: function () {
+                $("#pubIetpSpinner").hide();
+                $("#btnPublishIetp").prop("disabled", !$("#pubProjectSelect").val());
+            }
+        });
+    });
+
+    function _showPubAlert(type, msg) {
+        var $a = $("#pubIetpAlert");
+        if (!type || !msg) { $a.hide().attr("class", "pub-alert"); return; }
+        $a.attr("class", "pub-alert " + type).text(msg).show();
+    }
+
 </script>
 }
