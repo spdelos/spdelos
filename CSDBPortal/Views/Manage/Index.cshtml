@@ -1902,7 +1902,7 @@
                 });
             });
 
-            $(".project_dmc_generate_button").click(function () {
+            $('#tableProject tbody').on('click', '.project_dmc_generate_button', function () {
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
 
@@ -1918,7 +1918,7 @@
             });
 
 
-            $(".project_dmc_button").click(function () {
+            $('#tableProject tbody').on('click', '.project_dmc_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
@@ -1941,7 +1941,7 @@
                 $("#DMCModel").modal('show');
             });
 
-            $(".project_sns_button").click(function () {
+            $('#tableProject tbody').on('click', '.project_sns_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
@@ -2060,7 +2060,7 @@
                 });
             });
 
-            $(".project_brex_rules_button").click(function () {
+            $('#tableProject tbody').on('click', '.project_brex_rules_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
@@ -2113,7 +2113,7 @@
             });
 
 
-            $(".project_navigation_generate_button").click(function () {
+            $('#tableProject tbody').on('click', '.project_navigation_generate_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
