@@ -33,6 +33,13 @@ namespace CSDBPortal.Models
         [Required, MaxLength(50)]
         public string FullPNC { get; set; } = "";       // Assembled PNC (unique)
 
+        public bool IsObsolete { get; set; } = false;
+
+        [MaxLength(256)]
+        public string? ObsoletedBy { get; set; }
+
+        public DateTime? ObsoletedOn { get; set; }
+
         [MaxLength(256)]
         public string? CreatedBy { get; set; }
 

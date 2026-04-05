@@ -51,26 +51,22 @@
 
     #pncListTable thead th { font-size: 0.8rem; white-space: nowrap; }
     #pncListTable tbody td { font-size: 0.82rem; }
-    #pncListTable .pnc-code { font-family: 'Courier New', monospace; font-weight: 600; letter-spacing: 1px; }
+
+    .pnc-code { font-family: 'Courier New', monospace; font-weight: 600; letter-spacing: 1px; }
+
+    tr.row-obsolete td { text-decoration: line-through; color: #999; }
+    tr.row-obsolete .pnc-code { color: #999; }
+    tr.row-obsolete .badge-obsolete { font-size: 0.68rem; }
 
     .upload-zone {
         border: 2px dashed var(--border, #dee2e6);
-        border-radius: 8px;
-        padding: 1rem 1.5rem;
-        text-align: center;
-        cursor: pointer;
+        border-radius: 8px; padding: 1rem 1.5rem;
+        text-align: center; cursor: pointer;
         transition: border-color .2s, background .2s;
     }
-    .upload-zone:hover, .upload-zone.drag-over {
-        border-color: #0d6efd;
-        background: rgba(13,110,253,.04);
-    }
+    .upload-zone:hover { border-color: #0d6efd; background: rgba(13,110,253,.04); }
 
-    .filter-active-badge {
-        font-size: 0.68rem;
-        vertical-align: middle;
-        margin-left: 4px;
-    }
+    .filter-active-badge { font-size: 0.68rem; vertical-align: middle; margin-left: 4px; }
 </style>
 
 <div class="pnc-wrapper">
@@ -85,7 +81,7 @@
         &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-00001-D-A</span>
     </div>
 
-    <!-- ── Live Preview ─────────────────────────────────────────────────── -->
+    <!-- ── Live Preview ──────────────────────────────────────────────── -->
     <div class="card mb-3 shadow-sm">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
@@ -104,7 +100,7 @@
         </div>
     </div>
 
-    <!-- ── Segment Inputs ──────────────────────────────────────────────── -->
+    <!-- ── Segment Inputs ───────────────────────────────────────────── -->
     <div class="card shadow-sm mb-3">
         <div class="card-header fw-semibold d-flex align-items-center justify-content-between">
             <span>Build PNC Segments</span>
@@ -119,8 +115,7 @@
                     <div class="pnc-segment-card" id="card_seg1">
                         <div class="pnc-segment-label">Seg 1 — Model ID</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
-                               id="seg1" maxlength="5" placeholder="KAV"
-                               data-pattern="^[A-Z]{2,4}[0-9]?$">
+                               id="seg1" maxlength="5" placeholder="KAV" data-pattern="^[A-Z]{2,4}[0-9]?$">
                         <small class="text-muted" style="font-size:.7rem;">e.g. KAV, KAV1</small>
                     </div>
                 </div>
@@ -180,8 +175,7 @@
                     <div class="pnc-segment-card" id="card_seg4">
                         <div class="pnc-segment-label">Seg 4 — Sub-Asm</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
-                               id="seg4" maxlength="3" placeholder="FCA"
-                               data-pattern="^[A-Z]{3}$">
+                               id="seg4" maxlength="3" placeholder="FCA" data-pattern="^[A-Z]{3}$">
                         <small class="text-muted" style="font-size:.7rem;">3 letters</small>
                     </div>
                 </div>
@@ -192,8 +186,7 @@
                     <div class="pnc-segment-card" id="card_seg5">
                         <div class="pnc-segment-label">Seg 5 — Seq. Digits</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace"
-                               id="seg5" maxlength="5" placeholder="00001"
-                               data-pattern="^[0-9]{5}$">
+                               id="seg5" maxlength="5" placeholder="00001" data-pattern="^[0-9]{5}$">
                         <small class="text-muted" style="font-size:.7rem;">5 digits</small>
                     </div>
                 </div>
@@ -219,8 +212,7 @@
                     <div class="pnc-segment-card" id="card_seg7">
                         <div class="pnc-segment-label">Seg 7 — Rev. Suffix</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
-                               id="seg7" maxlength="1" placeholder="A"
-                               data-pattern="^[A-Z]$">
+                               id="seg7" maxlength="1" placeholder="A" data-pattern="^[A-Z]$">
                         <small class="text-muted" style="font-size:.7rem;">A – Z</small>
                     </div>
                 </div>
@@ -229,7 +221,7 @@
         </div>
     </div>
 
-    <!-- ── Action toolbar ─────────────────────────────────────────────── -->
+    <!-- ── Action toolbar ───────────────────────────────────────────── -->
     <div class="d-flex flex-wrap gap-2 mb-4">
         <button class="btn btn-outline-primary btn-sm" id="btnShowPNCs">
             <i class="fa-solid fa-table-list me-1"></i> Show Part Numbers
@@ -244,18 +236,31 @@
         <input type="file" id="excelFileInput" accept=".xlsx" class="d-none">
     </div>
 
-    <!-- ── Upload result toast-style alert ───────────────────────────── -->
+    <!-- ── Upload result ────────────────────────────────────────────── -->
     <div id="uploadResult" class="alert d-none mb-3" role="alert"></div>
 
-    <!-- ── PNC List ──────────────────────────────────────────────────── -->
+    <!-- ── PNC List ─────────────────────────────────────────────────── -->
     <div id="pncListWrap" class="d-none">
         <div class="card shadow-sm">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <span class="fw-semibold">
-                    Part Numbers
-                    <span id="pncCount" class="badge bg-secondary ms-1">0</span>
-                </span>
-                <span id="pncFilterDesc" class="text-muted small"></span>
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <span class="fw-semibold">
+                        Part Numbers
+                        <span id="pncCount" class="badge bg-secondary ms-1">0</span>
+                    </span>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Show obsolete toggle -->
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="chkShowObsolete" checked>
+                            <label class="form-check-label small" for="chkShowObsolete">Show obsolete</label>
+                        </div>
+                        <!-- Download filtered -->
+                        <button class="btn btn-sm btn-outline-success" id="btnDownloadFiltered">
+                            <i class="fa-solid fa-file-arrow-down me-1"></i> Download
+                        </button>
+                    </div>
+                </div>
+                <div id="pncFilterDesc" class="text-muted small mt-1"></div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -268,16 +273,17 @@
                                 <th>ModCode</th>
                                 <th>SubAsmCode</th>
                                 <th>SeqDigits</th>
-                                <th>MaintLevel</th>
-                                <th>RevSuffix</th>
+                                <th>Level</th>
+                                <th>Rev</th>
                                 <th>Full PNC</th>
+                                <th>Status</th>
                                 <th>Created By</th>
                                 <th>Created On</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody id="pncTbody">
-                            <tr><td colspan="12" class="text-center text-muted py-3">No data loaded.</td></tr>
+                            <tr><td colspan="13" class="text-center text-muted py-3">No data loaded.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -285,7 +291,7 @@
         </div>
     </div>
 
-    <!-- ── Reference Tables ──────────────────────────────────────────── -->
+    <!-- ── Reference Tables ─────────────────────────────────────────── -->
     <div class="row g-3 mt-1">
         <div class="col-md-5">
             <div class="card shadow-sm">
@@ -339,21 +345,23 @@
     </div>
 </div>
 
-<!-- Delete confirm modal -->
-<div class="modal fade" id="delModal" tabindex="-1">
+<!-- Obsolete confirm modal -->
+<div class="modal fade" id="obsoleteModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header py-2">
-                <h6 class="modal-title">Delete PNC?</h6>
+                <h6 class="modal-title text-warning"><i class="fa-solid fa-triangle-exclamation me-1"></i>Mark as Obsolete?</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body py-2">
-                <p class="mb-1">This will permanently remove:</p>
-                <p class="font-monospace fw-bold" id="delPncCode"></p>
+                <p class="mb-1 small">This action cannot be undone. The part number will be permanently marked obsolete:</p>
+                <p class="font-monospace fw-bold" id="obsoletePncCode"></p>
             </div>
             <div class="modal-footer py-2">
                 <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-sm btn-danger" id="btnConfirmDelete">Delete</button>
+                <button type="button" class="btn btn-sm btn-warning" id="btnConfirmObsolete">
+                    <i class="fa-solid fa-ban me-1"></i>Mark Obsolete
+                </button>
             </div>
         </div>
     </div>
@@ -365,11 +373,12 @@
 
     var segIds = ['seg1','seg2','seg3','seg4','seg5','seg6','seg7'];
     var listVisible = false;
-    var delId = null;
+    var obsoleteId  = null;
 
-    // ── helpers ────────────────────────────────────────────────────────
     function escHtml(s) {
-        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     function getVal(id) { return ($('#' + id).val() || '').trim().toUpperCase(); }
@@ -379,19 +388,16 @@
         var val = ($el.val() || '').trim().toUpperCase();
         if (!val) return null;
         var pat = $el.data('pattern');
-        if (pat) return new RegExp(pat).test(val);
-        return val.length > 0;
+        return pat ? new RegExp(pat).test(val) : val.length > 0;
     }
 
-    // ── live preview ───────────────────────────────────────────────────
+    // ── live preview ──────────────────────────────────────────────────
     function updatePreview() {
-        var parts = segIds.map(function(id) {
-            var $el = $('#' + id);
-            return ($el.val() || '').trim().toUpperCase();
+        var parts = segIds.map(function(id){
+            return ($('#' + id).val() || '').trim().toUpperCase();
         });
 
-        // card colours
-        segIds.forEach(function(id, i) {
+        segIds.forEach(function(id){
             var $card = $('#card_' + id);
             $card.removeClass('seg-valid seg-invalid');
             var v = isValidSeg(id);
@@ -404,6 +410,7 @@
             $('#pncPreview').text('—');
             $('#pncValidMsg').text('');
             $('#btnCopyPNC, #btnSavePNC').prop('disabled', true);
+            updateFilterBadge();
             return;
         }
 
@@ -411,10 +418,7 @@
         $('#pncPreview').text(pnc);
 
         var allFilled = parts.every(function(v){ return v !== ''; });
-        var allValid  = segIds.every(function(id){
-            var v = isValidSeg(id);
-            return v === true;
-        });
+        var allValid  = segIds.every(function(id){ return isValidSeg(id) === true; });
 
         if (allFilled && allValid) {
             $('#pncValidMsg').html('<span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>Valid PNC.</span>');
@@ -427,30 +431,26 @@
             $('#btnCopyPNC, #btnSavePNC').prop('disabled', true);
         }
 
-        // update filter badge
         updateFilterBadge();
-
-        // if list is visible, live-filter it
         if (listVisible) loadPNCs();
     }
 
     function updateFilterBadge() {
-        var anyFilled = segIds.some(function(id){ return ($('#' + id).val() || '').trim() !== ''; });
-        $('#filterBadge').toggleClass('d-none', !anyFilled);
+        var any = segIds.some(function(id){ return ($('#' + id).val() || '').trim() !== ''; });
+        $('#filterBadge').toggleClass('d-none', !any);
     }
 
-    // ── segment events ─────────────────────────────────────────────────
+    // ── segment events ────────────────────────────────────────────────
     $('.pnc-seg').on('input change', function(){
-        var $el = $(this);
-        if ($el.is('input')) {
+        if ($(this).is('input')) {
             var pos = this.selectionStart;
-            $el.val($el.val().toUpperCase());
+            $(this).val($(this).val().toUpperCase());
             try { this.setSelectionRange(pos, pos); } catch(e){}
         }
         updatePreview();
     });
 
-    // ── Save PNC ───────────────────────────────────────────────────────
+    // ── Save ──────────────────────────────────────────────────────────
     $('#btnSavePNC').on('click', function(){
         var pnc = {
             modelId:    getVal('seg1'),
@@ -461,32 +461,19 @@
             maintLevel: $('#seg6').val() || '',
             revSuffix:  getVal('seg7')
         };
-
         $('#btnSavePNC').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving…');
-
-        $.ajax({
-            url: '/PNC/SavePNC',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(pnc)
-        }).done(function(r){
-            if (r.success) {
-                showMsg('pncValidMsg', 'success', '<i class="fa-solid fa-circle-check me-1"></i>Saved: <strong>' + escHtml(r.message.replace('PNC \'','').replace('\' saved.','')) + '</strong>');
-                if (listVisible) loadPNCs();
-            } else {
-                showMsg('pncValidMsg', 'danger', '<i class="fa-solid fa-triangle-exclamation me-1"></i>' + escHtml(r.message));
-            }
-        }).fail(function(){
-            showMsg('pncValidMsg', 'danger', 'Server error while saving.');
-        }).always(function(){
-            $('#btnSavePNC').prop('disabled', false).html('<i class="fa-solid fa-floppy-disk me-1"></i> Save PNC');
-        });
+        $.ajax({ url: '/PNC/SavePNC', method: 'POST', contentType: 'application/json', data: JSON.stringify(pnc) })
+            .done(function(r){
+                if (r.success) {
+                    $('#pncValidMsg').html('<span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>' + escHtml(r.message) + '</span>');
+                    if (listVisible) loadPNCs();
+                } else {
+                    $('#pncValidMsg').html('<span class="text-danger fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>' + escHtml(r.message) + '</span>');
+                }
+            })
+            .fail(function(){ $('#pncValidMsg').html('<span class="text-danger">Server error.</span>'); })
+            .always(function(){ $('#btnSavePNC').prop('disabled', false).html('<i class="fa-solid fa-floppy-disk me-1"></i> Save PNC'); });
     });
-
-    function showMsg(elId, type, html) {
-        var cls = { success: 'text-success', danger: 'text-danger', info: 'text-info' };
-        $('#' + elId).html('<span class="' + (cls[type]||'text-muted') + ' fw-semibold">' + html + '</span>');
-    }
 
     // ── Copy ──────────────────────────────────────────────────────────
     $('#btnCopyPNC').on('click', function(){
@@ -517,7 +504,7 @@
         if (listVisible) loadPNCs();
     });
 
-    // ── Show/load PNCs ────────────────────────────────────────────────
+    // ── Show PNCs / reload ────────────────────────────────────────────
     $('#btnShowPNCs').on('click', function(){
         listVisible = true;
         $('#pncListWrap').removeClass('d-none');
@@ -525,43 +512,56 @@
         $('html,body').animate({ scrollTop: $('#pncListWrap').offset().top - 80 }, 300);
     });
 
-    function loadPNCs() {
-        var params = {
+    $('#chkShowObsolete').on('change', function(){ if (listVisible) loadPNCs(); });
+
+    function buildFilterParams() {
+        return {
             seg1: getVal('seg1') || undefined,
             seg2: $('#seg2').val() || undefined,
             seg3: $('#seg3').val() || undefined,
             seg4: getVal('seg4') || undefined,
             seg5: $('#seg5').val() || undefined,
             seg6: $('#seg6').val() || undefined,
-            seg7: getVal('seg7') || undefined
+            seg7: getVal('seg7') || undefined,
+            includeObsolete: $('#chkShowObsolete').is(':checked')
         };
+    }
 
-        // Build filter description
-        var active = [];
-        if (params.seg1) active.push('Model: ' + params.seg1);
-        if (params.seg2) active.push('Eq: '    + params.seg2);
-        if (params.seg3) active.push('Mod: '   + params.seg3);
-        if (params.seg4) active.push('Sub: '   + params.seg4);
-        if (params.seg5) active.push('Seq: '   + params.seg5);
-        if (params.seg6) active.push('Level: ' + params.seg6);
-        if (params.seg7) active.push('Rev: '   + params.seg7);
-        $('#pncFilterDesc').text(active.length ? 'Filters: ' + active.join(', ') : 'Showing all');
+    function buildFilterDesc(p) {
+        var parts = [];
+        if (p.seg1) parts.push('Model: ' + p.seg1);
+        if (p.seg2) parts.push('Eq: '    + p.seg2);
+        if (p.seg3) parts.push('Mod: '   + p.seg3);
+        if (p.seg4) parts.push('Sub: '   + p.seg4);
+        if (p.seg5) parts.push('Seq: '   + p.seg5);
+        if (p.seg6) parts.push('Level: ' + p.seg6);
+        if (p.seg7) parts.push('Rev: '   + p.seg7);
+        var obsoleteNote = p.includeObsolete ? '' : ' · Obsolete hidden';
+        return parts.length ? 'Filters: ' + parts.join(', ') + obsoleteNote : 'Showing all' + obsoleteNote;
+    }
 
-        $('#pncTbody').html('<tr><td colspan="12" class="text-center py-3"><span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr>');
+    function loadPNCs() {
+        var params = buildFilterParams();
+        $('#pncFilterDesc').text(buildFilterDesc(params));
+        $('#pncTbody').html('<tr><td colspan="13" class="text-center py-3"><span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr>');
 
         $.get('/PNC/GetPNCs', params).done(function(r){
-            if (!r.success) {
-                $('#pncTbody').html('<tr><td colspan="12" class="text-danger text-center py-2">Error loading data.</td></tr>');
-                return;
-            }
-            $('#pncCount').text(r.data.length);
-            if (!r.data.length) {
-                $('#pncTbody').html('<tr><td colspan="12" class="text-center text-muted py-3">No part numbers found.</td></tr>');
+            $('#pncCount').text(r.data ? r.data.length : 0);
+            if (!r.success || !r.data.length) {
+                $('#pncTbody').html('<tr><td colspan="13" class="text-center text-muted py-3">No part numbers found.</td></tr>');
                 return;
             }
             var html = '';
             $.each(r.data, function(i, row){
-                html += '<tr>' +
+                var obs = row.isObsolete;
+                var statusBadge = obs
+                    ? '<span class="badge bg-secondary badge-obsolete">Obsolete</span>'
+                    : '<span class="badge bg-success" style="font-size:.68rem;">Active</span>';
+                var actionBtn = obs
+                    ? '<span class="text-muted small" title="Obsoleted by ' + escHtml(row.obsoletedBy||'') + ' on ' + escHtml(row.obsoletedOn||'') + '"><i class="fa-solid fa-ban"></i></span>'
+                    : '<button class="btn btn-warning btn-sm py-0 px-1 btn-mark-obsolete" data-id="' + row.id + '" data-pnc="' + escHtml(row.fullPNC) + '" title="Mark as Obsolete"><i class="fa-solid fa-ban" style="font-size:.75rem;"></i></button>';
+
+                html += '<tr class="' + (obs ? 'row-obsolete' : '') + '">' +
                     '<td>' + (i+1) + '</td>' +
                     '<td class="font-monospace">' + escHtml(row.modelId)    + '</td>' +
                     '<td class="font-monospace">' + escHtml(row.eqCode)     + '</td>' +
@@ -571,34 +571,49 @@
                     '<td class="font-monospace text-center">' + escHtml(row.maintLevel) + '</td>' +
                     '<td class="font-monospace text-center">' + escHtml(row.revSuffix)  + '</td>' +
                     '<td class="pnc-code">'       + escHtml(row.fullPNC)    + '</td>' +
-                    '<td class="text-muted small">' + escHtml(row.createdBy || '') + '</td>' +
-                    '<td class="text-muted small">' + escHtml(row.createdOn)  + '</td>' +
-                    '<td class="text-center">' +
-                        '<button class="btn btn-danger btn-sm py-0 px-1 btn-del-pnc" data-id="' + row.id + '" data-pnc="' + escHtml(row.fullPNC) + '" title="Delete">' +
-                        '<i class="fa-solid fa-trash-can" style="font-size:.75rem;"></i></button>' +
-                    '</td>' +
+                    '<td class="text-center">'    + statusBadge + '</td>' +
+                    '<td class="text-muted small">' + escHtml(row.createdBy||'')  + '</td>' +
+                    '<td class="text-muted small">' + escHtml(row.createdOn)       + '</td>' +
+                    '<td class="text-center">'    + actionBtn + '</td>' +
                     '</tr>';
             });
             $('#pncTbody').html(html);
         }).fail(function(){
-            $('#pncTbody').html('<tr><td colspan="12" class="text-danger text-center py-2">Request failed.</td></tr>');
+            $('#pncTbody').html('<tr><td colspan="13" class="text-danger text-center py-2">Request failed.</td></tr>');
         });
     }
 
-    // ── Delete ────────────────────────────────────────────────────────
-    $(document).on('click', '.btn-del-pnc', function(){
-        delId = $(this).data('id');
-        $('#delPncCode').text($(this).data('pnc'));
-        new bootstrap.Modal(document.getElementById('delModal')).show();
+    // ── Mark Obsolete ─────────────────────────────────────────────────
+    $(document).on('click', '.btn-mark-obsolete', function(){
+        obsoleteId = $(this).data('id');
+        $('#obsoletePncCode').text($(this).data('pnc'));
+        new bootstrap.Modal(document.getElementById('obsoleteModal')).show();
     });
 
-    $('#btnConfirmDelete').on('click', function(){
-        if (!delId) return;
-        $.ajax({ url: '/PNC/DeletePNC?id=' + delId, method: 'DELETE' })
+    $('#btnConfirmObsolete').on('click', function(){
+        if (!obsoleteId) return;
+        $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Processing…');
+        $.post('/PNC/MarkObsolete?id=' + obsoleteId)
             .done(function(r){
-                bootstrap.Modal.getInstance(document.getElementById('delModal')).hide();
+                bootstrap.Modal.getInstance(document.getElementById('obsoleteModal')).hide();
                 if (r.success) loadPNCs();
+            })
+            .always(function(){
+                $('#btnConfirmObsolete').prop('disabled', false)
+                    .html('<i class="fa-solid fa-ban me-1"></i>Mark Obsolete');
+                obsoleteId = null;
             });
+    });
+
+    // ── Download filtered ─────────────────────────────────────────────
+    $('#btnDownloadFiltered').on('click', function(){
+        var params = buildFilterParams();
+        // Build query string
+        var qs = Object.keys(params)
+            .filter(function(k){ return params[k] !== undefined && params[k] !== null; })
+            .map(function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); })
+            .join('&');
+        window.location.href = '/PNC/DownloadFiltered?' + qs;
     });
 
     // ── Upload Excel ──────────────────────────────────────────────────
@@ -610,37 +625,25 @@
         var fd = new FormData();
         fd.append('file', file);
         this.value = '';
-
         $('#uploadResult').removeClass('d-none alert-success alert-danger alert-warning')
-            .addClass('alert-info').html('<span class="spinner-border spinner-border-sm me-2"></span>Uploading and processing…');
-
-        $.ajax({
-            url: '/PNC/UploadExcel',
-            method: 'POST',
-            data: fd,
-            processData: false,
-            contentType: false
-        }).done(function(r){
-            var cls = r.success ? (r.errors > 0 ? 'alert-warning' : 'alert-success') : 'alert-danger';
-            var details = '';
-            if (r.dupList && r.dupList.length) {
-                details += '<br><small><strong>Duplicates skipped:</strong> ' + r.dupList.map(escHtml).join(', ') + '</small>';
-            }
-            if (r.errorList && r.errorList.length) {
-                details += '<br><small><strong>Errors:</strong><br>' + r.errorList.map(escHtml).join('<br>') + '</small>';
-            }
-            $('#uploadResult').removeClass('alert-info alert-success alert-danger alert-warning')
-                .addClass(cls)
-                .html('<i class="fa-solid fa-circle-info me-1"></i><strong>' + escHtml(r.message) + '</strong>' + details);
-            if (r.imported > 0 && listVisible) loadPNCs();
-        }).fail(function(){
-            $('#uploadResult').removeClass('alert-info').addClass('alert-danger').html('Upload failed.');
-        });
+            .addClass('alert-info').html('<span class="spinner-border spinner-border-sm me-2"></span>Processing…');
+        $.ajax({ url: '/PNC/UploadExcel', method: 'POST', data: fd, processData: false, contentType: false })
+            .done(function(r){
+                var cls = r.success ? (r.errors > 0 ? 'alert-warning' : 'alert-success') : 'alert-danger';
+                var details = '';
+                if (r.dupList && r.dupList.length)
+                    details += '<br><small><strong>Duplicates skipped:</strong> ' + r.dupList.map(escHtml).join(', ') + '</small>';
+                if (r.errorList && r.errorList.length)
+                    details += '<br><small><strong>Errors:</strong><br>' + r.errorList.map(escHtml).join('<br>') + '</small>';
+                $('#uploadResult').removeClass('alert-info').addClass(cls)
+                    .html('<i class="fa-solid fa-circle-info me-1"></i><strong>' + escHtml(r.message) + '</strong>' + details);
+                if (r.imported > 0 && listVisible) loadPNCs();
+            })
+            .fail(function(){ $('#uploadResult').removeClass('alert-info').addClass('alert-danger').html('Upload failed.'); });
     });
 
     // ── Sidebar active ────────────────────────────────────────────────
     $('#pnclink').addClass('active');
-
     updatePreview();
 })();
 </script>
