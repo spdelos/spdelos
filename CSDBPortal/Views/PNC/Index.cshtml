@@ -4,10 +4,7 @@
 }
 
 <style>
-    .pnc-wrapper {
-        padding: 1.5rem;
-        max-width: 1100px;
-    }
+    .pnc-wrapper { padding: 1.5rem; max-width: 1200px; }
 
     .pnc-preview-box {
         background: var(--primary-light, #f0f4ff);
@@ -21,11 +18,10 @@
         color: var(--text, #212529);
         text-align: center;
         min-height: 3.5rem;
-        word-break: break-all;
     }
 
     .pnc-segment-label {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 600;
         text-transform: uppercase;
         color: var(--text-muted, #6c757d);
@@ -36,113 +32,105 @@
     .pnc-segment-card {
         border: 1px solid var(--border, #dee2e6);
         border-radius: 6px;
-        padding: 0.75rem 1rem;
+        padding: 0.65rem 0.8rem;
         background: #fff;
-        height: 100%;
     }
 
-    .pnc-segment-card.active-seg {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 2px rgba(13,110,253,.15);
-    }
+    .pnc-segment-card.seg-valid   { border-color: #198754; box-shadow: 0 0 0 2px rgba(25,135,84,.15); }
+    .pnc-segment-card.seg-invalid { border-color: #dc3545; box-shadow: 0 0 0 2px rgba(220,53,69,.15); }
 
-    .pnc-separator {
-        font-size: 1.4rem;
-        font-weight: 700;
+    .sep-dash {
+        font-size: 1.3rem; font-weight: 700;
         color: var(--text-muted, #6c757d);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding-top: 1.6rem;
+        display: flex; align-items: center; justify-content: center;
+        padding-top: 1.5rem;
     }
 
-    .ref-table th {
-        background: var(--primary-light, #f0f4ff);
-        font-size: 0.8rem;
-    }
+    .ref-table th { background: var(--primary-light, #f0f4ff); font-size: 0.8rem; }
+    .ref-table td, .ref-table th { font-size: 0.82rem; padding: 0.28rem 0.55rem; }
 
-    .ref-table td, .ref-table th {
-        font-size: 0.82rem;
-        padding: 0.3rem 0.6rem;
-    }
+    #pncListTable thead th { font-size: 0.8rem; white-space: nowrap; }
+    #pncListTable tbody td { font-size: 0.82rem; }
+    #pncListTable .pnc-code { font-family: 'Courier New', monospace; font-weight: 600; letter-spacing: 1px; }
 
-    .pnc-invalid {
-        border-color: #dc3545 !important;
-    }
-
-    .pnc-valid {
-        border-color: #198754 !important;
-    }
-
-    .badge-seg {
-        font-size: 0.7rem;
-        vertical-align: middle;
-    }
-
-    #pncResult {
-        font-size: 1rem;
-    }
-
-    .copy-btn {
+    .upload-zone {
+        border: 2px dashed var(--border, #dee2e6);
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        text-align: center;
         cursor: pointer;
+        transition: border-color .2s, background .2s;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+        border-color: #0d6efd;
+        background: rgba(13,110,253,.04);
+    }
+
+    .filter-active-badge {
+        font-size: 0.68rem;
+        vertical-align: middle;
+        margin-left: 4px;
     }
 </style>
 
 <div class="pnc-wrapper">
     <div class="d-flex align-items-center mb-3 gap-2">
         <i class="fa-solid fa-barcode fa-lg text-primary"></i>
-        <h4 class="mb-0 fw-semibold">Part Numbering Code (PNC) Builder</h4>
+        <h4 class="mb-0 fw-semibold">Part Numbering Code (PNC)</h4>
     </div>
 
-    <!-- Format description -->
-    <div class="alert alert-info py-2 mb-3" style="font-size:0.87rem;">
-        <strong>PNC Format:</strong>
-        <span class="font-monospace fw-semibold">
-            &lt;ModelId&gt; - &lt;EqCode&gt; - &lt;ModCode&gt; - &lt;SubAsmCode&gt; - &lt;SeqDigits&gt; - &lt;MaintLevel&gt; - &lt;RevSuffix&gt;
-        </span>
-        &nbsp;&nbsp;
-        <span class="text-muted">Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-00001-D-A</span></span>
+    <div class="alert alert-info py-2 mb-3" style="font-size:.87rem;">
+        <strong>Format:</strong>
+        <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;EqCode&gt;-&lt;ModCode&gt;-&lt;SubAsmCode&gt;-&lt;SeqDigits&gt;-&lt;MaintLevel&gt;-&lt;RevSuffix&gt;</span>
+        &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-00001-D-A</span>
     </div>
 
-    <!-- Live preview -->
-    <div class="card mb-4 shadow-sm">
+    <!-- ── Live Preview ─────────────────────────────────────────────────── -->
+    <div class="card mb-3 shadow-sm">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
                 <span class="fw-semibold">Generated PNC</span>
-                <button class="btn btn-sm btn-outline-secondary copy-btn" id="btnCopyPNC" title="Copy to clipboard" disabled>
-                    <i class="fa-regular fa-copy"></i> Copy
-                </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" id="btnCopyPNC" disabled title="Copy to clipboard">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                    <button class="btn btn-sm btn-success" id="btnSavePNC" disabled>
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save PNC
+                    </button>
+                </div>
             </div>
             <div class="pnc-preview-box" id="pncPreview">—</div>
-            <div id="pncValidMsg" class="mt-2 text-center" style="font-size:0.85rem;"></div>
+            <div id="pncValidMsg" class="mt-2 text-center" style="font-size:.85rem;"></div>
         </div>
     </div>
 
-    <!-- Segment inputs -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header fw-semibold">Build PNC Segments</div>
+    <!-- ── Segment Inputs ──────────────────────────────────────────────── -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header fw-semibold d-flex align-items-center justify-content-between">
+            <span>Build PNC Segments</span>
+            <button class="btn btn-sm btn-outline-secondary" id="btnResetPNC">
+                <i class="fa-solid fa-rotate-left me-1"></i> Reset
+            </button>
+        </div>
         <div class="card-body">
-            <div class="row g-2 align-items-start" id="segmentRow">
+            <div class="row g-2 align-items-start flex-nowrap overflow-auto pb-1">
 
-                <!-- Seg 1: Model ID -->
                 <div class="col-auto" style="min-width:110px;">
                     <div class="pnc-segment-card" id="card_seg1">
                         <div class="pnc-segment-label">Seg 1 — Model ID</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
-                               id="seg1" maxlength="4" placeholder="KAV"
-                               data-seg="1" data-pattern="^[A-Z]{2,4}[0-9]?$" data-hint="2-4 letters, optional digit suffix for variant">
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">e.g. KAV, KAV1</small>
+                               id="seg1" maxlength="5" placeholder="KAV"
+                               data-pattern="^[A-Z]{2,4}[0-9]?$">
+                        <small class="text-muted" style="font-size:.7rem;">e.g. KAV, KAV1</small>
                     </div>
                 </div>
 
-                <div class="pnc-separator col-auto px-0">-</div>
+                <div class="col-auto sep-dash px-0">-</div>
 
-                <!-- Seg 2: Equipment Code -->
-                <div class="col-auto" style="min-width:120px;">
+                <div class="col-auto" style="min-width:155px;">
                     <div class="pnc-segment-card" id="card_seg2">
                         <div class="pnc-segment-label">Seg 2 — Eq. Code</div>
-                        <select class="form-select form-select-sm pnc-seg font-monospace"
-                                id="seg2" data-seg="2">
+                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg2">
                             <option value="">— select —</option>
                             <option value="70">70 – Std Practices</option>
                             <option value="71">71 – Power Plant</option>
@@ -156,120 +144,155 @@
                             <option value="79">79 – Oil</option>
                             <option value="80">80 – Starting</option>
                         </select>
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">ATA 2-digit</small>
+                        <small class="text-muted" style="font-size:.7rem;">ATA 2-digit</small>
                     </div>
                 </div>
 
-                <div class="pnc-separator col-auto px-0">-</div>
+                <div class="col-auto sep-dash px-0">-</div>
 
-                <!-- Seg 3: Module Code -->
-                <div class="col-auto" style="min-width:130px;">
+                <div class="col-auto" style="min-width:155px;">
                     <div class="pnc-segment-card" id="card_seg3">
                         <div class="pnc-segment-label">Seg 3 — Module Code</div>
-                        <select class="form-select form-select-sm pnc-seg font-monospace"
-                                id="seg3" data-seg="3">
+                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg3">
                             <option value="">— select —</option>
                             <option value="EGN">EGN – Engine General</option>
                             <option value="EEX">EEX – Engine Exhaust</option>
-                            <option value="LPC">LPC – Low Pressure Compressor</option>
+                            <option value="LPC">LPC – Low Pres. Compressor</option>
                             <option value="COU">COU – Coupler</option>
                             <option value="FAN">FAN – Fan</option>
                             <option value="ICA">ICA – Intermediate Casing</option>
-                            <option value="HPC">HPC – High Pressure Compressor</option>
+                            <option value="HPC">HPC – High Pres. Compressor</option>
                             <option value="DCO">DCO – Diffuser &amp; Combustor</option>
                             <option value="TNZ">TNZ – Transition Zone</option>
-                            <option value="HPT">HPT – High Pressure Turbine</option>
-                            <option value="LPT">LPT – Low Pressure Turbine</option>
+                            <option value="HPT">HPT – High Pres. Turbine</option>
+                            <option value="LPT">LPT – Low Pres. Turbine</option>
                             <option value="TEC">TEC – Turbine Exhaust Case</option>
                             <option value="MGB">MGB – Main Gearbox</option>
                             <option value="AGB">AGB – Accessory Gearbox</option>
                         </select>
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">3-letter code</small>
+                        <small class="text-muted" style="font-size:.7rem;">3-letter code</small>
                     </div>
                 </div>
 
-                <div class="pnc-separator col-auto px-0">-</div>
+                <div class="col-auto sep-dash px-0">-</div>
 
-                <!-- Seg 4: Subassembly Code -->
-                <div class="col-auto" style="min-width:130px;">
+                <div class="col-auto" style="min-width:120px;">
                     <div class="pnc-segment-card" id="card_seg4">
-                        <div class="pnc-segment-label">Seg 4 — Sub-Asm Code</div>
+                        <div class="pnc-segment-label">Seg 4 — Sub-Asm</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
                                id="seg4" maxlength="3" placeholder="FCA"
-                               data-seg="4" data-pattern="^[A-Z]{3}$" data-hint="Exactly 3 letters">
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">3 letters, e.g. FCA</small>
+                               data-pattern="^[A-Z]{3}$">
+                        <small class="text-muted" style="font-size:.7rem;">3 letters</small>
                     </div>
                 </div>
 
-                <div class="pnc-separator col-auto px-0">-</div>
+                <div class="col-auto sep-dash px-0">-</div>
 
-                <!-- Seg 5: Sequential Digits -->
-                <div class="col-auto" style="min-width:120px;">
+                <div class="col-auto" style="min-width:115px;">
                     <div class="pnc-segment-card" id="card_seg5">
                         <div class="pnc-segment-label">Seg 5 — Seq. Digits</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace"
                                id="seg5" maxlength="5" placeholder="00001"
-                               data-seg="5" data-pattern="^[0-9]{5}$" data-hint="Exactly 5 digits (e.g. 00001)">
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">5 digits</small>
+                               data-pattern="^[0-9]{5}$">
+                        <small class="text-muted" style="font-size:.7rem;">5 digits</small>
                     </div>
                 </div>
 
-                <div class="pnc-separator col-auto px-0">-</div>
+                <div class="col-auto sep-dash px-0">-</div>
 
-                <!-- Seg 6: Maintenance Level -->
-                <div class="col-auto" style="min-width:130px;">
+                <div class="col-auto" style="min-width:120px;">
                     <div class="pnc-segment-card" id="card_seg6">
                         <div class="pnc-segment-label">Seg 6 — Maint. Level</div>
-                        <select class="form-select form-select-sm pnc-seg font-monospace"
-                                id="seg6" data-seg="6">
+                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg6">
                             <option value="">— select —</option>
                             <option value="O">O – Operator</option>
                             <option value="I">I – Intermediate</option>
                             <option value="D">D – Depot</option>
                         </select>
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">O / I / D</small>
+                        <small class="text-muted" style="font-size:.7rem;">O / I / D</small>
                     </div>
                 </div>
 
-                <div class="pnc-separator col-auto px-0">-</div>
+                <div class="col-auto sep-dash px-0">-</div>
 
-                <!-- Seg 7: Revision Suffix -->
-                <div class="col-auto" style="min-width:110px;">
+                <div class="col-auto" style="min-width:105px;">
                     <div class="pnc-segment-card" id="card_seg7">
                         <div class="pnc-segment-label">Seg 7 — Rev. Suffix</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
                                id="seg7" maxlength="1" placeholder="A"
-                               data-seg="7" data-pattern="^[A-Z]$" data-hint="Single letter A–Z">
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">A – Z</small>
+                               data-pattern="^[A-Z]$">
+                        <small class="text-muted" style="font-size:.7rem;">A – Z</small>
                     </div>
                 </div>
 
-            </div><!-- /row -->
-
-            <div class="d-flex gap-2 mt-3">
-                <button class="btn btn-primary btn-sm" id="btnBuildPNC">
-                    <i class="fa-solid fa-wrench me-1"></i> Build PNC
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" id="btnResetPNC">
-                    <i class="fa-solid fa-rotate-left me-1"></i> Reset
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- Reference tables -->
-    <div class="row g-3">
+    <!-- ── Action toolbar ─────────────────────────────────────────────── -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="btn btn-outline-primary btn-sm" id="btnShowPNCs">
+            <i class="fa-solid fa-table-list me-1"></i> Show Part Numbers
+            <span id="filterBadge" class="badge bg-primary filter-active-badge d-none">Filtered</span>
+        </button>
+        <a class="btn btn-outline-success btn-sm" href="/PNC/DownloadTemplate">
+            <i class="fa-solid fa-file-excel me-1"></i> Download Template
+        </a>
+        <button class="btn btn-outline-secondary btn-sm" id="btnUploadTrigger">
+            <i class="fa-solid fa-upload me-1"></i> Upload Excel
+        </button>
+        <input type="file" id="excelFileInput" accept=".xlsx" class="d-none">
+    </div>
+
+    <!-- ── Upload result toast-style alert ───────────────────────────── -->
+    <div id="uploadResult" class="alert d-none mb-3" role="alert"></div>
+
+    <!-- ── PNC List ──────────────────────────────────────────────────── -->
+    <div id="pncListWrap" class="d-none">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span class="fw-semibold">
+                    Part Numbers
+                    <span id="pncCount" class="badge bg-secondary ms-1">0</span>
+                </span>
+                <span id="pncFilterDesc" class="text-muted small"></span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover mb-0" id="pncListTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>ModelId</th>
+                                <th>EqCode</th>
+                                <th>ModCode</th>
+                                <th>SubAsmCode</th>
+                                <th>SeqDigits</th>
+                                <th>MaintLevel</th>
+                                <th>RevSuffix</th>
+                                <th>Full PNC</th>
+                                <th>Created By</th>
+                                <th>Created On</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="pncTbody">
+                            <tr><td colspan="12" class="text-center text-muted py-3">No data loaded.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Reference Tables ──────────────────────────────────────────── -->
+    <div class="row g-3 mt-1">
         <div class="col-md-5">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm">
                 <div class="card-header fw-semibold">Equipment Codes (ATA)</div>
                 <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Code</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td class="font-monospace fw-semibold">70</td><td>Standard Practices</td></tr>
                             <tr><td class="font-monospace fw-semibold">71</td><td>Power Plant</td></tr>
@@ -288,16 +311,11 @@
             </div>
         </div>
         <div class="col-md-7">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm">
                 <div class="card-header fw-semibold">Module Codes</div>
                 <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Code</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td class="font-monospace fw-semibold">EGN</td><td>Engine General</td></tr>
                             <tr><td class="font-monospace fw-semibold">EEX</td><td>Engine Exhaust</td></tr>
@@ -321,130 +339,308 @@
     </div>
 </div>
 
+<!-- Delete confirm modal -->
+<div class="modal fade" id="delModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">Delete PNC?</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="mb-1">This will permanently remove:</p>
+                <p class="font-monospace fw-bold" id="delPncCode"></p>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-danger" id="btnConfirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    (function () {
-        'use strict';
+(function () {
+    'use strict';
 
-        var segIds = ['seg1', 'seg2', 'seg3', 'seg4', 'seg5', 'seg6', 'seg7'];
+    var segIds = ['seg1','seg2','seg3','seg4','seg5','seg6','seg7'];
+    var listVisible = false;
+    var delId = null;
 
-        // Auto-uppercase text inputs on input
-        $('.pnc-seg').on('input change', function () {
-            var $el = $(this);
-            if ($el.is('input')) {
-                var pos = this.selectionStart;
-                $el.val($el.val().toUpperCase());
-                try { this.setSelectionRange(pos, pos); } catch (e) { }
-            }
-            updatePreview();
-        });
+    // ── helpers ────────────────────────────────────────────────────────
+    function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
-        function getSegValue(id) {
-            return $('#' + id).val() || '';
-        }
+    function getVal(id) { return ($('#' + id).val() || '').trim().toUpperCase(); }
 
-        function validateSeg(id) {
+    function isValidSeg(id) {
+        var $el = $('#' + id);
+        var val = ($el.val() || '').trim().toUpperCase();
+        if (!val) return null;
+        var pat = $el.data('pattern');
+        if (pat) return new RegExp(pat).test(val);
+        return val.length > 0;
+    }
+
+    // ── live preview ───────────────────────────────────────────────────
+    function updatePreview() {
+        var parts = segIds.map(function(id) {
             var $el = $('#' + id);
-            var val = $el.val() || '';
-            if (!val) return null; // empty = neutral
-            var pattern = $el.data('pattern');
-            if (pattern) {
-                return new RegExp(pattern).test(val);
-            }
-            return val.length > 0;
-        }
-
-        function updatePreview() {
-            var parts = segIds.map(function (id) { return getSegValue(id); });
-            var filled = parts.filter(function (v) { return v !== ''; });
-
-            // Update card borders
-            segIds.forEach(function (id, i) {
-                var valid = validateSeg(id);
-                var $card = $('#card_' + id);
-                $card.removeClass('pnc-invalid pnc-valid active-seg');
-                var val = getSegValue(id);
-                if (val) {
-                    $card.addClass(valid ? 'pnc-valid active-seg' : 'pnc-invalid active-seg');
-                }
-            });
-
-            if (filled.length === 0) {
-                $('#pncPreview').text('—');
-                $('#pncValidMsg').text('');
-                $('#btnCopyPNC').prop('disabled', true);
-                return;
-            }
-
-            var pnc = parts.map(function (v) { return v || '?'; }).join('-');
-            $('#pncPreview').text(pnc);
-
-            // Check all valid
-            var allFilled = parts.every(function (v) { return v !== ''; });
-            var allValid = segIds.every(function (id) {
-                var v = getSegValue(id);
-                if (!v) return false;
-                var pattern = $('#' + id).data('pattern');
-                return pattern ? new RegExp(pattern).test(v) : true;
-            });
-
-            if (allFilled && allValid) {
-                $('#pncValidMsg').html('<span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>PNC is valid.</span>');
-                $('#btnCopyPNC').prop('disabled', false);
-            } else if (allFilled && !allValid) {
-                $('#pncValidMsg').html('<span class="text-danger fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>One or more segments are invalid. Check highlighted fields.</span>');
-                $('#btnCopyPNC').prop('disabled', true);
-            } else {
-                var remaining = 7 - filled.length;
-                $('#pncValidMsg').html('<span class="text-muted">' + remaining + ' segment(s) remaining.</span>');
-                $('#btnCopyPNC').prop('disabled', true);
-            }
-        }
-
-        $('#btnBuildPNC').on('click', function () {
-            updatePreview();
-            // Scroll to preview
-            $('html, body').animate({ scrollTop: $('.pnc-preview-box').offset().top - 80 }, 300);
+            return ($el.val() || '').trim().toUpperCase();
         });
 
-        $('#btnResetPNC').on('click', function () {
-            segIds.forEach(function (id) {
-                var $el = $('#' + id);
-                if ($el.is('select')) {
-                    $el.val('');
-                } else {
-                    $el.val('');
-                }
-                $('#card_' + id).removeClass('pnc-invalid pnc-valid active-seg');
-            });
+        // card colours
+        segIds.forEach(function(id, i) {
+            var $card = $('#card_' + id);
+            $card.removeClass('seg-valid seg-invalid');
+            var v = isValidSeg(id);
+            if (v === true)  $card.addClass('seg-valid');
+            if (v === false) $card.addClass('seg-invalid');
+        });
+
+        var filled = parts.filter(function(v){ return v !== ''; });
+        if (!filled.length) {
             $('#pncPreview').text('—');
             $('#pncValidMsg').text('');
-            $('#btnCopyPNC').prop('disabled', true);
+            $('#btnCopyPNC, #btnSavePNC').prop('disabled', true);
+            return;
+        }
+
+        var pnc = parts.map(function(v){ return v || '?'; }).join('-');
+        $('#pncPreview').text(pnc);
+
+        var allFilled = parts.every(function(v){ return v !== ''; });
+        var allValid  = segIds.every(function(id){
+            var v = isValidSeg(id);
+            return v === true;
         });
 
-        $('#btnCopyPNC').on('click', function () {
-            var pnc = $('#pncPreview').text();
-            if (pnc && pnc !== '—') {
-                navigator.clipboard.writeText(pnc).then(function () {
-                    var $btn = $('#btnCopyPNC');
-                    var orig = $btn.html();
-                    $btn.html('<i class="fa-solid fa-check me-1"></i> Copied!');
-                    setTimeout(function () { $btn.html(orig); }, 1500);
-                }).catch(function () {
-                    // fallback
-                    var ta = document.createElement('textarea');
-                    ta.value = pnc;
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                });
-            }
-        });
+        if (allFilled && allValid) {
+            $('#pncValidMsg').html('<span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>Valid PNC.</span>');
+            $('#btnCopyPNC, #btnSavePNC').prop('disabled', false);
+        } else if (allFilled) {
+            $('#pncValidMsg').html('<span class="text-danger fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>One or more segments are invalid.</span>');
+            $('#btnCopyPNC, #btnSavePNC').prop('disabled', true);
+        } else {
+            $('#pncValidMsg').html('<span class="text-muted">' + (7 - filled.length) + ' segment(s) remaining.</span>');
+            $('#btnCopyPNC, #btnSavePNC').prop('disabled', true);
+        }
 
-        // Set pnclink active in sidebar
-        $('#pnclink').addClass('active');
+        // update filter badge
+        updateFilterBadge();
 
-        // Initial state
+        // if list is visible, live-filter it
+        if (listVisible) loadPNCs();
+    }
+
+    function updateFilterBadge() {
+        var anyFilled = segIds.some(function(id){ return ($('#' + id).val() || '').trim() !== ''; });
+        $('#filterBadge').toggleClass('d-none', !anyFilled);
+    }
+
+    // ── segment events ─────────────────────────────────────────────────
+    $('.pnc-seg').on('input change', function(){
+        var $el = $(this);
+        if ($el.is('input')) {
+            var pos = this.selectionStart;
+            $el.val($el.val().toUpperCase());
+            try { this.setSelectionRange(pos, pos); } catch(e){}
+        }
         updatePreview();
-    })();
+    });
+
+    // ── Save PNC ───────────────────────────────────────────────────────
+    $('#btnSavePNC').on('click', function(){
+        var pnc = {
+            modelId:    getVal('seg1'),
+            eqCode:     $('#seg2').val() || '',
+            modCode:    $('#seg3').val() || '',
+            subAsmCode: getVal('seg4'),
+            seqDigits:  $('#seg5').val() || '',
+            maintLevel: $('#seg6').val() || '',
+            revSuffix:  getVal('seg7')
+        };
+
+        $('#btnSavePNC').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving…');
+
+        $.ajax({
+            url: '/PNC/SavePNC',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(pnc)
+        }).done(function(r){
+            if (r.success) {
+                showMsg('pncValidMsg', 'success', '<i class="fa-solid fa-circle-check me-1"></i>Saved: <strong>' + escHtml(r.message.replace('PNC \'','').replace('\' saved.','')) + '</strong>');
+                if (listVisible) loadPNCs();
+            } else {
+                showMsg('pncValidMsg', 'danger', '<i class="fa-solid fa-triangle-exclamation me-1"></i>' + escHtml(r.message));
+            }
+        }).fail(function(){
+            showMsg('pncValidMsg', 'danger', 'Server error while saving.');
+        }).always(function(){
+            $('#btnSavePNC').prop('disabled', false).html('<i class="fa-solid fa-floppy-disk me-1"></i> Save PNC');
+        });
+    });
+
+    function showMsg(elId, type, html) {
+        var cls = { success: 'text-success', danger: 'text-danger', info: 'text-info' };
+        $('#' + elId).html('<span class="' + (cls[type]||'text-muted') + ' fw-semibold">' + html + '</span>');
+    }
+
+    // ── Copy ──────────────────────────────────────────────────────────
+    $('#btnCopyPNC').on('click', function(){
+        var pnc = $('#pncPreview').text();
+        if (pnc && pnc !== '—') {
+            navigator.clipboard.writeText(pnc).then(function(){
+                var $b = $('#btnCopyPNC'), orig = $b.html();
+                $b.html('<i class="fa-solid fa-check me-1"></i>Copied!');
+                setTimeout(function(){ $b.html(orig); }, 1500);
+            }).catch(function(){
+                var ta = document.createElement('textarea');
+                ta.value = pnc; document.body.appendChild(ta); ta.select();
+                document.execCommand('copy'); document.body.removeChild(ta);
+            });
+        }
+    });
+
+    // ── Reset ─────────────────────────────────────────────────────────
+    $('#btnResetPNC').on('click', function(){
+        segIds.forEach(function(id){
+            $('#' + id).val('');
+            $('#card_' + id).removeClass('seg-valid seg-invalid');
+        });
+        $('#pncPreview').text('—');
+        $('#pncValidMsg').text('');
+        $('#btnCopyPNC, #btnSavePNC').prop('disabled', true);
+        $('#filterBadge').addClass('d-none');
+        if (listVisible) loadPNCs();
+    });
+
+    // ── Show/load PNCs ────────────────────────────────────────────────
+    $('#btnShowPNCs').on('click', function(){
+        listVisible = true;
+        $('#pncListWrap').removeClass('d-none');
+        loadPNCs();
+        $('html,body').animate({ scrollTop: $('#pncListWrap').offset().top - 80 }, 300);
+    });
+
+    function loadPNCs() {
+        var params = {
+            seg1: getVal('seg1') || undefined,
+            seg2: $('#seg2').val() || undefined,
+            seg3: $('#seg3').val() || undefined,
+            seg4: getVal('seg4') || undefined,
+            seg5: $('#seg5').val() || undefined,
+            seg6: $('#seg6').val() || undefined,
+            seg7: getVal('seg7') || undefined
+        };
+
+        // Build filter description
+        var active = [];
+        if (params.seg1) active.push('Model: ' + params.seg1);
+        if (params.seg2) active.push('Eq: '    + params.seg2);
+        if (params.seg3) active.push('Mod: '   + params.seg3);
+        if (params.seg4) active.push('Sub: '   + params.seg4);
+        if (params.seg5) active.push('Seq: '   + params.seg5);
+        if (params.seg6) active.push('Level: ' + params.seg6);
+        if (params.seg7) active.push('Rev: '   + params.seg7);
+        $('#pncFilterDesc').text(active.length ? 'Filters: ' + active.join(', ') : 'Showing all');
+
+        $('#pncTbody').html('<tr><td colspan="12" class="text-center py-3"><span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr>');
+
+        $.get('/PNC/GetPNCs', params).done(function(r){
+            if (!r.success) {
+                $('#pncTbody').html('<tr><td colspan="12" class="text-danger text-center py-2">Error loading data.</td></tr>');
+                return;
+            }
+            $('#pncCount').text(r.data.length);
+            if (!r.data.length) {
+                $('#pncTbody').html('<tr><td colspan="12" class="text-center text-muted py-3">No part numbers found.</td></tr>');
+                return;
+            }
+            var html = '';
+            $.each(r.data, function(i, row){
+                html += '<tr>' +
+                    '<td>' + (i+1) + '</td>' +
+                    '<td class="font-monospace">' + escHtml(row.modelId)    + '</td>' +
+                    '<td class="font-monospace">' + escHtml(row.eqCode)     + '</td>' +
+                    '<td class="font-monospace">' + escHtml(row.modCode)    + '</td>' +
+                    '<td class="font-monospace">' + escHtml(row.subAsmCode) + '</td>' +
+                    '<td class="font-monospace">' + escHtml(row.seqDigits)  + '</td>' +
+                    '<td class="font-monospace text-center">' + escHtml(row.maintLevel) + '</td>' +
+                    '<td class="font-monospace text-center">' + escHtml(row.revSuffix)  + '</td>' +
+                    '<td class="pnc-code">'       + escHtml(row.fullPNC)    + '</td>' +
+                    '<td class="text-muted small">' + escHtml(row.createdBy || '') + '</td>' +
+                    '<td class="text-muted small">' + escHtml(row.createdOn)  + '</td>' +
+                    '<td class="text-center">' +
+                        '<button class="btn btn-danger btn-sm py-0 px-1 btn-del-pnc" data-id="' + row.id + '" data-pnc="' + escHtml(row.fullPNC) + '" title="Delete">' +
+                        '<i class="fa-solid fa-trash-can" style="font-size:.75rem;"></i></button>' +
+                    '</td>' +
+                    '</tr>';
+            });
+            $('#pncTbody').html(html);
+        }).fail(function(){
+            $('#pncTbody').html('<tr><td colspan="12" class="text-danger text-center py-2">Request failed.</td></tr>');
+        });
+    }
+
+    // ── Delete ────────────────────────────────────────────────────────
+    $(document).on('click', '.btn-del-pnc', function(){
+        delId = $(this).data('id');
+        $('#delPncCode').text($(this).data('pnc'));
+        new bootstrap.Modal(document.getElementById('delModal')).show();
+    });
+
+    $('#btnConfirmDelete').on('click', function(){
+        if (!delId) return;
+        $.ajax({ url: '/PNC/DeletePNC?id=' + delId, method: 'DELETE' })
+            .done(function(r){
+                bootstrap.Modal.getInstance(document.getElementById('delModal')).hide();
+                if (r.success) loadPNCs();
+            });
+    });
+
+    // ── Upload Excel ──────────────────────────────────────────────────
+    $('#btnUploadTrigger').on('click', function(){ $('#excelFileInput').trigger('click'); });
+
+    $('#excelFileInput').on('change', function(){
+        var file = this.files[0];
+        if (!file) return;
+        var fd = new FormData();
+        fd.append('file', file);
+        this.value = '';
+
+        $('#uploadResult').removeClass('d-none alert-success alert-danger alert-warning')
+            .addClass('alert-info').html('<span class="spinner-border spinner-border-sm me-2"></span>Uploading and processing…');
+
+        $.ajax({
+            url: '/PNC/UploadExcel',
+            method: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false
+        }).done(function(r){
+            var cls = r.success ? (r.errors > 0 ? 'alert-warning' : 'alert-success') : 'alert-danger';
+            var details = '';
+            if (r.dupList && r.dupList.length) {
+                details += '<br><small><strong>Duplicates skipped:</strong> ' + r.dupList.map(escHtml).join(', ') + '</small>';
+            }
+            if (r.errorList && r.errorList.length) {
+                details += '<br><small><strong>Errors:</strong><br>' + r.errorList.map(escHtml).join('<br>') + '</small>';
+            }
+            $('#uploadResult').removeClass('alert-info alert-success alert-danger alert-warning')
+                .addClass(cls)
+                .html('<i class="fa-solid fa-circle-info me-1"></i><strong>' + escHtml(r.message) + '</strong>' + details);
+            if (r.imported > 0 && listVisible) loadPNCs();
+        }).fail(function(){
+            $('#uploadResult').removeClass('alert-info').addClass('alert-danger').html('Upload failed.');
+        });
+    });
+
+    // ── Sidebar active ────────────────────────────────────────────────
+    $('#pnclink').addClass('active');
+
+    updatePreview();
+})();
 </script>
