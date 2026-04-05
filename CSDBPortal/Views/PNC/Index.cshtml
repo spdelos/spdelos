@@ -378,11 +378,12 @@
 </div>
 
 <!-- ── Model ID selection modal (shown on page load, cannot be dismissed) ── -->
-<div class="modal fade" id="modelSelectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+<div class="modal fade" id="modelSelectModal" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header py-2">
                 <h6 class="modal-title"><i class="fa-solid fa-barcode me-1 text-primary"></i> Select Model ID</h6>
+                <button type="button" class="btn-close" id="btnCloseModelModal" aria-label="Close"></button>
             </div>
             <div class="modal-body py-3">
                 <!-- Option A: existing -->
@@ -412,6 +413,9 @@
                 <div id="modelSelectError" class="text-danger small mt-2 d-none"></div>
             </div>
             <div class="modal-footer py-2">
+                <button class="btn btn-secondary btn-sm" id="btnCancelModelModal">
+                    <i class="fa-solid fa-xmark me-1"></i> Cancel
+                </button>
                 <button class="btn btn-primary btn-sm" id="btnConfirmModel">
                     <i class="fa-solid fa-check me-1"></i> Proceed
                 </button>
@@ -477,10 +481,17 @@
     }
 
     // ── MODEL ID MODAL ────────────────────────────────────────────────
+    function closeModelModal() {
+        modelModal.hide();
+        // If no model has been selected yet, show the list panel in idle state
+        if (!selectedModelId) {
+            $('#seg1Display').text('(none selected)');
+            $('#card_seg1').removeClass('seg-valid seg-invalid');
+        }
+    }
+
     function initModelModal() {
-        modelModal = new bootstrap.Modal(document.getElementById('modelSelectModal'), {
-            backdrop: 'static', keyboard: false
-        });
+        modelModal = new bootstrap.Modal(document.getElementById('modelSelectModal'));
 
         // Load existing model IDs
         $.get('/PNC/GetModelIds').done(function(r) {
@@ -539,6 +550,11 @@
             }
             modelModal.hide();
             activateModel(mid);
+        });
+
+        // Cancel / close handlers
+        $('#btnCancelModelModal, #btnCloseModelModal').on('click', function() {
+            closeModelModal();
         });
 
         // Show on load
