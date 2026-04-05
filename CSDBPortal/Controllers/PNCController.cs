@@ -34,17 +34,21 @@ namespace CSDBPortal.Controllers
             }
         }
 
-        // ─── GET: next available SeqDigits for a model ───────────────────────
+        // ─── GET: next available SeqDigits (scoped to model + sub-assembly) ──
         [HttpGet]
-        public async Task<JsonResult> GetNextSeqDigits(string modelId)
+        public async Task<JsonResult> GetNextSeqDigits(string modelId, string? subAsmCode = null)
         {
             if (string.IsNullOrWhiteSpace(modelId))
                 return Json(new { success = false });
             try
             {
-                var max = await _db.PartNumberCodes
-                    .Where(p => p.ModelId == modelId.Trim().ToUpper())
-                    .MaxAsync(p => (string?)p.SeqDigits);
+                var q = _db.PartNumberCodes
+                    .Where(p => p.ModelId == modelId.Trim().ToUpper());
+
+                if (!string.IsNullOrWhiteSpace(subAsmCode))
+                    q = q.Where(p => p.SubAsmCode == subAsmCode.Trim().ToUpper());
+
+                var max = await q.MaxAsync(p => (string?)p.SeqDigits);
 
                 int next = 1;
                 if (max != null && int.TryParse(max, out int parsed))
@@ -395,8 +399,9 @@ namespace CSDBPortal.Controllers
                 return $"EqCode '{p.EqCode}' is invalid (must be 70-80).";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.ModCode,    @"^(EGN|EEX|LPC|COU|FAN|ICA|HPC|DCO|TNZ|HPT|LPT|TEC|MGB|AGB)$"))
                 return $"ModCode '{p.ModCode}' is not a recognised module code.";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.SubAsmCode, @"^[A-Z]{3}$"))
-                return $"SubAsmCode '{p.SubAsmCode}' is invalid (exactly 3 letters).";
+            var validSubAsm = new HashSet<string> { "FCA","FBL","FHB","FSH","BRG","TTG","FDU","FVA","POL","STP","CON","SPR" };
+            if (!validSubAsm.Contains(p.SubAsmCode))
+                return $"SubAsmCode '{p.SubAsmCode}' is not a recognised sub-assembly code.";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.SeqDigits,  @"^[0-9]{5}$"))
                 return $"SeqDigits '{p.SeqDigits}' is invalid (exactly 5 digits).";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.MaintLevel, @"^[OID]$"))

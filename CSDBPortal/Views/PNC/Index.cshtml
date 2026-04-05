@@ -189,12 +189,25 @@
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Sub-Asm -->
-                <div style="min-width:68px; max-width:80px;">
+                <div style="min-width:115px; max-width:135px;">
                     <div class="pnc-segment-card" id="card_seg4">
                         <div class="pnc-segment-label">Sub-Asm</div>
-                        <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
-                               id="seg4" maxlength="3" placeholder="FCA" data-pattern="^[A-Z]{3}$" style="max-width:68px;">
-                        <small class="text-muted" style="font-size:.65rem;">3 letters</small>
+                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg4" style="max-width:123px;">
+                            <option value="">— —</option>
+                            <option value="FCA">FCA · Fan Case</option>
+                            <option value="FBL">FBL · Fan Blades</option>
+                            <option value="FHB">FHB · Fan Hub</option>
+                            <option value="FSH">FSH · Fan Shaft</option>
+                            <option value="BRG">BRG · Bearings</option>
+                            <option value="TTG">TTG · Test &amp; Gnd Equip</option>
+                            <option value="FDU">FDU · Fan Duct</option>
+                            <option value="FVA">FVA · Fan Vane</option>
+                            <option value="POL">POL · Petrol/Oil/Lub</option>
+                            <option value="STP">STP · Std Fasteners</option>
+                            <option value="CON">CON · Consumables</option>
+                            <option value="SPR">SPR · Spares</option>
+                        </select>
+                        <small class="text-muted" style="font-size:.65rem;">3-letter</small>
                     </div>
                 </div>
 
@@ -324,6 +337,32 @@
     </div>
 
     <!-- ── Reference Tables ─────────────────────────────────────────── -->
+    <div class="row g-3 mt-1 mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header fw-semibold">Sub-Assembly Codes</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-bordered ref-table mb-0">
+                        <thead><tr><th>Code</th><th>Description</th><th>Example PN</th></tr></thead>
+                        <tbody>
+                            <tr><td class="font-monospace fw-semibold">FCA</td><td>Fan Case</td><td class="font-monospace text-muted small">KAV-72-FAN-FCA-00100-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">FBL</td><td>Fan Blades</td><td class="font-monospace text-muted small">KAV-72-FAN-FBL-00025-O-B</td></tr>
+                            <tr><td class="font-monospace fw-semibold">FHB</td><td>Fan Hub</td><td class="font-monospace text-muted small">KAV-72-FAN-FHB-00050-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">FSH</td><td>Fan Shaft</td><td class="font-monospace text-muted small">KAV-72-FAN-FSH-00075-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">BRG</td><td>Bearings</td><td class="font-monospace text-muted small">KAV-72-FAN-BRG-00030-O-C</td></tr>
+                            <tr><td class="font-monospace fw-semibold">TTG</td><td>Test Tools &amp; Ground Equipment (TT&amp;GE)</td><td class="font-monospace text-muted small">KAV-72-FAN-TTG-00200-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">FDU</td><td>Fan Duct</td><td class="font-monospace text-muted small">KAV-72-FAN-FDU-00200-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">FVA</td><td>Fan Vane</td><td class="font-monospace text-muted small">KAV-72-FAN-FVA-00200-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">POL</td><td>POL (Petroleum, Oil, Lubricants)</td><td class="font-monospace text-muted small">KAV-72-FAN-POL-00300-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">STP</td><td>Standard Fasteners (Bolts, Nuts, Washers)</td><td class="font-monospace text-muted small">KAV-72-FAN-STP-00400-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">CON</td><td>Consumables (Class C items)</td><td class="font-monospace text-muted small">KAV-72-FAN-CON-00500-O-A</td></tr>
+                            <tr><td class="font-monospace fw-semibold">SPR</td><td>Spares (Replacement Kits)</td><td class="font-monospace text-muted small">KAV-72-FAN-SPR-00600-O-A</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row g-3 mt-1">
         <div class="col-md-5">
             <div class="card shadow-sm">
@@ -469,14 +508,18 @@
         var $el = $('#' + id);
         if ($el.is('input[type=hidden]') || $el.is('input[type=text]'))
             return ($el.val() || '').trim().toUpperCase();
-        return ($el.val() || '').trim();
+        return ($el.val() || '').trim(); // select values already stored as uppercase codes
+    }
+    function isSelectSeg(id) {
+        return $('#' + id).is('select');
     }
     function isValidSeg(id) {
         if (id === 'seg1') return selectedModelId ? true : null;
-        var $el = $('#' + id);
         var val = getSegVal(id);
         if (!val) return null;
-        var pat = $el.data('pattern');
+        // Selects: any chosen value is valid; inputs: check data-pattern
+        if (isSelectSeg(id)) return true;
+        var pat = $('#' + id).data('pattern');
         return pat ? new RegExp(pat).test(val) : val.length > 0;
     }
 
@@ -600,10 +643,13 @@
         if (listVisible) loadPNCs();
     }
 
-    // ── Fetch next SeqDigits ──────────────────────────────────────────
+    // ── Fetch next SeqDigits (scoped to model + current sub-asm) ─────
     function fetchNextSeq() {
         if (!selectedModelId) return;
-        $.get('/PNC/GetNextSeqDigits', { modelId: selectedModelId }).done(function(r) {
+        var params = { modelId: selectedModelId };
+        var sub = $('#seg4').val();
+        if (sub) params.subAsmCode = sub;
+        $.get('/PNC/GetNextSeqDigits', params).done(function(r) {
             if (r.success) {
                 $('#seg5').val(r.nextSeq);
                 $('#card_seg5').removeClass('seg-invalid').addClass('seg-valid');
@@ -615,7 +661,10 @@
     $('#btnRefreshSeq').on('click', function() {
         $(this).find('i').addClass('fa-spin');
         var self = this;
-        $.get('/PNC/GetNextSeqDigits', { modelId: selectedModelId }).done(function(r) {
+        var params = { modelId: selectedModelId };
+        var sub = $('#seg4').val();
+        if (sub) params.subAsmCode = sub;
+        $.get('/PNC/GetNextSeqDigits', params).done(function(r) {
             if (r.success) {
                 $('#seg5').val(r.nextSeq);
                 updatePreview();
@@ -683,6 +732,8 @@
                 try { this.setSelectionRange(pos, pos); } catch(e) {}
             }
             updatePreview();
+            // Auto-refresh seq digits when sub-asm changes (uniqueness is per sub-asm)
+            if (id === 'seg4') fetchNextSeq();
         });
     });
 
