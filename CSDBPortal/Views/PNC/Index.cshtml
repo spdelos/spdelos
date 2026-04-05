@@ -492,15 +492,16 @@
                     $ddl.append('<option value="' + escHtml(m) + '">' + escHtml(m) + '</option>');
                 });
             } else {
-                // No existing IDs — force New mode
+                // No existing IDs (empty DB or table not yet created) — force New mode
                 $ddl.append('<option value="">(none yet)</option>');
                 $('#rdExisting').prop('disabled', true);
-                $('#rdNew').prop('checked', true);
-                $('#ddlExistingModel').prop('disabled', true);
-                $('#txtNewModel').prop('disabled', false);
+                $('#rdNew').prop('checked', true).trigger('change');
             }
         }).fail(function() {
-            $('#ddlExistingModel').html('<option value="">(failed to load)</option>');
+            // Network/server error — fall through to Create New
+            $('#ddlExistingModel').html('<option value="">(unavailable)</option>');
+            $('#rdExisting').prop('disabled', true);
+            $('#rdNew').prop('checked', true).trigger('change');
         });
 
         // Radio toggle
@@ -558,12 +559,16 @@
                 $.each(r.data, function(_, m) {
                     $ddl.append('<option value="' + escHtml(m) + '">' + escHtml(m) + '</option>');
                 });
-                $('#rdExisting').prop('disabled', false);
+                $('#rdExisting').prop('disabled', false).prop('checked', true).trigger('change');
             } else {
                 $ddl.append('<option value="">(none yet)</option>');
                 $('#rdExisting').prop('disabled', true);
                 $('#rdNew').prop('checked', true).trigger('change');
             }
+        }).fail(function() {
+            $('#ddlExistingModel').html('<option value="">(unavailable)</option>');
+            $('#rdExisting').prop('disabled', true);
+            $('#rdNew').prop('checked', true).trigger('change');
         });
         modelModal.show();
     });
@@ -769,9 +774,18 @@
 
         $.get('/PNC/GetPNCs', params)
             .done(function(r) {
-                var count = r.data ? r.data.length : 0;
+                var count = (r.data && r.success) ? r.data.length : 0;
                 $('#pncCount').text(count);
-                if (!r.success || !count) {
+                if (!r.success) {
+                    $('#pncTbody').html(
+                        '<tr><td colspan="13" class="text-center py-4 text-danger">' +
+                        '<i class="fa-solid fa-triangle-exclamation me-2"></i>' +
+                        '<strong>Database error</strong> — ' + escHtml(r.error || 'Unknown error') +
+                        '<br><small class="text-muted">The PNC table may not exist yet. Run pending database migrations.</small>' +
+                        '</td></tr>');
+                    return;
+                }
+                if (!count) {
                     $('#pncTbody').html(
                         '<tr><td colspan="13" class="text-center py-4">' +
                         '<i class="fa-solid fa-circle-info me-2 text-muted"></i>' +

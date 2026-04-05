@@ -18,12 +18,20 @@ namespace CSDBPortal.Controllers
         [HttpGet]
         public async Task<JsonResult> GetModelIds()
         {
-            var ids = await _db.PartNumberCodes
-                .Select(p => p.ModelId)
-                .Distinct()
-                .OrderBy(m => m)
-                .ToListAsync();
-            return Json(new { success = true, data = ids });
+            try
+            {
+                var ids = await _db.PartNumberCodes
+                    .Select(p => p.ModelId)
+                    .Distinct()
+                    .OrderBy(m => m)
+                    .ToListAsync();
+                return Json(new { success = true, data = ids });
+            }
+            catch
+            {
+                // Table may not exist yet (pending migration) — return empty list
+                return Json(new { success = true, data = new List<string>(), dbReady = false });
+            }
         }
 
         // ─── GET: next available SeqDigits for a model ───────────────────────
@@ -32,16 +40,22 @@ namespace CSDBPortal.Controllers
         {
             if (string.IsNullOrWhiteSpace(modelId))
                 return Json(new { success = false });
+            try
+            {
+                var max = await _db.PartNumberCodes
+                    .Where(p => p.ModelId == modelId.Trim().ToUpper())
+                    .MaxAsync(p => (string?)p.SeqDigits);
 
-            var max = await _db.PartNumberCodes
-                .Where(p => p.ModelId == modelId.Trim().ToUpper())
-                .MaxAsync(p => (string?)p.SeqDigits);
+                int next = 1;
+                if (max != null && int.TryParse(max, out int parsed))
+                    next = parsed + 1;
 
-            int next = 1;
-            if (max != null && int.TryParse(max, out int parsed))
-                next = parsed + 1;
-
-            return Json(new { success = true, nextSeq = next.ToString("D5") });
+                return Json(new { success = true, nextSeq = next.ToString("D5") });
+            }
+            catch
+            {
+                return Json(new { success = true, nextSeq = "00001" });
+            }
         }
 
         // ─── GET: filtered list ──────────────────────────────────────────────
@@ -50,30 +64,37 @@ namespace CSDBPortal.Controllers
             string? seg1, string? seg2, string? seg3, string? seg4,
             string? seg5, string? seg6, string? seg7, bool includeObsolete = true)
         {
-            var q = _db.PartNumberCodes.AsNoTracking();
+            try
+            {
+                var q = _db.PartNumberCodes.AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(seg1)) q = q.Where(p => p.ModelId    == seg1.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg2)) q = q.Where(p => p.EqCode     == seg2.Trim());
-            if (!string.IsNullOrWhiteSpace(seg3)) q = q.Where(p => p.ModCode    == seg3.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg4)) q = q.Where(p => p.SubAsmCode == seg4.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg5)) q = q.Where(p => p.SeqDigits  == seg5.Trim());
-            if (!string.IsNullOrWhiteSpace(seg6)) q = q.Where(p => p.MaintLevel == seg6.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg7)) q = q.Where(p => p.RevSuffix  == seg7.Trim().ToUpper());
-            if (!includeObsolete)                 q = q.Where(p => !p.IsObsolete);
+                if (!string.IsNullOrWhiteSpace(seg1)) q = q.Where(p => p.ModelId    == seg1.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(seg2)) q = q.Where(p => p.EqCode     == seg2.Trim());
+                if (!string.IsNullOrWhiteSpace(seg3)) q = q.Where(p => p.ModCode    == seg3.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(seg4)) q = q.Where(p => p.SubAsmCode == seg4.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(seg5)) q = q.Where(p => p.SeqDigits  == seg5.Trim());
+                if (!string.IsNullOrWhiteSpace(seg6)) q = q.Where(p => p.MaintLevel == seg6.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(seg7)) q = q.Where(p => p.RevSuffix  == seg7.Trim().ToUpper());
+                if (!includeObsolete)                 q = q.Where(p => !p.IsObsolete);
 
-            var rows = await q.OrderBy(p => p.FullPNC)
-                              .Select(p => new {
-                                  p.Id, p.ModelId, p.EqCode, p.ModCode, p.SubAsmCode,
-                                  p.SeqDigits, p.MaintLevel, p.RevSuffix, p.FullPNC,
-                                  p.IsObsolete, p.ObsoletedBy,
-                                  ObsoletedOn = p.ObsoletedOn.HasValue
-                                      ? p.ObsoletedOn.Value.ToString("yyyy-MM-dd HH:mm") : null,
-                                  p.CreatedBy,
-                                  CreatedOn = p.CreatedOn.ToString("yyyy-MM-dd HH:mm")
-                              })
-                              .ToListAsync();
+                var rows = await q.OrderBy(p => p.FullPNC)
+                                  .Select(p => new {
+                                      p.Id, p.ModelId, p.EqCode, p.ModCode, p.SubAsmCode,
+                                      p.SeqDigits, p.MaintLevel, p.RevSuffix, p.FullPNC,
+                                      p.IsObsolete, p.ObsoletedBy,
+                                      ObsoletedOn = p.ObsoletedOn.HasValue
+                                          ? p.ObsoletedOn.Value.ToString("yyyy-MM-dd HH:mm") : null,
+                                      p.CreatedBy,
+                                      CreatedOn = p.CreatedOn.ToString("yyyy-MM-dd HH:mm")
+                                  })
+                                  .ToListAsync();
 
-            return Json(new { success = true, data = rows });
+                return Json(new { success = true, data = rows });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message, data = Array.Empty<object>() });
+            }
         }
 
         // ─── POST: save single PNC ───────────────────────────────────────────
@@ -98,28 +119,42 @@ namespace CSDBPortal.Controllers
             var msg = ValidatePNC(pnc);
             if (msg != null) return Json(new { success = false, message = msg });
 
-            bool exists = await _db.PartNumberCodes.AnyAsync(p => p.FullPNC == pnc.FullPNC);
-            if (exists)
-                return Json(new { success = false, message = $"PNC '{pnc.FullPNC}' already exists.", duplicate = true });
+            try
+            {
+                bool exists = await _db.PartNumberCodes.AnyAsync(p => p.FullPNC == pnc.FullPNC);
+                if (exists)
+                    return Json(new { success = false, message = $"PNC '{pnc.FullPNC}' already exists.", duplicate = true });
 
-            _db.PartNumberCodes.Add(pnc);
-            await _db.SaveChangesAsync();
-            return Json(new { success = true, message = $"PNC '{pnc.FullPNC}' saved.", id = pnc.Id });
+                _db.PartNumberCodes.Add(pnc);
+                await _db.SaveChangesAsync();
+                return Json(new { success = true, message = $"PNC '{pnc.FullPNC}' saved.", id = pnc.Id });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Database error: " + ex.Message });
+            }
         }
 
         // ─── POST: mark obsolete ─────────────────────────────────────────────
         [HttpPost]
         public async Task<JsonResult> MarkObsolete(int id)
         {
-            var pnc = await _db.PartNumberCodes.FindAsync(id);
-            if (pnc == null) return Json(new { success = false, message = "Not found." });
-            if (pnc.IsObsolete) return Json(new { success = false, message = "Already obsolete." });
+            try
+            {
+                var pnc = await _db.PartNumberCodes.FindAsync(id);
+                if (pnc == null) return Json(new { success = false, message = "Not found." });
+                if (pnc.IsObsolete) return Json(new { success = false, message = "Already obsolete." });
 
-            pnc.IsObsolete  = true;
-            pnc.ObsoletedBy = User.Identity?.Name;
-            pnc.ObsoletedOn = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-            return Json(new { success = true, fullPNC = pnc.FullPNC });
+                pnc.IsObsolete  = true;
+                pnc.ObsoletedBy = User.Identity?.Name;
+                pnc.ObsoletedOn = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+                return Json(new { success = true, fullPNC = pnc.FullPNC });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Database error: " + ex.Message });
+            }
         }
 
         // ─── GET: download filtered results as Excel ─────────────────────────
