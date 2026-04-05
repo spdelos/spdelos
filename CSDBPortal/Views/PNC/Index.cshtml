@@ -723,9 +723,14 @@
     // ── Show Part Numbers ─────────────────────────────────────────────
     $('#btnShowPNCs').on('click', function() {
         listVisible = true;
-        $('#pncListWrap').removeClass('d-none');
+        var $wrap = $('#pncListWrap');
+        $wrap.removeClass('d-none');
         loadPNCs();
-        $('html,body').animate({ scrollTop: $('#pncListWrap').offset().top - 80 }, 300);
+        // Scroll only after the element is definitely laid out
+        setTimeout(function() {
+            var off = $wrap.offset();
+            if (off) $('html,body').animate({ scrollTop: off.top - 80 }, 300);
+        }, 50);
     });
 
     $('#chkShowObsolete').on('change', function() { if (listVisible) loadPNCs(); });
@@ -806,9 +811,11 @@
                 });
                 $('#pncTbody').html(html);
             })
-            .fail(function() {
+            .fail(function(xhr) {
                 $('#pncTbody').html(
-                    '<tr><td colspan="13" class="text-danger text-center py-2">Request failed.</td></tr>');
+                    '<tr><td colspan="13" class="text-danger text-center py-2">' +
+                    'Request failed (HTTP ' + xhr.status + '). Check that you are logged in and the server is running.' +
+                    '</td></tr>');
             });
     }
 
@@ -902,7 +909,15 @@
     $('#pnclink').addClass('active');
 
     // ── Boot ─────────────────────────────────────────────────────────
-    initModelModal();
+    try { initModelModal(); } catch(e) {
+        // Bootstrap may not be ready in rare edge cases; retry once on next tick
+        setTimeout(function() {
+            try { initModelModal(); } catch(e2) {
+                $('#pncListWrap').removeClass('d-none');
+                $('#pncTbody').html('<tr><td colspan="13" class="text-danger text-center py-2">Modal init failed — please refresh.</td></tr>');
+            }
+        }, 200);
+    }
 })();
 </script>
 }
