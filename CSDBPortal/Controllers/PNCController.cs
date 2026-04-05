@@ -14,6 +14,36 @@ namespace CSDBPortal.Controllers
 
         public IActionResult Index() => View();
 
+        // ─── GET: distinct Model IDs ─────────────────────────────────────────
+        [HttpGet]
+        public async Task<JsonResult> GetModelIds()
+        {
+            var ids = await _db.PartNumberCodes
+                .Select(p => p.ModelId)
+                .Distinct()
+                .OrderBy(m => m)
+                .ToListAsync();
+            return Json(new { success = true, data = ids });
+        }
+
+        // ─── GET: next available SeqDigits for a model ───────────────────────
+        [HttpGet]
+        public async Task<JsonResult> GetNextSeqDigits(string modelId)
+        {
+            if (string.IsNullOrWhiteSpace(modelId))
+                return Json(new { success = false });
+
+            var max = await _db.PartNumberCodes
+                .Where(p => p.ModelId == modelId.Trim().ToUpper())
+                .MaxAsync(p => (string?)p.SeqDigits);
+
+            int next = 1;
+            if (max != null && int.TryParse(max, out int parsed))
+                next = parsed + 1;
+
+            return Json(new { success = true, nextSeq = next.ToString("D5") });
+        }
+
         // ─── GET: filtered list ──────────────────────────────────────────────
         [HttpGet]
         public async Task<JsonResult> GetPNCs(
