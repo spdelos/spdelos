@@ -289,6 +289,15 @@ namespace CSDBPortal.Controllers
                 using var wb = new XLWorkbook(stream);
                 var ws = wb.Worksheets.First();
 
+                // Validate header row matches template columns
+                string[] expectedHeaders = { "ModelId", "EqCode", "ModCode", "SubAsmCode", "SeqDigits", "MaintLevel", "RevSuffix" };
+                for (int c = 0; c < expectedHeaders.Length; c++)
+                {
+                    var h = ws.Cell(1, c + 1).GetString().Trim();
+                    if (!h.StartsWith(expectedHeaders[c], StringComparison.OrdinalIgnoreCase))
+                        return Json(new { success = false, message = $"Incompatible format — column {c+1} expected '{expectedHeaders[c]}', found '{h}'. Use the PNC template." });
+                }
+
                 int row = 2;
                 while (true)
                 {
