@@ -47,9 +47,10 @@
         padding-top: 1.5rem;
     }
 
+    .ref-table { table-layout: fixed; width: 100%; }
     .ref-table th { background: var(--primary-light, #f0f4ff); font-size: 0.8rem; }
     .ref-table td, .ref-table th { font-size: 0.82rem; padding: 0.28rem 0.55rem; }
-    .ref-card { overflow: visible !important; }
+    .ref-table-body { max-height: 200px; overflow-y: auto; overflow-x: hidden; }
 
     #pncListTable thead th { font-size: 0.8rem; white-space: nowrap; }
     #pncListTable tbody td { font-size: 0.82rem; }
@@ -162,9 +163,7 @@
                     </div>
                 </div>
 
-                <div class="sep-dash px-0">-</div>
-
-                <!-- Sub-Asm -->
+                <!-- Sub-Asm (no sep-dash — joins directly to Section) -->
                 <div style="flex:1; min-width:115px; max-width:160px;">
                     <div class="pnc-segment-card" id="card_seg4">
                         <div class="pnc-segment-label">Sub Sec</div>
@@ -335,7 +334,7 @@
     <!-- ── Reference Tables (editable) ─────────────────────────────── -->
     <div class="row g-2 row-cols-1 row-cols-md-2 row-cols-xl-5 mt-1 align-items-start">
         <div class="col" id="refWrap_EqCode">
-            <div class="card shadow-sm ref-card">
+            <div class="card shadow-sm">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Chapters</span>
                     @if (isAdmin) {
@@ -344,9 +343,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 ref-table-body">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_EqCode">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
+                        <thead><tr><th style="width:28%">Code</th><th>Description</th>@if(isAdmin){<th style="width:68px"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -362,9 +361,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 ref-table-body">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_ModCode">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
+                        <thead><tr><th style="width:28%">Code</th><th>Description</th>@if(isAdmin){<th style="width:68px"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -380,9 +379,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 ref-table-body">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_SubAsm">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
+                        <thead><tr><th style="width:28%">Code</th><th>Description</th>@if(isAdmin){<th style="width:68px"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -398,9 +397,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 ref-table-body">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_DesignOff">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
+                        <thead><tr><th style="width:28%">Code</th><th>Description</th>@if(isAdmin){<th style="width:68px"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -416,9 +415,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 ref-table-body">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_MaintLevel">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
+                        <thead><tr><th style="width:28%">Code</th><th>Description</th>@if(isAdmin){<th style="width:68px"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -1162,6 +1161,8 @@
             '</td></tr>';
         $tbody.append(row);
         $tbody.find('tr[data-id="0"] input:first').focus();
+        var $scroll = $tbody.closest('.ref-table-body');
+        $scroll.scrollTop($scroll[0].scrollHeight);
     });
 
     // Commit add/edit on Enter key inside table inputs
