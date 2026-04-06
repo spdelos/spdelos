@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "PNC";
+    ViewData["Title"] = "PNS";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var isAdmin = User.IsInRole("Administrator");
 }
@@ -85,7 +85,7 @@
 <div class="pnc-wrapper">
     <div class="d-flex align-items-center mb-3 gap-2">
         <i class="fa-solid fa-barcode fa-lg text-primary"></i>
-        <h4 class="mb-0 fw-semibold">Part Numbering Code (PNC)</h4>
+        <h4 class="mb-0 fw-semibold">Part Numbering System (PNS)</h4>
     </div>
 
     <div class="alert alert-info py-2 mb-3" style="font-size:.87rem;">
@@ -98,13 +98,13 @@
     <div class="card mb-3 shadow-sm">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="fw-semibold">Generated PNC</span>
+                <span class="fw-semibold">Generated PNS</span>
                 <div class="d-flex gap-2">
                     <button class="btn btn-sm btn-outline-secondary" id="btnCopyPNC" disabled title="Copy to clipboard">
                         <i class="fa-regular fa-copy"></i> Copy
                     </button>
                     <button class="btn btn-sm btn-success" id="btnSavePNC" disabled>
-                        <i class="fa-solid fa-floppy-disk me-1"></i> Save PNC
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save PNS
                     </button>
                 </div>
             </div>
@@ -116,7 +116,7 @@
     <!-- ── Segment Inputs ───────────────────────────────────────────── -->
     <div class="card shadow-sm mb-3">
         <div class="card-header fw-semibold d-flex align-items-center justify-content-between">
-            <span>Build PNC Segments</span>
+            <span>Build PNS Segments</span>
             <button class="btn btn-sm btn-outline-secondary" id="btnResetPNC">
                 <i class="fa-solid fa-rotate-left me-1"></i> Reset
             </button>
@@ -281,7 +281,7 @@
                                 <th>SeqDigits</th>
                                 <th>Level</th>
                                 <th>Rev</th>
-                                <th>Full PNC</th>
+                                <th>Full PNS</th>
                                 <th>Status</th>
                                 <th>Created By</th>
                                 <th>Created On</th>
@@ -661,7 +661,7 @@
         var allValid  = allSegIds.every(function(id) { return isValidSeg(id) === true; });
 
         if (allFilled && allValid) {
-            $('#pncValidMsg').html('<span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>Valid PNC.</span>');
+            $('#pncValidMsg').html('<span class="text-success fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>Valid PNS.</span>');
             $('#btnCopyPNC, #btnSavePNC').prop('disabled', false);
         } else if (allFilled) {
             $('#pncValidMsg').html('<span class="text-danger fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>One or more segments are invalid.</span>');
@@ -718,7 +718,7 @@
                 }
             })
             .fail(function() { $('#pncValidMsg').html('<span class="text-danger">Server error.</span>'); })
-            .always(function() { $('#btnSavePNC').prop('disabled', false).html('<i class="fa-solid fa-floppy-disk me-1"></i> Save PNC'); });
+            .always(function() { $('#btnSavePNC').prop('disabled', false).html('<i class="fa-solid fa-floppy-disk me-1"></i> Save PNS'); });
     });
 
     // ── Copy ──────────────────────────────────────────────────────────
@@ -806,7 +806,7 @@
                         '<tr><td colspan="13" class="text-center py-4 text-danger">' +
                         '<i class="fa-solid fa-triangle-exclamation me-2"></i>' +
                         '<strong>Database error</strong> — ' + escHtml(r.error || 'Unknown error') +
-                        '<br><small class="text-muted">The PNC table may not exist yet. Run pending database migrations.</small>' +
+                        '<br><small class="text-muted">The PNS table may not exist yet. Run pending database migrations.</small>' +
                         '</td></tr>');
                     return;
                 }
@@ -901,7 +901,7 @@
             $('#uploadResult').removeClass('d-none alert-success alert-warning alert-info')
                 .addClass('alert-danger')
                 .html('<i class="fa-solid fa-triangle-exclamation me-1"></i>' +
-                      '<strong>Incompatible format.</strong> Only .xlsx files from the PNC template are accepted.');
+                      '<strong>Incompatible format.</strong> Only .xlsx files from the PNS template are accepted.');
             this.value = '';
             return;
         }
