@@ -360,7 +360,7 @@ namespace CSDBPortal.Controllers
             ws.Cell(2, 6).Value = "e.g. 001";
             ws.Cell(2, 7).Value = "e.g. 00001";
             ws.Cell(2, 8).Value = "e.g. 01";
-            ws.Cell(2, 9).Value = "e.g. RED";
+            ws.Cell(2, 9).Value = "e.g. A";
             for (int c = 1; c <= 9; c++)
                 ws.Cell(2, c).Style.Font.Italic = true;
 
@@ -505,16 +505,16 @@ namespace CSDBPortal.Controllers
                 return "Section (ModCode) is required.";
             if (string.IsNullOrWhiteSpace(p.SubAsmCode))
                 return "Sub Sec (SubAsmCode) is required.";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.DesignOffice, @"^[0-9]$"))
-                return $"Design Office '{p.DesignOffice}' is invalid (single digit 0-9).";
+            if (string.IsNullOrWhiteSpace(p.DesignOffice))
+                return "Design Office is required.";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.DrawingSeqNo, @"^[0-9]{3}$"))
                 return $"Drawing Seq. No. '{p.DrawingSeqNo}' is invalid (exactly 3 digits).";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.SeqDigits,    @"^[0-9]{5}$"))
                 return $"Seq. No. '{p.SeqDigits}' is invalid (exactly 5 digits).";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.MaintLevel, @"^[0-9]{2}$"))
                 return $"Technical Spec. No. '{p.MaintLevel}' is invalid (exactly 2 digits).";
-            if (string.IsNullOrWhiteSpace(p.RevSuffix))
-                return "Customised Colour Scheme is required.";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.RevSuffix, @"^[A-Z]$"))
+                return $"Colour Scheme '{p.RevSuffix}' is invalid (single letter A-Z).";
             return null;
         }
     }

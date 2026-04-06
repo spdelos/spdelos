@@ -91,7 +91,7 @@
     <div class="alert alert-info py-2 mb-3" style="font-size:.87rem;">
         <strong>Format:</strong>
         <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;Chapter&gt;-&lt;Section&gt;-&lt;SubSec&gt;-&lt;DesignOff&gt;-&lt;DrawingSeq&gt;-&lt;SeqNo&gt;-&lt;TechSpecNo&gt;-&lt;ColourScheme&gt;</span>
-        &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-1-001-00001-01-RED</span>
+        &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-DO1-001-00001-01-A</span>
     </div>
 
     <!-- ── Live Preview ──────────────────────────────────────────────── -->
@@ -158,7 +158,7 @@
                         <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="seg3">
                             <option value="">— —</option>
                         </select>
-                        <small class="text-muted" style="font-size:.65rem;">single digit</small>
+                        <small class="text-muted" style="font-size:.65rem;">1 digit</small>
                     </div>
                 </div>
 
@@ -171,19 +171,20 @@
                         <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="seg4">
                             <option value="">— —</option>
                         </select>
-                        <small class="text-muted" style="font-size:.65rem;">single digit</small>
+                        <small class="text-muted" style="font-size:.65rem;">1 digit</small>
                     </div>
                 </div>
 
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Design Office Responsibility -->
-                <div style="flex:1; min-width:72px; max-width:100px;">
+                <div style="flex:1; min-width:90px; max-width:130px;">
                     <div class="pnc-segment-card" id="card_segDOR">
                         <div class="pnc-segment-label">Design Off.</div>
-                        <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-center w-100"
-                               id="segDOR" maxlength="1" placeholder="0" data-pattern="^[0-9]$">
-                        <small class="text-muted" style="font-size:.65rem;">1 digit</small>
+                        <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="segDOR">
+                            <option value="">— —</option>
+                        </select>
+                        <small class="text-muted" style="font-size:.65rem;">office code</small>
                     </div>
                 </div>
 
@@ -235,10 +236,10 @@
                 <!-- Rev. Suffix -->
                 <div style="flex:1; min-width:58px; max-width:90px;">
                     <div class="pnc-segment-card" id="card_seg7">
-                        <div class="pnc-segment-label">Colour Scheme</div>
+                        <div class="pnc-segment-label">Colour</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase w-100"
-                               id="seg7" maxlength="10" placeholder="e.g. RED" data-pattern="^[A-Z0-9]{1,10}$">
-                        <small class="text-muted" style="font-size:.65rem;">1–10 chars</small>
+                               id="seg7" maxlength="1" placeholder="A" data-pattern="^[A-Z]$">
+                        <small class="text-muted" style="font-size:.65rem;">A – Z</small>
                     </div>
                 </div>
 
@@ -306,7 +307,7 @@
                                 <th>Drawing Seq.</th>
                                 <th>Seq. No.</th>
                                 <th>Tech Spec No.</th>
-                                <th>Colour Scheme</th>
+                                <th>Colour</th>
                                 <th>Full PNS</th>
                                 <th>Status</th>
                                 <th>Created By</th>
@@ -324,8 +325,8 @@
     </div>
 
     <!-- ── Reference Tables (editable) ─────────────────────────────── -->
-    <div class="row g-3 mt-1">
-        <div class="col-md-6 col-lg-3" id="refWrap_EqCode">
+    <div class="row g-2 row-cols-1 row-cols-md-2 row-cols-xl-5 mt-1">
+        <div class="col" id="refWrap_EqCode">
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Chapters</span>
@@ -343,7 +344,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3" id="refWrap_ModCode">
+        <div class="col" id="refWrap_ModCode">
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Sections</span>
@@ -361,7 +362,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3" id="refWrap_SubAsm">
+        <div class="col" id="refWrap_SubAsm">
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Sub Sections</span>
@@ -379,7 +380,25 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3" id="refWrap_MaintLevel">
+        <div class="col" id="refWrap_DesignOff">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
+                    <span>Design Offices</span>
+                    @if (isAdmin) {
+                    <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="DesignOff" title="Add row">
+                        <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
+                    </button>
+                    }
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-bordered ref-table mb-0" id="refTable_DesignOff">
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="width:52px;"></th>}</tr></thead>
+                        <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col" id="refWrap_MaintLevel">
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Technical Specification Numbers</span>
@@ -980,7 +999,7 @@
 
     // ── Reference Tables ──────────────────────────────────────────────
     // Maps lookup type → segment select id
-    var refSegMap  = { EqCode: 'seg2', ModCode: 'seg3', SubAsm: 'seg4', MaintLevel: 'seg6' };
+    var refSegMap  = { EqCode: 'seg2', ModCode: 'seg3', SubAsm: 'seg4', DesignOff: 'segDOR', MaintLevel: 'seg6' };
     var pncIsAdmin = @Json.Serialize(isAdmin);
 
     function loadRefTable(type) {
@@ -1149,7 +1168,7 @@
 
     // ── Boot ─────────────────────────────────────────────────────────
     // Load all 4 reference tables (also populates the dropdowns dynamically)
-    ['EqCode', 'ModCode', 'SubAsm', 'MaintLevel'].forEach(function(t) { loadRefTable(t); });
+    ['EqCode', 'ModCode', 'SubAsm', 'DesignOff', 'MaintLevel'].forEach(function(t) { loadRefTable(t); });
 
     try { initModelModal(); } catch(e) {
         // Bootstrap may not be ready in rare edge cases; retry once on next tick
