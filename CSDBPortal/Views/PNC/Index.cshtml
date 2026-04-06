@@ -143,17 +143,6 @@
                         <div class="pnc-segment-label">Eq. Code</div>
                         <select class="form-select form-select-sm pnc-seg font-monospace" id="seg2" style="max-width:98px;">
                             <option value="">— —</option>
-                            <option value="70">70 · Std Practice</option>
-                            <option value="71">71 · Power Plant</option>
-                            <option value="72">72 · Engine</option>
-                            <option value="73">73 · Fuel &amp; Ctrl</option>
-                            <option value="74">74 · Ignition</option>
-                            <option value="75">75 · Air</option>
-                            <option value="76">76 · Eng Controls</option>
-                            <option value="77">77 · Indicating</option>
-                            <option value="78">78 · Exhaust</option>
-                            <option value="79">79 · Oil</option>
-                            <option value="80">80 · Starting</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">ATA</small>
                     </div>
@@ -167,20 +156,6 @@
                         <div class="pnc-segment-label">Module Code</div>
                         <select class="form-select form-select-sm pnc-seg font-monospace" id="seg3" style="max-width:104px;">
                             <option value="">— —</option>
-                            <option value="EGN">EGN · General</option>
-                            <option value="EEX">EEX · Exhaust</option>
-                            <option value="LPC">LPC · LP Comp</option>
-                            <option value="COU">COU · Coupler</option>
-                            <option value="FAN">FAN · Fan</option>
-                            <option value="ICA">ICA · Int. Casing</option>
-                            <option value="HPC">HPC · HP Comp</option>
-                            <option value="DCO">DCO · Combustor</option>
-                            <option value="TNZ">TNZ · Trans. Zone</option>
-                            <option value="HPT">HPT · HP Turbine</option>
-                            <option value="LPT">LPT · LP Turbine</option>
-                            <option value="TEC">TEC · Exh. Case</option>
-                            <option value="MGB">MGB · Main GBox</option>
-                            <option value="AGB">AGB · Acc. GBox</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">3-letter</small>
                     </div>
@@ -194,18 +169,6 @@
                         <div class="pnc-segment-label">Sub-Asm</div>
                         <select class="form-select form-select-sm pnc-seg font-monospace" id="seg4" style="max-width:123px;">
                             <option value="">— —</option>
-                            <option value="FCA">FCA · Fan Case</option>
-                            <option value="FBL">FBL · Fan Blades</option>
-                            <option value="FHB">FHB · Fan Hub</option>
-                            <option value="FSH">FSH · Fan Shaft</option>
-                            <option value="BRG">BRG · Bearings</option>
-                            <option value="TTG">TTG · Test &amp; Gnd Equip</option>
-                            <option value="FDU">FDU · Fan Duct</option>
-                            <option value="FVA">FVA · Fan Vane</option>
-                            <option value="POL">POL · Petrol/Oil/Lub</option>
-                            <option value="STP">STP · Std Fasteners</option>
-                            <option value="CON">CON · Consumables</option>
-                            <option value="SPR">SPR · Spares</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">3-letter</small>
                     </div>
@@ -237,9 +200,6 @@
                         <div class="pnc-segment-label">Maint. Level</div>
                         <select class="form-select form-select-sm pnc-seg font-monospace" id="seg6" style="max-width:90px;">
                             <option value="">— —</option>
-                            <option value="O">O – Operator</option>
-                            <option value="I">I – Interm.</option>
-                            <option value="D">D – Depot</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">O / I / D</small>
                     </div>
@@ -336,79 +296,68 @@
         </div>
     </div>
 
-    <!-- ── Reference Tables ─────────────────────────────────────────── -->
-    <div class="row g-3 mt-1 mb-3">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header fw-semibold">Sub-Assembly Codes</div>
-                <div class="card-body p-0">
-                    <table class="table table-sm table-bordered ref-table mb-0">
-                        <thead><tr><th>Code</th><th>Description</th><th>Example PN</th></tr></thead>
-                        <tbody>
-                            <tr><td class="font-monospace fw-semibold">FCA</td><td>Fan Case</td><td class="font-monospace text-muted small">KAV-72-FAN-FCA-00100-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">FBL</td><td>Fan Blades</td><td class="font-monospace text-muted small">KAV-72-FAN-FBL-00025-O-B</td></tr>
-                            <tr><td class="font-monospace fw-semibold">FHB</td><td>Fan Hub</td><td class="font-monospace text-muted small">KAV-72-FAN-FHB-00050-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">FSH</td><td>Fan Shaft</td><td class="font-monospace text-muted small">KAV-72-FAN-FSH-00075-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">BRG</td><td>Bearings</td><td class="font-monospace text-muted small">KAV-72-FAN-BRG-00030-O-C</td></tr>
-                            <tr><td class="font-monospace fw-semibold">TTG</td><td>Test Tools &amp; Ground Equipment (TT&amp;GE)</td><td class="font-monospace text-muted small">KAV-72-FAN-TTG-00200-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">FDU</td><td>Fan Duct</td><td class="font-monospace text-muted small">KAV-72-FAN-FDU-00200-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">FVA</td><td>Fan Vane</td><td class="font-monospace text-muted small">KAV-72-FAN-FVA-00200-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">POL</td><td>POL (Petroleum, Oil, Lubricants)</td><td class="font-monospace text-muted small">KAV-72-FAN-POL-00300-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">STP</td><td>Standard Fasteners (Bolts, Nuts, Washers)</td><td class="font-monospace text-muted small">KAV-72-FAN-STP-00400-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">CON</td><td>Consumables (Class C items)</td><td class="font-monospace text-muted small">KAV-72-FAN-CON-00500-O-A</td></tr>
-                            <tr><td class="font-monospace fw-semibold">SPR</td><td>Spares (Replacement Kits)</td><td class="font-monospace text-muted small">KAV-72-FAN-SPR-00600-O-A</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- ── Reference Tables (editable) ─────────────────────────────── -->
     <div class="row g-3 mt-1">
-        <div class="col-md-5">
-            <div class="card shadow-sm">
-                <div class="card-header fw-semibold">Equipment Codes (ATA)</div>
+        <div class="col-md-6 col-lg-3" id="refWrap_EqCode">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
+                    <span>Equipment Codes</span>
+                    <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="EqCode" title="Add row">
+                        <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
+                    </button>
+                </div>
                 <div class="card-body p-0">
-                    <table class="table table-sm table-bordered ref-table mb-0">
-                        <thead><tr><th>Code</th><th>Description</th></tr></thead>
-                        <tbody>
-                            <tr><td class="font-monospace fw-semibold">70</td><td>Standard Practices</td></tr>
-                            <tr><td class="font-monospace fw-semibold">71</td><td>Power Plant</td></tr>
-                            <tr><td class="font-monospace fw-semibold">72</td><td>Engine</td></tr>
-                            <tr><td class="font-monospace fw-semibold">73</td><td>Engine Fuel and Control</td></tr>
-                            <tr><td class="font-monospace fw-semibold">74</td><td>Ignition</td></tr>
-                            <tr><td class="font-monospace fw-semibold">75</td><td>Air General</td></tr>
-                            <tr><td class="font-monospace fw-semibold">76</td><td>Engine Controls</td></tr>
-                            <tr><td class="font-monospace fw-semibold">77</td><td>Engine Indicating</td></tr>
-                            <tr><td class="font-monospace fw-semibold">78</td><td>Exhaust</td></tr>
-                            <tr><td class="font-monospace fw-semibold">79</td><td>Oil</td></tr>
-                            <tr><td class="font-monospace fw-semibold">80</td><td>Starting</td></tr>
-                        </tbody>
+                    <table class="table table-sm table-bordered ref-table mb-0" id="refTable_EqCode">
+                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
             </div>
         </div>
-        <div class="col-md-7">
-            <div class="card shadow-sm">
-                <div class="card-header fw-semibold">Module Codes</div>
+        <div class="col-md-6 col-lg-3" id="refWrap_ModCode">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
+                    <span>Module Codes</span>
+                    <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="ModCode" title="Add row">
+                        <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
+                    </button>
+                </div>
                 <div class="card-body p-0">
-                    <table class="table table-sm table-bordered ref-table mb-0">
-                        <thead><tr><th>Code</th><th>Description</th></tr></thead>
-                        <tbody>
-                            <tr><td class="font-monospace fw-semibold">EGN</td><td>Engine General</td></tr>
-                            <tr><td class="font-monospace fw-semibold">EEX</td><td>Engine Exhaust</td></tr>
-                            <tr><td class="font-monospace fw-semibold">LPC</td><td>Low Pressure Compressor</td></tr>
-                            <tr><td class="font-monospace fw-semibold">COU</td><td>Coupler</td></tr>
-                            <tr><td class="font-monospace fw-semibold">FAN</td><td>Fan</td></tr>
-                            <tr><td class="font-monospace fw-semibold">ICA</td><td>Intermediate Casing</td></tr>
-                            <tr><td class="font-monospace fw-semibold">HPC</td><td>High Pressure Compressor</td></tr>
-                            <tr><td class="font-monospace fw-semibold">DCO</td><td>Diffuser &amp; Combustor</td></tr>
-                            <tr><td class="font-monospace fw-semibold">TNZ</td><td>Transition Zone</td></tr>
-                            <tr><td class="font-monospace fw-semibold">HPT</td><td>High Pressure Turbine</td></tr>
-                            <tr><td class="font-monospace fw-semibold">LPT</td><td>Low Pressure Turbine</td></tr>
-                            <tr><td class="font-monospace fw-semibold">TEC</td><td>Turbine Exhaust Case</td></tr>
-                            <tr><td class="font-monospace fw-semibold">MGB</td><td>Main Gearbox</td></tr>
-                            <tr><td class="font-monospace fw-semibold">AGB</td><td>Accessory Gearbox</td></tr>
-                        </tbody>
+                    <table class="table table-sm table-bordered ref-table mb-0" id="refTable_ModCode">
+                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3" id="refWrap_SubAsm">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
+                    <span>Sub-Assembly Codes</span>
+                    <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="SubAsm" title="Add row">
+                        <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-bordered ref-table mb-0" id="refTable_SubAsm">
+                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3" id="refWrap_MaintLevel">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
+                    <span>Maintenance Level</span>
+                    <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="MaintLevel" title="Add row">
+                        <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-bordered ref-table mb-0" id="refTable_MaintLevel">
+                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -986,10 +935,175 @@
             });
     });
 
+    // ── Reference Tables ──────────────────────────────────────────────
+    // Maps lookup type → segment select id
+    var refSegMap = { EqCode: 'seg2', ModCode: 'seg3', SubAsm: 'seg4', MaintLevel: 'seg6' };
+
+    function loadRefTable(type) {
+        var $tbody = $('#refTable_' + type + ' tbody');
+        $tbody.html('<tr><td colspan="3" class="text-center text-muted py-2">' +
+            '<span class="spinner-border spinner-border-sm"></span></td></tr>');
+        $.get('/PNC/GetLookups', { type: type })
+            .done(function(r) {
+                if (!r.success || !r.data || !r.data.length) {
+                    $tbody.html('<tr><td colspan="3" class="text-center text-muted py-2" ' +
+                        'style="font-size:.8rem;">No entries yet.</td></tr>');
+                    refreshSegDropdown(type, []);
+                    return;
+                }
+                renderRefRows(type, r.data);
+                refreshSegDropdown(type, r.data);
+            })
+            .fail(function() {
+                $tbody.html('<tr><td colspan="3" class="text-center text-danger py-2" ' +
+                    'style="font-size:.8rem;">Failed to load.</td></tr>');
+            });
+    }
+
+    function renderRefRows(type, data) {
+        var html = '';
+        $.each(data, function(_, row) {
+            html += '<tr data-id="' + row.id + '" data-type="' + escHtml(type) + '">' +
+                '<td class="font-monospace cell-code">' + escHtml(row.code) + '</td>' +
+                '<td class="cell-desc">' + escHtml(row.description) + '</td>' +
+                '<td class="text-center text-nowrap" style="width:52px;">' +
+                    '<button class="btn btn-outline-primary btn-sm py-0 px-1 btn-edit-lookup" title="Edit">' +
+                        '<i class="fa-solid fa-pencil" style="font-size:.6rem;"></i>' +
+                    '</button> ' +
+                    '<button class="btn btn-outline-danger btn-sm py-0 px-1 btn-del-lookup" title="Delete">' +
+                        '<i class="fa-solid fa-trash" style="font-size:.6rem;"></i>' +
+                    '</button>' +
+                '</td></tr>';
+        });
+        $('#refTable_' + type + ' tbody').html(html);
+    }
+
+    function refreshSegDropdown(type, data) {
+        var segId = refSegMap[type];
+        if (!segId) return;
+        var $sel = $('#' + segId);
+        var current = $sel.val();
+        $sel.empty().append('<option value="">— —</option>');
+        $.each(data, function(_, row) {
+            $sel.append('<option value="' + escHtml(row.code) + '">' +
+                escHtml(row.code) + ' · ' + escHtml(row.description) + '</option>');
+        });
+        if (current) $sel.val(current);
+    }
+
+    // Inline edit — click pencil
+    $(document).on('click', '.btn-edit-lookup', function() {
+        var $tr = $(this).closest('tr');
+        if ($tr.hasClass('editing')) return;
+        var code = $tr.find('.cell-code').text();
+        var desc = $tr.find('.cell-desc').text();
+        $tr.addClass('editing')
+            .find('.cell-code').html(
+                '<input type="text" class="form-control form-control-sm font-monospace" ' +
+                'value="' + escHtml(code) + '" maxlength="10" style="max-width:76px; text-transform:uppercase;">')
+            .end()
+            .find('.cell-desc').html(
+                '<input type="text" class="form-control form-control-sm" ' +
+                'value="' + escHtml(desc) + '" maxlength="200">')
+            .end()
+            .find('td:last').html(
+                '<button class="btn btn-success btn-sm py-0 px-1 btn-save-lookup" title="Save">' +
+                    '<i class="fa-solid fa-check" style="font-size:.6rem;"></i></button> ' +
+                '<button class="btn btn-secondary btn-sm py-0 px-1 btn-cancel-lookup" title="Cancel">' +
+                    '<i class="fa-solid fa-xmark" style="font-size:.6rem;"></i></button>');
+        $tr.find('.cell-desc input').focus();
+    });
+
+    // Cancel inline edit
+    $(document).on('click', '.btn-cancel-lookup', function() {
+        var $tr = $(this).closest('tr');
+        var type = $tr.data('type');
+        if ($tr.data('id') == 0) { $tr.remove(); return; }
+        loadRefTable(type);
+    });
+
+    // Save inline edit (insert or update)
+    $(document).on('click', '.btn-save-lookup', function() {
+        var $tr = $(this).closest('tr');
+        var type = $tr.data('type');
+        var id   = parseInt($tr.data('id')) || 0;
+        var code = ($tr.find('.cell-code input').val() || '').trim().toUpperCase();
+        var desc = ($tr.find('.cell-desc input').val() || '').trim();
+        if (!code || !desc) {
+            alert('Both Code and Description are required.');
+            return;
+        }
+        var $btn = $(this).prop('disabled', true);
+        $.ajax({
+            url: '/PNC/SaveLookup', method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ id: id, lookupType: type, code: code, description: desc, sortOrder: 0 })
+        })
+        .done(function(r) {
+            if (r.success) { loadRefTable(type); }
+            else { alert(r.message || 'Save failed.'); $btn.prop('disabled', false); }
+        })
+        .fail(function() { alert('Server error. Please retry.'); $btn.prop('disabled', false); });
+    });
+
+    // Delete row
+    $(document).on('click', '.btn-del-lookup', function() {
+        var $tr  = $(this).closest('tr');
+        var type = $tr.data('type');
+        var id   = parseInt($tr.data('id'));
+        var code = $tr.find('.cell-code').text();
+        if (!confirm('Delete "' + code + '" from ' + type + '? This cannot be undone.')) return;
+        $.ajax({ url: '/PNC/DeleteLookup?id=' + id, method: 'DELETE' })
+            .done(function(r) {
+                if (r.success) { loadRefTable(type); }
+                else { alert(r.message || 'Delete failed.'); }
+            })
+            .fail(function() { alert('Server error.'); });
+    });
+
+    // Add new row — appends blank editing row at bottom of table
+    $(document).on('click', '.btn-add-lookup', function() {
+        var type   = $(this).data('type');
+        var $tbody = $('#refTable_' + type + ' tbody');
+        if ($tbody.find('tr[data-id="0"]').length) {
+            $tbody.find('tr[data-id="0"] input:first').focus();
+            return;
+        }
+        var row = '<tr data-id="0" data-type="' + escHtml(type) + '" class="editing">' +
+            '<td class="cell-code"><input type="text" class="form-control form-control-sm font-monospace" ' +
+                'placeholder="CODE" maxlength="10" style="max-width:76px; text-transform:uppercase;"></td>' +
+            '<td class="cell-desc"><input type="text" class="form-control form-control-sm" ' +
+                'placeholder="Description" maxlength="200"></td>' +
+            '<td class="text-center text-nowrap" style="width:52px;">' +
+                '<button class="btn btn-success btn-sm py-0 px-1 btn-save-lookup" title="Save">' +
+                    '<i class="fa-solid fa-check" style="font-size:.6rem;"></i></button> ' +
+                '<button class="btn btn-secondary btn-sm py-0 px-1 btn-cancel-lookup" title="Cancel">' +
+                    '<i class="fa-solid fa-xmark" style="font-size:.6rem;"></i></button>' +
+            '</td></tr>';
+        $tbody.append(row);
+        $tbody.find('tr[data-id="0"] input:first').focus();
+    });
+
+    // Commit add/edit on Enter key inside table inputs
+    $(document).on('keydown', '.ref-table input', function(e) {
+        if (e.key === 'Enter') { $(this).closest('tr').find('.btn-save-lookup').trigger('click'); }
+        if (e.key === 'Escape') { $(this).closest('tr').find('.btn-cancel-lookup').trigger('click'); }
+    });
+
+    // Auto-uppercase while typing in code cells
+    $(document).on('input', '.ref-table .cell-code input', function() {
+        var pos = this.selectionStart;
+        $(this).val($(this).val().toUpperCase());
+        try { this.setSelectionRange(pos, pos); } catch(e) {}
+    });
+
     // ── Sidebar active ────────────────────────────────────────────────
     $('#pnclink').addClass('active');
 
     // ── Boot ─────────────────────────────────────────────────────────
+    // Load all 4 reference tables (also populates the dropdowns dynamically)
+    ['EqCode', 'ModCode', 'SubAsm', 'MaintLevel'].forEach(function(t) { loadRefTable(t); });
+
     try { initModelModal(); } catch(e) {
         // Bootstrap may not be ready in rare edge cases; retry once on next tick
         setTimeout(function() {

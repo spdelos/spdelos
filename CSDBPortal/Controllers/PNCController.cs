@@ -14,6 +14,85 @@ namespace CSDBPortal.Controllers
 
         public IActionResult Index() => View();
 
+        // ─── GET: lookup rows by type ────────────────────────────────────────
+        [HttpGet]
+        public async Task<JsonResult> GetLookups(string type)
+        {
+            try
+            {
+                var rows = await _db.PNCLookups
+                    .Where(l => l.LookupType == type)
+                    .OrderBy(l => l.SortOrder).ThenBy(l => l.Code)
+                    .Select(l => new { l.Id, l.Code, l.Description, l.SortOrder })
+                    .ToListAsync();
+                return Json(new { success = true, data = rows });
+            }
+            catch
+            {
+                return Json(new { success = true, data = Array.Empty<object>() });
+            }
+        }
+
+        // ─── POST: save (insert or update) a lookup row ──────────────────────
+        [HttpPost]
+        public async Task<JsonResult> SaveLookup([FromBody] PNCLookup row)
+        {
+            if (row == null || string.IsNullOrWhiteSpace(row.Code) || string.IsNullOrWhiteSpace(row.Description))
+                return Json(new { success = false, message = "Code and Description are required." });
+
+            row.Code        = row.Code.Trim().ToUpper();
+            row.Description = row.Description.Trim();
+            row.LookupType  = row.LookupType?.Trim() ?? "";
+
+            try
+            {
+                // Check for duplicate code within same type (excluding self on update)
+                bool dup = await _db.PNCLookups.AnyAsync(l =>
+                    l.LookupType == row.LookupType && l.Code == row.Code && l.Id != row.Id);
+                if (dup)
+                    return Json(new { success = false, message = $"Code '{row.Code}' already exists in this table." });
+
+                if (row.Id == 0)
+                {
+                    row.CreatedBy = User.Identity?.Name;
+                    row.CreatedOn = DateTime.UtcNow;
+                    _db.PNCLookups.Add(row);
+                }
+                else
+                {
+                    var existing = await _db.PNCLookups.FindAsync(row.Id);
+                    if (existing == null) return Json(new { success = false, message = "Row not found." });
+                    existing.Code        = row.Code;
+                    existing.Description = row.Description;
+                    existing.SortOrder   = row.SortOrder;
+                }
+                await _db.SaveChangesAsync();
+                return Json(new { success = true, id = row.Id == 0 ? 0 : row.Id });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Database error: " + ex.Message });
+            }
+        }
+
+        // ─── DELETE: remove a lookup row ─────────────────────────────────────
+        [HttpDelete]
+        public async Task<JsonResult> DeleteLookup(int id)
+        {
+            try
+            {
+                var row = await _db.PNCLookups.FindAsync(id);
+                if (row == null) return Json(new { success = false, message = "Not found." });
+                _db.PNCLookups.Remove(row);
+                await _db.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Database error: " + ex.Message });
+            }
+        }
+
         // ─── GET: distinct Model IDs ─────────────────────────────────────────
         [HttpGet]
         public async Task<JsonResult> GetModelIds()
