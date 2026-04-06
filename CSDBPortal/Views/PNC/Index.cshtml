@@ -91,7 +91,7 @@
 
     <div class="alert alert-info py-2 mb-3" style="font-size:.87rem;">
         <strong>Format:</strong>
-        <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;Chapter&gt;-&lt;Section&gt;-&lt;SubSec&gt;-&lt;DesignOff&gt;-&lt;DrawingSeq&gt;-&lt;SeqNo&gt;-&lt;TechSpecNo&gt;-&lt;Colour&gt;</span>
+        <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;Chapter&gt;-&lt;Section&gt;&lt;SubSec&gt;-&lt;DesignOff&gt;-&lt;DrawingSeq&gt;-&lt;SeqNo&gt;-&lt;TechSpecNo&gt;-&lt;Colour&gt;</span>
     </div>
 
     <!-- ── Live Preview ──────────────────────────────────────────────── -->
@@ -707,7 +707,8 @@
             return;
         }
 
-        var pnc = parts.map(function(v) { return v || '?'; }).join('-');
+        var p   = parts.map(function(v) { return v || '?'; });
+        var pnc = [p[0], p[1], p[2] + p[3], p[4], p[5], p[6], p[7], p[8]].join('-');
         $('#pncPreview').text(pnc);
 
         var allFilled = parts.every(function(v) { return v !== ''; });

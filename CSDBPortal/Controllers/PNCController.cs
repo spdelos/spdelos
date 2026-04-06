@@ -208,7 +208,7 @@ namespace CSDBPortal.Controllers
             pnc.MaintLevel   = (pnc.MaintLevel   ?? "").Trim().ToUpper();
             pnc.RevSuffix    = (pnc.RevSuffix    ?? "").Trim().ToUpper();
             pnc.PartName     = (pnc.PartName     ?? "").Trim();
-            pnc.FullPNC      = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}-{pnc.SubAsmCode}-{pnc.DesignOffice}-{pnc.DrawingSeqNo}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
+            pnc.FullPNC      = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}{pnc.SubAsmCode}-{pnc.DesignOffice}-{pnc.DrawingSeqNo}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
             pnc.CreatedBy  = User.Identity?.Name;
             pnc.CreatedOn  = DateTime.UtcNow;
             pnc.IsObsolete = false;
@@ -510,7 +510,7 @@ namespace CSDBPortal.Controllers
                         CreatedOn    = DateTime.UtcNow,
                         IsObsolete   = false
                     };
-                    pnc.FullPNC = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}-{pnc.SubAsmCode}-{pnc.DesignOffice}-{pnc.DrawingSeqNo}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
+                    pnc.FullPNC = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}{pnc.SubAsmCode}-{pnc.DesignOffice}-{pnc.DrawingSeqNo}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
 
                     var msg = ValidatePNC(pnc);
                     if (msg != null) { errors.Add($"Row {row}: {msg}"); row++; continue; }
