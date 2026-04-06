@@ -243,6 +243,13 @@
                 </div>
 
             </div>
+
+            <!-- Part Name -->
+            <div class="mt-2">
+                <label class="form-label fw-semibold mb-1" style="font-size:.8rem;">Part Name</label>
+                <input type="text" class="form-control form-control-sm" id="partName"
+                       maxlength="200" placeholder="Enter descriptive part name…">
+            </div>
         </div>
     </div>
 
@@ -308,6 +315,7 @@
                                 <th>Tech Spec No.</th>
                                 <th>Colour</th>
                                 <th>Full PNS</th>
+                                <th>Part Name</th>
                                 <th>Status</th>
                                 <th>Created By</th>
                                 <th>Created On</th>
@@ -315,7 +323,7 @@
                             </tr>
                         </thead>
                         <tbody id="pncTbody">
-                            <tr><td colspan="15" class="text-center text-muted py-3">No data loaded.</td></tr>
+                            <tr><td colspan="16" class="text-center text-muted py-3">No data loaded.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -742,6 +750,7 @@
     // ── Save PNC ──────────────────────────────────────────────────────
     $('#btnSavePNC').on('click', function() {
         var payload = {
+            partName:     $('#partName').val().trim(),
             modelId:      selectedModelId,
             eqCode:       $('#seg2').val()    || '',
             modCode:      $('#seg3').val()    || '',
@@ -788,6 +797,7 @@
             $('#' + id).val('');
             $('#card_' + id).removeClass('seg-valid seg-invalid');
         });
+        $('#partName').val('');
         $('#pncPreview').text('—');
         $('#pncValidMsg').text('');
         $('#btnCopyPNC, #btnSavePNC').prop('disabled', true);
@@ -844,7 +854,7 @@
     function loadPNCs() {
         var params = buildFilterParams();
         $('#pncFilterDesc').text(buildFilterDesc(params));
-        $('#pncTbody').html('<tr><td colspan="15" class="text-center py-3">' +
+        $('#pncTbody').html('<tr><td colspan="16" class="text-center py-3">' +
             '<span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr>');
 
         $.get('/PNC/GetPNCs', params)
@@ -853,7 +863,7 @@
                 $('#pncCount').text(count);
                 if (!r.success) {
                     $('#pncTbody').html(
-                        '<tr><td colspan="15" class="text-center py-4 text-danger">' +
+                        '<tr><td colspan="16" class="text-center py-4 text-danger">' +
                         '<i class="fa-solid fa-triangle-exclamation me-2"></i>' +
                         '<strong>Database error</strong> — ' + escHtml(r.error || 'Unknown error') +
                         '<br><small class="text-muted">The PNS table may not exist yet. Run pending database migrations.</small>' +
@@ -862,7 +872,7 @@
                 }
                 if (!count) {
                     $('#pncTbody').html(
-                        '<tr><td colspan="15" class="text-center py-4">' +
+                        '<tr><td colspan="16" class="text-center py-4">' +
                         '<i class="fa-solid fa-circle-info me-2 text-muted"></i>' +
                         '<span class="text-muted fw-semibold">No Part Numbers Available</span>' +
                         '</td></tr>');
@@ -894,6 +904,7 @@
                         '<td class="font-monospace text-center">' + escHtml(row.maintLevel)   + '</td>' +
                         '<td class="font-monospace text-center">' + escHtml(row.revSuffix)    + '</td>' +
                         '<td class="pnc-code">'         + escHtml(row.fullPNC)       + '</td>' +
+                        '<td class="text-muted small">' + escHtml(row.partName||'')  + '</td>' +
                         '<td class="text-center">'      + badge                      + '</td>' +
                         '<td class="text-muted small">' + escHtml(row.createdBy||'') + '</td>' +
                         '<td class="text-muted small">' + escHtml(row.createdOn)     + '</td>' +
@@ -904,7 +915,7 @@
             })
             .fail(function(xhr) {
                 $('#pncTbody').html(
-                    '<tr><td colspan="15" class="text-danger text-center py-2">' +
+                    '<tr><td colspan="16" class="text-danger text-center py-2">' +
                     'Request failed (HTTP ' + xhr.status + '). Check that you are logged in and the server is running.' +
                     '</td></tr>');
             });

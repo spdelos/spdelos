@@ -173,7 +173,7 @@ namespace CSDBPortal.Controllers
                                   .Select(p => new {
                                       p.Id, p.ModelId, p.EqCode, p.ModCode, p.SubAsmCode,
                                       p.DesignOffice, p.DrawingSeqNo,
-                                      p.SeqDigits, p.MaintLevel, p.RevSuffix, p.FullPNC,
+                                      p.SeqDigits, p.MaintLevel, p.RevSuffix, p.FullPNC, p.PartName,
                                       p.IsObsolete, p.ObsoletedBy,
                                       ObsoletedOn = p.ObsoletedOn.HasValue
                                           ? p.ObsoletedOn.Value.ToString("yyyy-MM-dd HH:mm") : null,
@@ -207,6 +207,7 @@ namespace CSDBPortal.Controllers
             pnc.SeqDigits    = (pnc.SeqDigits    ?? "").Trim();
             pnc.MaintLevel   = (pnc.MaintLevel   ?? "").Trim().ToUpper();
             pnc.RevSuffix    = (pnc.RevSuffix    ?? "").Trim().ToUpper();
+            pnc.PartName     = (pnc.PartName     ?? "").Trim();
             pnc.FullPNC      = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}-{pnc.SubAsmCode}-{pnc.DesignOffice}-{pnc.DrawingSeqNo}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
             pnc.CreatedBy  = User.Identity?.Name;
             pnc.CreatedOn  = DateTime.UtcNow;
@@ -281,7 +282,7 @@ namespace CSDBPortal.Controllers
             // Header
             string[] headers = { "ModelId", "Chapter (EqCode)", "Section (ModCode)", "Sub Sec (SubAsmCode)",
                                   "Design Office", "Drawing Seq. No.",
-                                  "Seq. No.", "Tech Spec No.", "Colour Scheme", "Full PNS",
+                                  "Seq. No.", "Tech Spec No.", "Colour", "Full PNS", "Part Name",
                                   "Status", "Created By", "Created On",
                                   "Obsoleted By", "Obsoleted On" };
             for (int c = 0; c < headers.Length; c++)
@@ -305,11 +306,12 @@ namespace CSDBPortal.Controllers
                 ws.Cell(r, 8).Value  = p.MaintLevel;
                 ws.Cell(r, 9).Value  = p.RevSuffix;
                 ws.Cell(r, 10).Value = p.FullPNC;
-                ws.Cell(r, 11).Value = p.IsObsolete ? "Obsolete" : "Active";
-                ws.Cell(r, 12).Value = p.CreatedBy   ?? "";
-                ws.Cell(r, 13).Value = p.CreatedOn.ToString("yyyy-MM-dd HH:mm");
-                ws.Cell(r, 14).Value = p.ObsoletedBy ?? "";
-                ws.Cell(r, 15).Value = p.ObsoletedOn.HasValue
+                ws.Cell(r, 11).Value = p.PartName    ?? "";
+                ws.Cell(r, 12).Value = p.IsObsolete ? "Obsolete" : "Active";
+                ws.Cell(r, 13).Value = p.CreatedBy   ?? "";
+                ws.Cell(r, 14).Value = p.CreatedOn.ToString("yyyy-MM-dd HH:mm");
+                ws.Cell(r, 15).Value = p.ObsoletedBy ?? "";
+                ws.Cell(r, 16).Value = p.ObsoletedOn.HasValue
                     ? p.ObsoletedOn.Value.ToString("yyyy-MM-dd HH:mm") : "";
 
                 if (p.IsObsolete)
@@ -349,12 +351,13 @@ namespace CSDBPortal.Controllers
             string[] headers = {
                 "ModelId", "EqCode", "ModCode", "SubAsmCode",
                 "DesignOffice", "DrawingSeqNo",
-                "SeqDigits", "MaintLevel", "RevSuffix"
+                "SeqDigits", "MaintLevel", "RevSuffix", "PartName"
             };
             string[] friendlyHeaders = {
                 "Model ID", "Chapter (EqCode)", "Section (ModCode)", "Sub Sec (SubAsmCode)",
                 "Design Office (DesignOffice)", "Drawing Seq. No. (DrawingSeqNo)",
-                "Seq. No. (SeqDigits)", "Tech Spec No. (MaintLevel)", "Colour (RevSuffix)"
+                "Seq. No. (SeqDigits)", "Tech Spec No. (MaintLevel)", "Colour (RevSuffix)",
+                "Part Name (PartName)"
             };
             for (int c = 0; c < headers.Length; c++)
             {
@@ -377,8 +380,9 @@ namespace CSDBPortal.Controllers
             ws.Cell(3, 6).Value = "001";   // Drawing Sequential Number (3 digits)
             ws.Cell(3, 7).Value = "00001"; // Seq. No. (5 digits)
             ws.Cell(3, 8).Value = "01";    // Tech Spec No. (2 digits)
-            ws.Cell(3, 9).Value = "A";     // Colour Scheme (single letter A-Z)
-            for (int c = 1; c <= 9; c++)
+            ws.Cell(3, 9).Value  = "A";                // Colour Scheme (single letter A-Z)
+            ws.Cell(3, 10).Value = "e.g. Fan Blade";   // Part Name (free text)
+            for (int c = 1; c <= 10; c++)
                 ws.Cell(3, c).Style.Font.Italic = true;
 
             ws.Columns().AdjustToContents();
@@ -474,7 +478,7 @@ namespace CSDBPortal.Controllers
                 // Validate header row matches template columns
                 string[] expectedHeaders = { "ModelId", "EqCode", "ModCode", "SubAsmCode",
                                              "DesignOffice", "DrawingSeqNo",
-                                             "SeqDigits", "MaintLevel", "RevSuffix" };
+                                             "SeqDigits", "MaintLevel", "RevSuffix", "PartName" };
                 for (int c = 0; c < expectedHeaders.Length; c++)
                 {
                     var h = ws.Cell(1, c + 1).GetString().Trim();
@@ -501,6 +505,7 @@ namespace CSDBPortal.Controllers
                         SeqDigits    = ws.Cell(row, 7).GetString().Trim(),
                         MaintLevel   = ws.Cell(row, 8).GetString().Trim().ToUpper(),
                         RevSuffix    = ws.Cell(row, 9).GetString().Trim().ToUpper(),
+                        PartName     = ws.Cell(row, 10).GetString().Trim(),
                         CreatedBy    = User.Identity?.Name,
                         CreatedOn    = DateTime.UtcNow,
                         IsObsolete   = false

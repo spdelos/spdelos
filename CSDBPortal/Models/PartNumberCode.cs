@@ -39,6 +39,9 @@ namespace CSDBPortal.Models
         [Required, MaxLength(80)]
         public string FullPNC { get; set; } = "";       // Assembled PNS (unique)
 
+        [MaxLength(200)]
+        public string PartName { get; set; } = "";      // Descriptive part name
+
         public bool IsObsolete { get; set; } = false;
 
         [MaxLength(256)]
