@@ -314,7 +314,7 @@
                                 <th>Seq. No.</th>
                                 <th>Tech Spec No.</th>
                                 <th>Colour</th>
-                                <th>Full PNS</th>
+                                <th>Full P No.</th>
                                 <th>Part Name</th>
                                 <th>Status</th>
                                 <th>Created By</th>
@@ -904,7 +904,7 @@
                         '<td class="font-monospace">' + escHtml(row.seqDigits)    + '</td>' +
                         '<td class="font-monospace text-center">' + escHtml(row.maintLevel)   + '</td>' +
                         '<td class="font-monospace text-center">' + escHtml(row.revSuffix)    + '</td>' +
-                        '<td class="pnc-code">'         + escHtml(row.fullPNC)       + '</td>' +
+                        '<td class="pnc-code">'         + escHtml(row.fullPNC.replace(/-/g,'')) + '</td>' +
                         '<td class="text-muted small">' + escHtml(row.partName||'')  + '</td>' +
                         '<td class="text-center">'      + badge                      + '</td>' +
                         '<td class="text-muted small">' + escHtml(row.createdBy||'') + '</td>' +
