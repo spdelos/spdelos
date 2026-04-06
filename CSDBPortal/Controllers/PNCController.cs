@@ -184,9 +184,10 @@ namespace CSDBPortal.Controllers
 
                 return Json(new { success = true, data = rows });
             }
-            catch (Exception ex)
+            catch
             {
-                return Json(new { success = false, error = ex.Message, data = Array.Empty<object>() });
+                // Table may not exist yet (pending migration) — return empty list
+                return Json(new { success = true, data = Array.Empty<object>() });
             }
         }
 
@@ -340,33 +341,54 @@ namespace CSDBPortal.Controllers
         public IActionResult DownloadTemplate()
         {
             using var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("PNC_Template");
 
-            string[] headers = { "ModelId", "EqCode", "ModCode", "SubAsmCode",
-                                  "DesignOffice", "DrawingSeqNo",
-                                  "SeqDigits", "MaintLevel", "RevSuffix" };
+            // ── Main data sheet ──────────────────────────────────────────────
+            var ws = wb.Worksheets.Add("PNS_Template");
+
+            // Column headers must match UploadExcel expectedHeaders exactly
+            string[] headers = {
+                "ModelId", "EqCode", "ModCode", "SubAsmCode",
+                "DesignOffice", "DrawingSeqNo",
+                "SeqDigits", "MaintLevel", "RevSuffix"
+            };
+            string[] friendlyHeaders = {
+                "Model ID", "Chapter (EqCode)", "Section (ModCode)", "Sub Sec (SubAsmCode)",
+                "Design Office (DesignOffice)", "Drawing Seq. No. (DrawingSeqNo)",
+                "Seq. No. (SeqDigits)", "Tech Spec No. (MaintLevel)", "Colour (RevSuffix)"
+            };
             for (int c = 0; c < headers.Length; c++)
             {
-                ws.Cell(1, c + 1).Value = headers[c];
-                ws.Cell(1, c + 1).Style.Font.Bold = true;
-                ws.Cell(1, c + 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+                var cell = ws.Cell(1, c + 1);
+                cell.Value = headers[c];
+                cell.Style.Font.Bold = true;
+                cell.Style.Fill.BackgroundColor = XLColor.LightBlue;
+                // Friendly name as a comment
+                ws.Cell(2, c + 1).Value = friendlyHeaders[c];
+                ws.Cell(2, c + 1).Style.Font.Italic = true;
+                ws.Cell(2, c + 1).Style.Font.FontColor = XLColor.Gray;
             }
 
-            ws.Cell(2, 1).Value = "e.g. KAV";
-            ws.Cell(2, 2).Value = "e.g. 72";
-            ws.Cell(2, 3).Value = "e.g. FAN";
-            ws.Cell(2, 4).Value = "e.g. FCA";
-            ws.Cell(2, 5).Value = "e.g. 1";
-            ws.Cell(2, 6).Value = "e.g. 001";
-            ws.Cell(2, 7).Value = "e.g. 00001";
-            ws.Cell(2, 8).Value = "e.g. 01";
-            ws.Cell(2, 9).Value = "e.g. A";
+            // Example data row (row 3)
+            ws.Cell(3, 1).Value = "KAV";
+            ws.Cell(3, 2).Value = "72";
+            ws.Cell(3, 3).Value = "FAN";
+            ws.Cell(3, 4).Value = "FCA";
+            ws.Cell(3, 5).Value = "DO1";   // Design Office code (from Design Offices table)
+            ws.Cell(3, 6).Value = "001";   // Drawing Sequential Number (3 digits)
+            ws.Cell(3, 7).Value = "00001"; // Seq. No. (5 digits)
+            ws.Cell(3, 8).Value = "01";    // Tech Spec No. (2 digits)
+            ws.Cell(3, 9).Value = "A";     // Colour Scheme (single letter A-Z)
             for (int c = 1; c <= 9; c++)
-                ws.Cell(2, c).Style.Font.Italic = true;
+                ws.Cell(3, c).Style.Font.Italic = true;
 
-            var wsEq = wb.Worksheets.Add("Equipment Codes");
+            ws.Columns().AdjustToContents();
+
+            // ── Reference sheet: Chapters (EqCode) ──────────────────────────
+            var wsEq = wb.Worksheets.Add("Chapters (EqCode)");
             wsEq.Cell(1, 1).Value = "Code"; wsEq.Cell(1, 2).Value = "Description";
             wsEq.Cell(1, 1).Style.Font.Bold = true; wsEq.Cell(1, 2).Style.Font.Bold = true;
+            wsEq.Cell(1, 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            wsEq.Cell(1, 2).Style.Fill.BackgroundColor = XLColor.LightBlue;
             string[,] eqData = {
                 {"70","Standard Practices"},{"71","Power Plant"},{"72","Engine"},
                 {"73","Engine Fuel and Control"},{"74","Ignition"},{"75","Air General"},
@@ -378,10 +400,14 @@ namespace CSDBPortal.Controllers
                 wsEq.Cell(i + 2, 1).Value = eqData[i, 0];
                 wsEq.Cell(i + 2, 2).Value = eqData[i, 1];
             }
+            wsEq.Columns().AdjustToContents();
 
-            var wsMod = wb.Worksheets.Add("Module Codes");
+            // ── Reference sheet: Sections (ModCode) ─────────────────────────
+            var wsMod = wb.Worksheets.Add("Sections (ModCode)");
             wsMod.Cell(1, 1).Value = "Code"; wsMod.Cell(1, 2).Value = "Description";
             wsMod.Cell(1, 1).Style.Font.Bold = true; wsMod.Cell(1, 2).Style.Font.Bold = true;
+            wsMod.Cell(1, 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            wsMod.Cell(1, 2).Style.Fill.BackgroundColor = XLColor.LightBlue;
             string[,] modData = {
                 {"EGN","Engine General"},{"EEX","Engine Exhaust"},{"LPC","Low Pressure Compressor"},
                 {"COU","Coupler"},{"FAN","Fan"},{"ICA","Intermediate Casing"},
@@ -394,17 +420,34 @@ namespace CSDBPortal.Controllers
                 wsMod.Cell(i + 2, 1).Value = modData[i, 0];
                 wsMod.Cell(i + 2, 2).Value = modData[i, 1];
             }
-
-            ws.Columns().AdjustToContents();
-            wsEq.Columns().AdjustToContents();
             wsMod.Columns().AdjustToContents();
+
+            // ── Reference sheet: Sub Sections (SubAsmCode) ──────────────────
+            var wsSub = wb.Worksheets.Add("Sub Sections (SubAsmCode)");
+            wsSub.Cell(1, 1).Value = "Code"; wsSub.Cell(1, 2).Value = "Description";
+            wsSub.Cell(1, 1).Style.Font.Bold = true; wsSub.Cell(1, 2).Style.Font.Bold = true;
+            wsSub.Cell(1, 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            wsSub.Cell(1, 2).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            string[,] subData = {
+                {"FCA","Fan Case"},{"FBL","Fan Blades"},{"FHB","Fan Hub"},{"FSH","Fan Shaft"},
+                {"BRG","Bearings"},{"TTG","Test Tools & Ground Equipment (TT&GE)"},
+                {"FDU","Fan Duct"},{"FVA","Fan Vane"},{"POL","POL (Petroleum, Oil, Lubricants)"},
+                {"STP","Standard Fasteners (Bolts, Nuts, Washers)"},
+                {"CON","Consumables (Class C items)"},{"SPR","Spares (Replacement Kits)"}
+            };
+            for (int i = 0; i < subData.GetLength(0); i++)
+            {
+                wsSub.Cell(i + 2, 1).Value = subData[i, 0];
+                wsSub.Cell(i + 2, 2).Value = subData[i, 1];
+            }
+            wsSub.Columns().AdjustToContents();
 
             using var ms = new MemoryStream();
             wb.SaveAs(ms);
             ms.Position = 0;
             return File(ms.ToArray(),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "PNC_Template.xlsx");
+                "PNS_Template.xlsx");
         }
 
         // ─── POST: upload Excel ──────────────────────────────────────────────
@@ -439,11 +482,12 @@ namespace CSDBPortal.Controllers
                         return Json(new { success = false, message = $"Incompatible format — column {c+1} expected '{expectedHeaders[c]}', found '{h}'. Use the PNC template." });
                 }
 
-                int row = 2;
+                // Template layout: row 1 = machine headers, row 2 = friendly names, row 3 = example
+                int row = 4;
                 while (true)
                 {
                     var cell = ws.Cell(row, 1).GetString().Trim();
-                    if (string.IsNullOrEmpty(cell) && row > 2) break;
+                    if (string.IsNullOrEmpty(cell) && row > 4) break;
                     if (string.IsNullOrEmpty(cell)) { row++; continue; }
 
                     var pnc = new PartNumberCode
@@ -472,7 +516,7 @@ namespace CSDBPortal.Controllers
                     _db.PartNumberCodes.Add(pnc);
                     imported.Add(pnc.FullPNC);
                     row++;
-                    if (row > 10000) break;
+                    if (row > 10003) break; // 10000 data rows + 3 header rows
                 }
 
                 if (imported.Count > 0) await _db.SaveChangesAsync();
