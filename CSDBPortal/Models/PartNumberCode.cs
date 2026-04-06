@@ -30,11 +30,11 @@ namespace CSDBPortal.Models
         [Required, MaxLength(5)]
         public string SeqDigits { get; set; } = "";     // Seg 7: 00001 (Seq. No.)
 
-        [Required, MaxLength(1)]
-        public string MaintLevel { get; set; } = "";    // Seg 8: O/I/D
+        [Required, MaxLength(2)]
+        public string MaintLevel { get; set; } = "";    // Seg 8: 2-digit Tech Spec No.
 
-        [Required, MaxLength(1)]
-        public string RevSuffix { get; set; } = "";     // Seg 9: A-Z
+        [Required, MaxLength(10)]
+        public string RevSuffix { get; set; } = "";     // Seg 9: Customised Colour Scheme
 
         [Required, MaxLength(80)]
         public string FullPNC { get; set; } = "";       // Assembled PNS (unique)

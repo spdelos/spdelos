@@ -280,7 +280,7 @@ namespace CSDBPortal.Controllers
             // Header
             string[] headers = { "ModelId", "Chapter (EqCode)", "Section (ModCode)", "Sub Sec (SubAsmCode)",
                                   "Design Office", "Drawing Seq. No.",
-                                  "Seq. No.", "Maint. Level", "Rev. Suffix", "Full PNS",
+                                  "Seq. No.", "Tech Spec No.", "Colour Scheme", "Full PNS",
                                   "Status", "Created By", "Created On",
                                   "Obsoleted By", "Obsoleted On" };
             for (int c = 0; c < headers.Length; c++)
@@ -359,8 +359,8 @@ namespace CSDBPortal.Controllers
             ws.Cell(2, 5).Value = "e.g. 1";
             ws.Cell(2, 6).Value = "e.g. 001";
             ws.Cell(2, 7).Value = "e.g. 00001";
-            ws.Cell(2, 8).Value = "O/I/D";
-            ws.Cell(2, 9).Value = "e.g. A";
+            ws.Cell(2, 8).Value = "e.g. 01";
+            ws.Cell(2, 9).Value = "e.g. RED";
             for (int c = 1; c <= 9; c++)
                 ws.Cell(2, c).Style.Font.Italic = true;
 
@@ -511,10 +511,10 @@ namespace CSDBPortal.Controllers
                 return $"Drawing Seq. No. '{p.DrawingSeqNo}' is invalid (exactly 3 digits).";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.SeqDigits,    @"^[0-9]{5}$"))
                 return $"Seq. No. '{p.SeqDigits}' is invalid (exactly 5 digits).";
-            if (string.IsNullOrWhiteSpace(p.MaintLevel))
-                return "Maintenance Level is required.";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.RevSuffix,    @"^[A-Z]$"))
-                return $"Rev. Suffix '{p.RevSuffix}' is invalid (single letter A-Z).";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.MaintLevel, @"^[0-9]{2}$"))
+                return $"Technical Spec. No. '{p.MaintLevel}' is invalid (exactly 2 digits).";
+            if (string.IsNullOrWhiteSpace(p.RevSuffix))
+                return "Customised Colour Scheme is required.";
             return null;
         }
     }

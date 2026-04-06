@@ -90,8 +90,8 @@
 
     <div class="alert alert-info py-2 mb-3" style="font-size:.87rem;">
         <strong>Format:</strong>
-        <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;Chapter&gt;-&lt;Section&gt;-&lt;SubSec&gt;-&lt;DesignOff&gt;-&lt;DrawingSeq&gt;-&lt;SeqNo&gt;-&lt;MaintLevel&gt;-&lt;RevSuffix&gt;</span>
-        &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-1-001-00001-D-A</span>
+        <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;Chapter&gt;-&lt;Section&gt;-&lt;SubSec&gt;-&lt;DesignOff&gt;-&lt;DrawingSeq&gt;-&lt;SeqNo&gt;-&lt;TechSpecNo&gt;-&lt;ColourScheme&gt;</span>
+        &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-1-001-00001-01-RED</span>
     </div>
 
     <!-- ── Live Preview ──────────────────────────────────────────────── -->
@@ -222,11 +222,11 @@
                 <!-- Maint. Level -->
                 <div style="flex:1; min-width:82px; max-width:140px;">
                     <div class="pnc-segment-card" id="card_seg6">
-                        <div class="pnc-segment-label">Maint. Level</div>
+                        <div class="pnc-segment-label">Tech Spec No.</div>
                         <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="seg6">
                             <option value="">— —</option>
                         </select>
-                        <small class="text-muted" style="font-size:.65rem;">O / I / D</small>
+                        <small class="text-muted" style="font-size:.65rem;">2 digits</small>
                     </div>
                 </div>
 
@@ -235,10 +235,10 @@
                 <!-- Rev. Suffix -->
                 <div style="flex:1; min-width:58px; max-width:90px;">
                     <div class="pnc-segment-card" id="card_seg7">
-                        <div class="pnc-segment-label">Rev. Suffix</div>
+                        <div class="pnc-segment-label">Colour Scheme</div>
                         <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase w-100"
-                               id="seg7" maxlength="1" placeholder="A" data-pattern="^[A-Z]$">
-                        <small class="text-muted" style="font-size:.65rem;">A – Z</small>
+                               id="seg7" maxlength="10" placeholder="e.g. RED" data-pattern="^[A-Z0-9]{1,10}$">
+                        <small class="text-muted" style="font-size:.65rem;">1–10 chars</small>
                     </div>
                 </div>
 
@@ -262,7 +262,7 @@
     </div>
     <p class="text-muted mb-3" style="font-size:.78rem;">
         <i class="fa-solid fa-circle-info me-1"></i>
-        Excel upload must follow the <strong>Download Template</strong> format (columns: ModelId, EqCode, ModCode, SubAsmCode, SeqDigits, MaintLevel, RevSuffix).
+        Excel upload must follow the <strong>Download Template</strong> format (columns: ModelId, EqCode, ModCode, SubAsmCode, DesignOffice, DrawingSeqNo, SeqDigits, MaintLevel, RevSuffix).
         Files with missing or extra columns will be rejected as incompatible.
     </p>
 
@@ -305,8 +305,8 @@
                                 <th>Design Off.</th>
                                 <th>Drawing Seq.</th>
                                 <th>Seq. No.</th>
-                                <th>Level</th>
-                                <th>Rev</th>
+                                <th>Tech Spec No.</th>
+                                <th>Colour Scheme</th>
                                 <th>Full PNS</th>
                                 <th>Status</th>
                                 <th>Created By</th>
@@ -382,7 +382,7 @@
         <div class="col-md-6 col-lg-3" id="refWrap_MaintLevel">
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
-                    <span>Maintenance Level</span>
+                    <span>Technical Specification Numbers</span>
                     @if (isAdmin) {
                     <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="MaintLevel" title="Add row">
                         <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
@@ -817,8 +817,8 @@
         if (p.segDOR) parts.push('Design Off.: ' + p.segDOR);
         if (p.segDSN) parts.push('Drawing Seq.: '+ p.segDSN);
         if (p.seg5)   parts.push('Seq. No.: '    + p.seg5);
-        if (p.seg6)   parts.push('Level: '       + p.seg6);
-        if (p.seg7)   parts.push('Rev: '         + p.seg7);
+        if (p.seg6)   parts.push('Tech Spec: '    + p.seg6);
+        if (p.seg7)   parts.push('Colour: '      + p.seg7);
         var obs = p.includeObsolete ? '' : ' · Obsolete hidden';
         return parts.length ? 'Filters: ' + parts.join(', ') + obs : 'Showing all' + obs;
     }
