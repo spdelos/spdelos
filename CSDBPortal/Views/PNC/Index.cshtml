@@ -125,13 +125,13 @@
             <!-- hidden seg1 value written by the model-select modal -->
             <input type="hidden" id="seg1">
 
-            <div class="d-flex flex-wrap gap-1 align-items-start pb-1">
+            <div class="d-flex align-items-start justify-content-center gap-2 pb-1 flex-wrap">
 
                 <!-- Model ID — locked after modal selection -->
-                <div style="min-width:82px; max-width:110px;">
+                <div style="flex:1; min-width:82px; max-width:130px; text-align:center;">
                     <div class="pnc-segment-card" id="card_seg1">
                         <div class="pnc-segment-label">Model ID</div>
-                        <div class="seg-locked-display" id="seg1Display">—</div>
+                        <div class="seg-locked-display justify-content-center" id="seg1Display">—</div>
                         <a href="#" id="btnChangeModel" class="small text-primary d-block mt-1" style="font-size:.68rem;">Change</a>
                     </div>
                 </div>
@@ -139,10 +139,10 @@
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Eq. Code -->
-                <div style="min-width:90px; max-width:110px;">
+                <div style="flex:1; min-width:90px; max-width:140px;">
                     <div class="pnc-segment-card" id="card_seg2">
                         <div class="pnc-segment-label">Eq. Code</div>
-                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg2" style="max-width:98px;">
+                        <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="seg2">
                             <option value="">— —</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">ATA</small>
@@ -152,10 +152,10 @@
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Module Code -->
-                <div style="min-width:96px; max-width:116px;">
+                <div style="flex:1; min-width:96px; max-width:150px;">
                     <div class="pnc-segment-card" id="card_seg3">
                         <div class="pnc-segment-label">Module Code</div>
-                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg3" style="max-width:104px;">
+                        <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="seg3">
                             <option value="">— —</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">3-letter</small>
@@ -165,10 +165,10 @@
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Sub-Asm -->
-                <div style="min-width:115px; max-width:135px;">
+                <div style="flex:1; min-width:115px; max-width:160px;">
                     <div class="pnc-segment-card" id="card_seg4">
                         <div class="pnc-segment-label">Sub-Asm</div>
-                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg4" style="max-width:123px;">
+                        <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="seg4">
                             <option value="">— —</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">3-letter</small>
@@ -178,10 +178,10 @@
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Seq. Digits + refresh -->
-                <div style="min-width:104px; max-width:120px;">
+                <div style="flex:1; min-width:100px; max-width:140px;">
                     <div class="pnc-segment-card" id="card_seg5">
                         <div class="pnc-segment-label">Seq. Digits</div>
-                        <div class="input-group input-group-sm" style="max-width:112px;">
+                        <div class="input-group input-group-sm">
                             <input type="text" class="form-control font-monospace pnc-seg"
                                    id="seg5" maxlength="5" placeholder="00001" data-pattern="^[0-9]{5}$">
                             <button class="btn btn-outline-secondary" type="button" id="btnRefreshSeq"
@@ -196,10 +196,10 @@
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Maint. Level -->
-                <div style="min-width:82px; max-width:96px;">
+                <div style="flex:1; min-width:82px; max-width:140px;">
                     <div class="pnc-segment-card" id="card_seg6">
                         <div class="pnc-segment-label">Maint. Level</div>
-                        <select class="form-select form-select-sm pnc-seg font-monospace" id="seg6" style="max-width:90px;">
+                        <select class="form-select form-select-sm pnc-seg font-monospace w-100" id="seg6">
                             <option value="">— —</option>
                         </select>
                         <small class="text-muted" style="font-size:.65rem;">O / I / D</small>
@@ -209,11 +209,11 @@
                 <div class="sep-dash px-0">-</div>
 
                 <!-- Rev. Suffix -->
-                <div style="min-width:58px; max-width:70px;">
+                <div style="flex:1; min-width:58px; max-width:90px;">
                     <div class="pnc-segment-card" id="card_seg7">
                         <div class="pnc-segment-label">Rev. Suffix</div>
-                        <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase"
-                               id="seg7" maxlength="1" placeholder="A" data-pattern="^[A-Z]$" style="max-width:58px;">
+                        <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-uppercase w-100"
+                               id="seg7" maxlength="1" placeholder="A" data-pattern="^[A-Z]$">
                         <small class="text-muted" style="font-size:.65rem;">A – Z</small>
                     </div>
                 </div>
