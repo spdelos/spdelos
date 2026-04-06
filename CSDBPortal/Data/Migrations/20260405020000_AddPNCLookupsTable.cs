@@ -72,7 +72,7 @@ namespace CSDBPortal.Data.Migrations
 
             // Maintenance Levels
             var mlRows = new (string Code, string Desc, int Sort)[] {
-                ("O","Operator",1), ("I","Intermediate",2), ("D","Depot",3)
+                ("O","O Level - Operational",1), ("I","I Level - Intermediate",2), ("D","D Level - Depot",3)
             };
             foreach (var r in mlRows)
                 migrationBuilder.InsertData("PNCLookups", new[] { "LookupType","Code","Description","SortOrder","CreatedOn" }, new object[] { "MaintLevel", r.Code, r.Desc, r.Sort, now }, "dbo");
