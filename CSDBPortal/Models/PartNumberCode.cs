@@ -21,17 +21,23 @@ namespace CSDBPortal.Models
         [Required, MaxLength(3)]
         public string SubAsmCode { get; set; } = "";    // Seg 4: FCA…
 
+        [Required, MaxLength(1)]
+        public string DesignOffice { get; set; } = "";  // Seg 5: single digit (Design Office Responsibility)
+
+        [Required, MaxLength(3)]
+        public string DrawingSeqNo { get; set; } = "";  // Seg 6: 3-digit (Drawing Sequential Number)
+
         [Required, MaxLength(5)]
-        public string SeqDigits { get; set; } = "";     // Seg 5: 00001
+        public string SeqDigits { get; set; } = "";     // Seg 7: 00001 (Seq. No.)
 
         [Required, MaxLength(1)]
-        public string MaintLevel { get; set; } = "";    // Seg 6: O/I/D
+        public string MaintLevel { get; set; } = "";    // Seg 8: O/I/D
 
         [Required, MaxLength(1)]
-        public string RevSuffix { get; set; } = "";     // Seg 7: A-Z
+        public string RevSuffix { get; set; } = "";     // Seg 9: A-Z
 
-        [Required, MaxLength(50)]
-        public string FullPNC { get; set; } = "";       // Assembled PNC (unique)
+        [Required, MaxLength(80)]
+        public string FullPNC { get; set; } = "";       // Assembled PNS (unique)
 
         public bool IsObsolete { get; set; } = false;
 

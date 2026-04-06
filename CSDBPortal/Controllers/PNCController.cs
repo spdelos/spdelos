@@ -151,24 +151,28 @@ namespace CSDBPortal.Controllers
         [HttpGet]
         public async Task<JsonResult> GetPNCs(
             string? seg1, string? seg2, string? seg3, string? seg4,
+            string? segDOR, string? segDSN,
             string? seg5, string? seg6, string? seg7, bool includeObsolete = true)
         {
             try
             {
                 var q = _db.PartNumberCodes.AsNoTracking();
 
-                if (!string.IsNullOrWhiteSpace(seg1)) q = q.Where(p => p.ModelId    == seg1.Trim().ToUpper());
-                if (!string.IsNullOrWhiteSpace(seg2)) q = q.Where(p => p.EqCode     == seg2.Trim());
-                if (!string.IsNullOrWhiteSpace(seg3)) q = q.Where(p => p.ModCode    == seg3.Trim().ToUpper());
-                if (!string.IsNullOrWhiteSpace(seg4)) q = q.Where(p => p.SubAsmCode == seg4.Trim().ToUpper());
-                if (!string.IsNullOrWhiteSpace(seg5)) q = q.Where(p => p.SeqDigits  == seg5.Trim());
-                if (!string.IsNullOrWhiteSpace(seg6)) q = q.Where(p => p.MaintLevel == seg6.Trim().ToUpper());
-                if (!string.IsNullOrWhiteSpace(seg7)) q = q.Where(p => p.RevSuffix  == seg7.Trim().ToUpper());
-                if (!includeObsolete)                 q = q.Where(p => !p.IsObsolete);
+                if (!string.IsNullOrWhiteSpace(seg1))   q = q.Where(p => p.ModelId      == seg1.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(seg2))   q = q.Where(p => p.EqCode       == seg2.Trim());
+                if (!string.IsNullOrWhiteSpace(seg3))   q = q.Where(p => p.ModCode      == seg3.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(seg4))   q = q.Where(p => p.SubAsmCode   == seg4.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(segDOR)) q = q.Where(p => p.DesignOffice == segDOR.Trim());
+                if (!string.IsNullOrWhiteSpace(segDSN)) q = q.Where(p => p.DrawingSeqNo == segDSN.Trim());
+                if (!string.IsNullOrWhiteSpace(seg5))   q = q.Where(p => p.SeqDigits    == seg5.Trim());
+                if (!string.IsNullOrWhiteSpace(seg6))   q = q.Where(p => p.MaintLevel   == seg6.Trim().ToUpper());
+                if (!string.IsNullOrWhiteSpace(seg7))   q = q.Where(p => p.RevSuffix    == seg7.Trim().ToUpper());
+                if (!includeObsolete)                   q = q.Where(p => !p.IsObsolete);
 
                 var rows = await q.OrderBy(p => p.FullPNC)
                                   .Select(p => new {
                                       p.Id, p.ModelId, p.EqCode, p.ModCode, p.SubAsmCode,
+                                      p.DesignOffice, p.DrawingSeqNo,
                                       p.SeqDigits, p.MaintLevel, p.RevSuffix, p.FullPNC,
                                       p.IsObsolete, p.ObsoletedBy,
                                       ObsoletedOn = p.ObsoletedOn.HasValue
@@ -193,14 +197,16 @@ namespace CSDBPortal.Controllers
             if (pnc == null)
                 return Json(new { success = false, message = "No data received." });
 
-            pnc.ModelId    = (pnc.ModelId    ?? "").Trim().ToUpper();
-            pnc.EqCode     = (pnc.EqCode     ?? "").Trim();
-            pnc.ModCode    = (pnc.ModCode    ?? "").Trim().ToUpper();
-            pnc.SubAsmCode = (pnc.SubAsmCode ?? "").Trim().ToUpper();
-            pnc.SeqDigits  = (pnc.SeqDigits  ?? "").Trim();
-            pnc.MaintLevel = (pnc.MaintLevel ?? "").Trim().ToUpper();
-            pnc.RevSuffix  = (pnc.RevSuffix  ?? "").Trim().ToUpper();
-            pnc.FullPNC    = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}-{pnc.SubAsmCode}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
+            pnc.ModelId      = (pnc.ModelId      ?? "").Trim().ToUpper();
+            pnc.EqCode       = (pnc.EqCode       ?? "").Trim();
+            pnc.ModCode      = (pnc.ModCode      ?? "").Trim().ToUpper();
+            pnc.SubAsmCode   = (pnc.SubAsmCode   ?? "").Trim().ToUpper();
+            pnc.DesignOffice = (pnc.DesignOffice ?? "").Trim();
+            pnc.DrawingSeqNo = (pnc.DrawingSeqNo ?? "").Trim();
+            pnc.SeqDigits    = (pnc.SeqDigits    ?? "").Trim();
+            pnc.MaintLevel   = (pnc.MaintLevel   ?? "").Trim().ToUpper();
+            pnc.RevSuffix    = (pnc.RevSuffix    ?? "").Trim().ToUpper();
+            pnc.FullPNC      = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}-{pnc.SubAsmCode}-{pnc.DesignOffice}-{pnc.DrawingSeqNo}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
             pnc.CreatedBy  = User.Identity?.Name;
             pnc.CreatedOn  = DateTime.UtcNow;
             pnc.IsObsolete = false;
@@ -250,18 +256,21 @@ namespace CSDBPortal.Controllers
         [HttpGet]
         public async Task<IActionResult> DownloadFiltered(
             string? seg1, string? seg2, string? seg3, string? seg4,
+            string? segDOR, string? segDSN,
             string? seg5, string? seg6, string? seg7, bool includeObsolete = true)
         {
             var q = _db.PartNumberCodes.AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(seg1)) q = q.Where(p => p.ModelId    == seg1.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg2)) q = q.Where(p => p.EqCode     == seg2.Trim());
-            if (!string.IsNullOrWhiteSpace(seg3)) q = q.Where(p => p.ModCode    == seg3.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg4)) q = q.Where(p => p.SubAsmCode == seg4.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg5)) q = q.Where(p => p.SeqDigits  == seg5.Trim());
-            if (!string.IsNullOrWhiteSpace(seg6)) q = q.Where(p => p.MaintLevel == seg6.Trim().ToUpper());
-            if (!string.IsNullOrWhiteSpace(seg7)) q = q.Where(p => p.RevSuffix  == seg7.Trim().ToUpper());
-            if (!includeObsolete)                 q = q.Where(p => !p.IsObsolete);
+            if (!string.IsNullOrWhiteSpace(seg1))   q = q.Where(p => p.ModelId      == seg1.Trim().ToUpper());
+            if (!string.IsNullOrWhiteSpace(seg2))   q = q.Where(p => p.EqCode       == seg2.Trim());
+            if (!string.IsNullOrWhiteSpace(seg3))   q = q.Where(p => p.ModCode      == seg3.Trim().ToUpper());
+            if (!string.IsNullOrWhiteSpace(seg4))   q = q.Where(p => p.SubAsmCode   == seg4.Trim().ToUpper());
+            if (!string.IsNullOrWhiteSpace(segDOR)) q = q.Where(p => p.DesignOffice == segDOR.Trim());
+            if (!string.IsNullOrWhiteSpace(segDSN)) q = q.Where(p => p.DrawingSeqNo == segDSN.Trim());
+            if (!string.IsNullOrWhiteSpace(seg5))   q = q.Where(p => p.SeqDigits    == seg5.Trim());
+            if (!string.IsNullOrWhiteSpace(seg6))   q = q.Where(p => p.MaintLevel   == seg6.Trim().ToUpper());
+            if (!string.IsNullOrWhiteSpace(seg7))   q = q.Where(p => p.RevSuffix    == seg7.Trim().ToUpper());
+            if (!includeObsolete)                   q = q.Where(p => !p.IsObsolete);
 
             var rows = await q.OrderBy(p => p.FullPNC).ToListAsync();
 
@@ -269,8 +278,9 @@ namespace CSDBPortal.Controllers
             var ws = wb.Worksheets.Add("Part Numbers");
 
             // Header
-            string[] headers = { "ModelId", "EqCode", "ModCode", "SubAsmCode",
-                                  "SeqDigits", "MaintLevel", "RevSuffix", "Full PNC",
+            string[] headers = { "ModelId", "Chapter (EqCode)", "Section (ModCode)", "Sub Sec (SubAsmCode)",
+                                  "Design Office", "Drawing Seq. No.",
+                                  "Seq. No.", "Maint. Level", "Rev. Suffix", "Full PNS",
                                   "Status", "Created By", "Created On",
                                   "Obsoleted By", "Obsoleted On" };
             for (int c = 0; c < headers.Length; c++)
@@ -288,15 +298,17 @@ namespace CSDBPortal.Controllers
                 ws.Cell(r, 2).Value  = p.EqCode;
                 ws.Cell(r, 3).Value  = p.ModCode;
                 ws.Cell(r, 4).Value  = p.SubAsmCode;
-                ws.Cell(r, 5).Value  = p.SeqDigits;
-                ws.Cell(r, 6).Value  = p.MaintLevel;
-                ws.Cell(r, 7).Value  = p.RevSuffix;
-                ws.Cell(r, 8).Value  = p.FullPNC;
-                ws.Cell(r, 9).Value  = p.IsObsolete ? "Obsolete" : "Active";
-                ws.Cell(r, 10).Value = p.CreatedBy   ?? "";
-                ws.Cell(r, 11).Value = p.CreatedOn.ToString("yyyy-MM-dd HH:mm");
-                ws.Cell(r, 12).Value = p.ObsoletedBy ?? "";
-                ws.Cell(r, 13).Value = p.ObsoletedOn.HasValue
+                ws.Cell(r, 5).Value  = p.DesignOffice;
+                ws.Cell(r, 6).Value  = p.DrawingSeqNo;
+                ws.Cell(r, 7).Value  = p.SeqDigits;
+                ws.Cell(r, 8).Value  = p.MaintLevel;
+                ws.Cell(r, 9).Value  = p.RevSuffix;
+                ws.Cell(r, 10).Value = p.FullPNC;
+                ws.Cell(r, 11).Value = p.IsObsolete ? "Obsolete" : "Active";
+                ws.Cell(r, 12).Value = p.CreatedBy   ?? "";
+                ws.Cell(r, 13).Value = p.CreatedOn.ToString("yyyy-MM-dd HH:mm");
+                ws.Cell(r, 14).Value = p.ObsoletedBy ?? "";
+                ws.Cell(r, 15).Value = p.ObsoletedOn.HasValue
                     ? p.ObsoletedOn.Value.ToString("yyyy-MM-dd HH:mm") : "";
 
                 if (p.IsObsolete)
@@ -330,8 +342,9 @@ namespace CSDBPortal.Controllers
             using var wb = new XLWorkbook();
             var ws = wb.Worksheets.Add("PNC_Template");
 
-            string[] headers = { "ModelId (Seg1)", "EqCode (Seg2)", "ModCode (Seg3)",
-                                  "SubAsmCode (Seg4)", "SeqDigits (Seg5)", "MaintLevel (Seg6)", "RevSuffix (Seg7)" };
+            string[] headers = { "ModelId", "EqCode", "ModCode", "SubAsmCode",
+                                  "DesignOffice", "DrawingSeqNo",
+                                  "SeqDigits", "MaintLevel", "RevSuffix" };
             for (int c = 0; c < headers.Length; c++)
             {
                 ws.Cell(1, c + 1).Value = headers[c];
@@ -343,10 +356,12 @@ namespace CSDBPortal.Controllers
             ws.Cell(2, 2).Value = "e.g. 72";
             ws.Cell(2, 3).Value = "e.g. FAN";
             ws.Cell(2, 4).Value = "e.g. FCA";
-            ws.Cell(2, 5).Value = "e.g. 00001";
-            ws.Cell(2, 6).Value = "O/I/D";
-            ws.Cell(2, 7).Value = "e.g. A";
-            for (int c = 1; c <= 7; c++)
+            ws.Cell(2, 5).Value = "e.g. 1";
+            ws.Cell(2, 6).Value = "e.g. 001";
+            ws.Cell(2, 7).Value = "e.g. 00001";
+            ws.Cell(2, 8).Value = "O/I/D";
+            ws.Cell(2, 9).Value = "e.g. A";
+            for (int c = 1; c <= 9; c++)
                 ws.Cell(2, c).Style.Font.Italic = true;
 
             var wsEq = wb.Worksheets.Add("Equipment Codes");
@@ -414,7 +429,9 @@ namespace CSDBPortal.Controllers
                 var ws = wb.Worksheets.First();
 
                 // Validate header row matches template columns
-                string[] expectedHeaders = { "ModelId", "EqCode", "ModCode", "SubAsmCode", "SeqDigits", "MaintLevel", "RevSuffix" };
+                string[] expectedHeaders = { "ModelId", "EqCode", "ModCode", "SubAsmCode",
+                                             "DesignOffice", "DrawingSeqNo",
+                                             "SeqDigits", "MaintLevel", "RevSuffix" };
                 for (int c = 0; c < expectedHeaders.Length; c++)
                 {
                     var h = ws.Cell(1, c + 1).GetString().Trim();
@@ -431,18 +448,20 @@ namespace CSDBPortal.Controllers
 
                     var pnc = new PartNumberCode
                     {
-                        ModelId    = ws.Cell(row, 1).GetString().Trim().ToUpper(),
-                        EqCode     = ws.Cell(row, 2).GetString().Trim(),
-                        ModCode    = ws.Cell(row, 3).GetString().Trim().ToUpper(),
-                        SubAsmCode = ws.Cell(row, 4).GetString().Trim().ToUpper(),
-                        SeqDigits  = ws.Cell(row, 5).GetString().Trim(),
-                        MaintLevel = ws.Cell(row, 6).GetString().Trim().ToUpper(),
-                        RevSuffix  = ws.Cell(row, 7).GetString().Trim().ToUpper(),
-                        CreatedBy  = User.Identity?.Name,
-                        CreatedOn  = DateTime.UtcNow,
-                        IsObsolete = false
+                        ModelId      = ws.Cell(row, 1).GetString().Trim().ToUpper(),
+                        EqCode       = ws.Cell(row, 2).GetString().Trim(),
+                        ModCode      = ws.Cell(row, 3).GetString().Trim().ToUpper(),
+                        SubAsmCode   = ws.Cell(row, 4).GetString().Trim().ToUpper(),
+                        DesignOffice = ws.Cell(row, 5).GetString().Trim(),
+                        DrawingSeqNo = ws.Cell(row, 6).GetString().Trim(),
+                        SeqDigits    = ws.Cell(row, 7).GetString().Trim(),
+                        MaintLevel   = ws.Cell(row, 8).GetString().Trim().ToUpper(),
+                        RevSuffix    = ws.Cell(row, 9).GetString().Trim().ToUpper(),
+                        CreatedBy    = User.Identity?.Name,
+                        CreatedOn    = DateTime.UtcNow,
+                        IsObsolete   = false
                     };
-                    pnc.FullPNC = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}-{pnc.SubAsmCode}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
+                    pnc.FullPNC = $"{pnc.ModelId}-{pnc.EqCode}-{pnc.ModCode}-{pnc.SubAsmCode}-{pnc.DesignOffice}-{pnc.DrawingSeqNo}-{pnc.SeqDigits}-{pnc.MaintLevel}-{pnc.RevSuffix}";
 
                     var msg = ValidatePNC(pnc);
                     if (msg != null) { errors.Add($"Row {row}: {msg}"); row++; continue; }
@@ -478,21 +497,24 @@ namespace CSDBPortal.Controllers
         // ─── Validation helper ───────────────────────────────────────────────
         private static string? ValidatePNC(PartNumberCode p)
         {
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.ModelId,    @"^[A-Z]{2,4}[0-9]?$"))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.ModelId,      @"^[A-Z]{2,4}[0-9]?$"))
                 return $"ModelId '{p.ModelId}' is invalid (2-4 letters, optional trailing digit).";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.EqCode,     @"^(70|71|72|73|74|75|76|77|78|79|80)$"))
-                return $"EqCode '{p.EqCode}' is invalid (must be 70-80).";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.ModCode,    @"^(EGN|EEX|LPC|COU|FAN|ICA|HPC|DCO|TNZ|HPT|LPT|TEC|MGB|AGB)$"))
-                return $"ModCode '{p.ModCode}' is not a recognised module code.";
-            var validSubAsm = new HashSet<string> { "FCA","FBL","FHB","FSH","BRG","TTG","FDU","FVA","POL","STP","CON","SPR" };
-            if (!validSubAsm.Contains(p.SubAsmCode))
-                return $"SubAsmCode '{p.SubAsmCode}' is not a recognised sub-assembly code.";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.SeqDigits,  @"^[0-9]{5}$"))
-                return $"SeqDigits '{p.SeqDigits}' is invalid (exactly 5 digits).";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.MaintLevel, @"^[OID]$"))
-                return $"MaintLevel '{p.MaintLevel}' is invalid (O, I or D).";
-            if (!System.Text.RegularExpressions.Regex.IsMatch(p.RevSuffix,  @"^[A-Z]$"))
-                return $"RevSuffix '{p.RevSuffix}' is invalid (single letter A-Z).";
+            if (string.IsNullOrWhiteSpace(p.EqCode))
+                return "Chapter (EqCode) is required.";
+            if (string.IsNullOrWhiteSpace(p.ModCode))
+                return "Section (ModCode) is required.";
+            if (string.IsNullOrWhiteSpace(p.SubAsmCode))
+                return "Sub Sec (SubAsmCode) is required.";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.DesignOffice, @"^[0-9]$"))
+                return $"Design Office '{p.DesignOffice}' is invalid (single digit 0-9).";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.DrawingSeqNo, @"^[0-9]{3}$"))
+                return $"Drawing Seq. No. '{p.DrawingSeqNo}' is invalid (exactly 3 digits).";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.SeqDigits,    @"^[0-9]{5}$"))
+                return $"Seq. No. '{p.SeqDigits}' is invalid (exactly 5 digits).";
+            if (string.IsNullOrWhiteSpace(p.MaintLevel))
+                return "Maintenance Level is required.";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.RevSuffix,    @"^[A-Z]$"))
+                return $"Rev. Suffix '{p.RevSuffix}' is invalid (single letter A-Z).";
             return null;
         }
     }

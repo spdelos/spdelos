@@ -90,8 +90,8 @@
 
     <div class="alert alert-info py-2 mb-3" style="font-size:.87rem;">
         <strong>Format:</strong>
-        <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;Chapter&gt;-&lt;Section&gt;-&lt;SubSec&gt;-&lt;SeqDigits&gt;-&lt;MaintLevel&gt;-&lt;RevSuffix&gt;</span>
-        &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-00001-D-A</span>
+        <span class="font-monospace fw-semibold">&lt;ModelId&gt;-&lt;Chapter&gt;-&lt;Section&gt;-&lt;SubSec&gt;-&lt;DesignOff&gt;-&lt;DrawingSeq&gt;-&lt;SeqNo&gt;-&lt;MaintLevel&gt;-&lt;RevSuffix&gt;</span>
+        &nbsp; Example: <span class="font-monospace fw-semibold">KAV-72-FAN-FCA-1-001-00001-D-A</span>
     </div>
 
     <!-- ── Live Preview ──────────────────────────────────────────────── -->
@@ -177,10 +177,34 @@
 
                 <div class="sep-dash px-0">-</div>
 
-                <!-- Seq. Digits + refresh -->
+                <!-- Design Office Responsibility -->
+                <div style="flex:1; min-width:72px; max-width:100px;">
+                    <div class="pnc-segment-card" id="card_segDOR">
+                        <div class="pnc-segment-label">Design Off.</div>
+                        <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-center w-100"
+                               id="segDOR" maxlength="1" placeholder="0" data-pattern="^[0-9]$">
+                        <small class="text-muted" style="font-size:.65rem;">1 digit</small>
+                    </div>
+                </div>
+
+                <div class="sep-dash px-0">-</div>
+
+                <!-- Drawing Sequential Number -->
+                <div style="flex:1; min-width:80px; max-width:110px;">
+                    <div class="pnc-segment-card" id="card_segDSN">
+                        <div class="pnc-segment-label">Drawing Seq.</div>
+                        <input type="text" class="form-control form-control-sm pnc-seg font-monospace text-center w-100"
+                               id="segDSN" maxlength="3" placeholder="001" data-pattern="^[0-9]{3}$">
+                        <small class="text-muted" style="font-size:.65rem;">3 digits</small>
+                    </div>
+                </div>
+
+                <div class="sep-dash px-0">-</div>
+
+                <!-- Seq. No. + refresh -->
                 <div style="flex:1; min-width:100px; max-width:140px;">
                     <div class="pnc-segment-card" id="card_seg5">
-                        <div class="pnc-segment-label">Seq. Digits</div>
+                        <div class="pnc-segment-label">Seq. No.</div>
                         <div class="input-group input-group-sm">
                             <input type="text" class="form-control font-monospace pnc-seg"
                                    id="seg5" maxlength="5" placeholder="00001" data-pattern="^[0-9]{5}$">
@@ -275,10 +299,12 @@
                             <tr>
                                 <th>#</th>
                                 <th>ModelId</th>
-                                <th>EqCode</th>
-                                <th>ModCode</th>
-                                <th>SubAsmCode</th>
-                                <th>SeqDigits</th>
+                                <th>Chapter</th>
+                                <th>Section</th>
+                                <th>Sub Sec</th>
+                                <th>Design Off.</th>
+                                <th>Drawing Seq.</th>
+                                <th>Seq. No.</th>
                                 <th>Level</th>
                                 <th>Rev</th>
                                 <th>Full PNS</th>
@@ -289,7 +315,7 @@
                             </tr>
                         </thead>
                         <tbody id="pncTbody">
-                            <tr><td colspan="13" class="text-center text-muted py-3">No data loaded.</td></tr>
+                            <tr><td colspan="15" class="text-center text-muted py-3">No data loaded.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -449,8 +475,8 @@
     'use strict';
 
     // seg1 is now a hidden input; seg1Display is the locked div
-    var nonSeg1Ids  = ['seg2','seg3','seg4','seg5','seg6','seg7'];
-    var allSegIds   = ['seg1','seg2','seg3','seg4','seg5','seg6','seg7'];
+    var nonSeg1Ids  = ['seg2','seg3','seg4','segDOR','segDSN','seg5','seg6','seg7'];
+    var allSegIds   = ['seg1','seg2','seg3','seg4','segDOR','segDSN','seg5','seg6','seg7'];
     var listVisible = false;
     var obsoleteId  = null;
     var selectedModelId = '';
@@ -698,13 +724,15 @@
     // ── Save PNC ──────────────────────────────────────────────────────
     $('#btnSavePNC').on('click', function() {
         var payload = {
-            modelId:    selectedModelId,
-            eqCode:     $('#seg2').val() || '',
-            modCode:    $('#seg3').val() || '',
-            subAsmCode: getSegVal('seg4'),
-            seqDigits:  $('#seg5').val() || '',
-            maintLevel: $('#seg6').val() || '',
-            revSuffix:  getSegVal('seg7')
+            modelId:      selectedModelId,
+            eqCode:       $('#seg2').val()    || '',
+            modCode:      $('#seg3').val()    || '',
+            subAsmCode:   getSegVal('seg4')   || '',
+            designOffice: getSegVal('segDOR') || '',
+            drawingSeqNo: getSegVal('segDSN') || '',
+            seqDigits:    $('#seg5').val()    || '',
+            maintLevel:   $('#seg6').val()    || '',
+            revSuffix:    getSegVal('seg7')   || ''
         };
         $('#btnSavePNC').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving…');
         $.ajax({ url: '/PNC/SavePNC', method: 'POST', contentType: 'application/json', data: JSON.stringify(payload) })
@@ -767,26 +795,30 @@
 
     function buildFilterParams() {
         return {
-            seg1: selectedModelId || undefined,
-            seg2: $('#seg2').val()  || undefined,
-            seg3: $('#seg3').val()  || undefined,
-            seg4: getSegVal('seg4') || undefined,
-            seg5: $('#seg5').val()  || undefined,
-            seg6: $('#seg6').val()  || undefined,
-            seg7: getSegVal('seg7') || undefined,
+            seg1:   selectedModelId    || undefined,
+            seg2:   $('#seg2').val()   || undefined,
+            seg3:   $('#seg3').val()   || undefined,
+            seg4:   getSegVal('seg4')  || undefined,
+            segDOR: getSegVal('segDOR')|| undefined,
+            segDSN: getSegVal('segDSN')|| undefined,
+            seg5:   $('#seg5').val()   || undefined,
+            seg6:   $('#seg6').val()   || undefined,
+            seg7:   getSegVal('seg7')  || undefined,
             includeObsolete: $('#chkShowObsolete').is(':checked')
         };
     }
 
     function buildFilterDesc(p) {
         var parts = [];
-        if (p.seg1) parts.push('Model: ' + p.seg1);
-        if (p.seg2) parts.push('Eq: '    + p.seg2);
-        if (p.seg3) parts.push('Mod: '   + p.seg3);
-        if (p.seg4) parts.push('Sub: '   + p.seg4);
-        if (p.seg5) parts.push('Seq: '   + p.seg5);
-        if (p.seg6) parts.push('Lvl: '   + p.seg6);
-        if (p.seg7) parts.push('Rev: '   + p.seg7);
+        if (p.seg1)   parts.push('Model: '       + p.seg1);
+        if (p.seg2)   parts.push('Chapter: '     + p.seg2);
+        if (p.seg3)   parts.push('Section: '     + p.seg3);
+        if (p.seg4)   parts.push('Sub Sec: '     + p.seg4);
+        if (p.segDOR) parts.push('Design Off.: ' + p.segDOR);
+        if (p.segDSN) parts.push('Drawing Seq.: '+ p.segDSN);
+        if (p.seg5)   parts.push('Seq. No.: '    + p.seg5);
+        if (p.seg6)   parts.push('Level: '       + p.seg6);
+        if (p.seg7)   parts.push('Rev: '         + p.seg7);
         var obs = p.includeObsolete ? '' : ' · Obsolete hidden';
         return parts.length ? 'Filters: ' + parts.join(', ') + obs : 'Showing all' + obs;
     }
@@ -794,7 +826,7 @@
     function loadPNCs() {
         var params = buildFilterParams();
         $('#pncFilterDesc').text(buildFilterDesc(params));
-        $('#pncTbody').html('<tr><td colspan="13" class="text-center py-3">' +
+        $('#pncTbody').html('<tr><td colspan="15" class="text-center py-3">' +
             '<span class="spinner-border spinner-border-sm me-2"></span>Loading…</td></tr>');
 
         $.get('/PNC/GetPNCs', params)
@@ -803,7 +835,7 @@
                 $('#pncCount').text(count);
                 if (!r.success) {
                     $('#pncTbody').html(
-                        '<tr><td colspan="13" class="text-center py-4 text-danger">' +
+                        '<tr><td colspan="15" class="text-center py-4 text-danger">' +
                         '<i class="fa-solid fa-triangle-exclamation me-2"></i>' +
                         '<strong>Database error</strong> — ' + escHtml(r.error || 'Unknown error') +
                         '<br><small class="text-muted">The PNS table may not exist yet. Run pending database migrations.</small>' +
@@ -812,7 +844,7 @@
                 }
                 if (!count) {
                     $('#pncTbody').html(
-                        '<tr><td colspan="13" class="text-center py-4">' +
+                        '<tr><td colspan="15" class="text-center py-4">' +
                         '<i class="fa-solid fa-circle-info me-2 text-muted"></i>' +
                         '<span class="text-muted fw-semibold">No Part Numbers Available</span>' +
                         '</td></tr>');
@@ -834,25 +866,27 @@
 
                     html += '<tr class="' + (obs ? 'row-obsolete' : '') + '">' +
                         '<td>' + (i+1) + '</td>' +
-                        '<td class="font-monospace">' + escHtml(row.modelId)    + '</td>' +
-                        '<td class="font-monospace">' + escHtml(row.eqCode)     + '</td>' +
-                        '<td class="font-monospace">' + escHtml(row.modCode)    + '</td>' +
-                        '<td class="font-monospace">' + escHtml(row.subAsmCode) + '</td>' +
-                        '<td class="font-monospace">' + escHtml(row.seqDigits)  + '</td>' +
-                        '<td class="font-monospace text-center">' + escHtml(row.maintLevel) + '</td>' +
-                        '<td class="font-monospace text-center">' + escHtml(row.revSuffix)  + '</td>' +
-                        '<td class="pnc-code">'         + escHtml(row.fullPNC)    + '</td>' +
-                        '<td class="text-center">'      + badge  + '</td>' +
+                        '<td class="font-monospace">' + escHtml(row.modelId)      + '</td>' +
+                        '<td class="font-monospace">' + escHtml(row.eqCode)       + '</td>' +
+                        '<td class="font-monospace">' + escHtml(row.modCode)      + '</td>' +
+                        '<td class="font-monospace">' + escHtml(row.subAsmCode)   + '</td>' +
+                        '<td class="font-monospace text-center">' + escHtml(row.designOffice) + '</td>' +
+                        '<td class="font-monospace text-center">' + escHtml(row.drawingSeqNo) + '</td>' +
+                        '<td class="font-monospace">' + escHtml(row.seqDigits)    + '</td>' +
+                        '<td class="font-monospace text-center">' + escHtml(row.maintLevel)   + '</td>' +
+                        '<td class="font-monospace text-center">' + escHtml(row.revSuffix)    + '</td>' +
+                        '<td class="pnc-code">'         + escHtml(row.fullPNC)       + '</td>' +
+                        '<td class="text-center">'      + badge                      + '</td>' +
                         '<td class="text-muted small">' + escHtml(row.createdBy||'') + '</td>' +
                         '<td class="text-muted small">' + escHtml(row.createdOn)     + '</td>' +
-                        '<td class="text-center">'      + action + '</td>' +
+                        '<td class="text-center">'      + action                     + '</td>' +
                         '</tr>';
                 });
                 $('#pncTbody').html(html);
             })
             .fail(function(xhr) {
                 $('#pncTbody').html(
-                    '<tr><td colspan="13" class="text-danger text-center py-2">' +
+                    '<tr><td colspan="15" class="text-danger text-center py-2">' +
                     'Request failed (HTTP ' + xhr.status + '). Check that you are logged in and the server is running.' +
                     '</td></tr>');
             });
