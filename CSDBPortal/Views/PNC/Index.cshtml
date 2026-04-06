@@ -47,11 +47,9 @@
         padding-top: 1.5rem;
     }
 
-    .ref-table { table-layout: fixed; width: 100%; }
     .ref-table th { background: var(--primary-light, #f0f4ff); font-size: 0.8rem; }
-    .ref-table td, .ref-table th { font-size: 0.82rem; padding: 0.28rem 0.55rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .ref-table td.cell-desc, .ref-table th.col-desc { white-space: normal; overflow: visible; }
-    .ref-table input { width: 100%; min-width: 0; box-sizing: border-box; }
+    .ref-table td, .ref-table th { font-size: 0.82rem; padding: 0.28rem 0.55rem; }
+    .ref-card { overflow: visible !important; }
 
     #pncListTable thead th { font-size: 0.8rem; white-space: nowrap; }
     #pncListTable tbody td { font-size: 0.82rem; }
@@ -337,7 +335,7 @@
     <!-- ── Reference Tables (editable) ─────────────────────────────── -->
     <div class="row g-2 row-cols-1 row-cols-md-2 row-cols-xl-5 mt-1 align-items-start">
         <div class="col" id="refWrap_EqCode">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm ref-card">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Chapters</span>
                     @if (isAdmin) {
@@ -346,9 +344,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0" style="height:200px; overflow-y:auto;">
+                <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_EqCode">
-                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -364,9 +362,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0" style="height:200px; overflow-y:auto;">
+                <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_ModCode">
-                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -382,9 +380,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0" style="height:200px; overflow-y:auto;">
+                <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_SubAsm">
-                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -400,9 +398,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0" style="height:200px; overflow-y:auto;">
+                <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_DesignOff">
-                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -418,9 +416,9 @@
                     </button>
                     }
                 </div>
-                <div class="card-body p-0" style="height:200px; overflow-y:auto;">
+                <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_MaintLevel">
-                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -1151,7 +1149,7 @@
         var row = '<tr data-id="0" data-type="' + escHtml(type) + '" class="editing">' +
             '<td class="cell-code"><input type="text" class="form-control form-control-sm font-monospace" ' +
                 'placeholder="CODE" maxlength="10" style="text-transform:uppercase;"></td>' +
-            '<td class="cell-desc col-desc"><input type="text" class="form-control form-control-sm" ' +
+            '<td class="cell-desc"><input type="text" class="form-control form-control-sm" ' +
                 'placeholder="Description" maxlength="200"></td>' +
             '<td class="text-center text-nowrap">' +
                 '<button class="btn btn-success btn-sm py-0 px-1 btn-save-lookup" title="Save">' +
@@ -1160,10 +1158,7 @@
                     '<i class="fa-solid fa-xmark" style="font-size:.6rem;"></i></button>' +
             '</td></tr>';
         $tbody.append(row);
-        var $input = $tbody.find('tr[data-id="0"] input:first').focus();
-        // Scroll the new row into view inside the fixed-height card-body
-        var $cardBody = $tbody.closest('.card-body');
-        $cardBody.scrollTop($cardBody[0].scrollHeight);
+        $tbody.find('tr[data-id="0"] input:first').focus();
     });
 
     // Commit add/edit on Enter key inside table inputs
