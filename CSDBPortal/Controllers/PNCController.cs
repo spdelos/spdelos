@@ -37,7 +37,7 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public async Task<JsonResult> SaveLookup([FromBody] PNCLookup row)
         {
-            if (!User.IsInRole("superAdmin") && !User.IsInRole("Administrator"))
+            if (!User.HasClaim("Permission", Features.UserAndRoleAdministration))
                 return Json(new { success = false, message = "Administrator privileges are required to modify reference tables." });
 
             if (row == null || string.IsNullOrWhiteSpace(row.Code) || string.IsNullOrWhiteSpace(row.Description))
@@ -82,7 +82,7 @@ namespace CSDBPortal.Controllers
         [HttpDelete]
         public async Task<JsonResult> DeleteLookup(int id)
         {
-            if (!User.IsInRole("superAdmin") && !User.IsInRole("Administrator"))
+            if (!User.HasClaim("Permission", Features.UserAndRoleAdministration))
                 return Json(new { success = false, message = "Administrator privileges are required to modify reference tables." });
 
             try

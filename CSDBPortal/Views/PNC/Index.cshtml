@@ -1,7 +1,7 @@
 @{
     ViewData["Title"] = "PNS";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var isAdmin = User.IsInRole("superAdmin") || User.IsInRole("Administrator");
+    var isAdmin = User.HasClaim("Permission", CSDBPortal.Features.UserAndRoleAdministration);
 }
 
 <style>
