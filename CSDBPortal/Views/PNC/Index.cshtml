@@ -47,8 +47,11 @@
         padding-top: 1.5rem;
     }
 
+    .ref-table { table-layout: fixed; width: 100%; }
     .ref-table th { background: var(--primary-light, #f0f4ff); font-size: 0.8rem; }
-    .ref-table td, .ref-table th { font-size: 0.82rem; padding: 0.28rem 0.55rem; }
+    .ref-table td, .ref-table th { font-size: 0.82rem; padding: 0.28rem 0.55rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ref-table td.cell-desc, .ref-table th.col-desc { white-space: normal; overflow: visible; }
+    .ref-table input { width: 100%; min-width: 0; box-sizing: border-box; }
 
     #pncListTable thead th { font-size: 0.8rem; white-space: nowrap; }
     #pncListTable tbody td { font-size: 0.82rem; }
@@ -345,7 +348,7 @@
                 </div>
                 <div class="card-body p-0" style="height:200px; overflow-y:auto;">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_EqCode">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="white-space:nowrap;"></th>}</tr></thead>
+                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -363,7 +366,7 @@
                 </div>
                 <div class="card-body p-0" style="height:200px; overflow-y:auto;">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_ModCode">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="white-space:nowrap;"></th>}</tr></thead>
+                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -381,7 +384,7 @@
                 </div>
                 <div class="card-body p-0" style="height:200px; overflow-y:auto;">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_SubAsm">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="white-space:nowrap;"></th>}</tr></thead>
+                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -399,7 +402,7 @@
                 </div>
                 <div class="card-body p-0" style="height:200px; overflow-y:auto;">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_DesignOff">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="white-space:nowrap;"></th>}</tr></thead>
+                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -417,7 +420,7 @@
                 </div>
                 <div class="card-body p-0" style="height:200px; overflow-y:auto;">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_MaintLevel">
-                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="white-space:nowrap;"></th>}</tr></thead>
+                        <thead><tr><th style="width:28%;">Code</th><th class="col-desc">Description</th>@if(isAdmin){<th style="width:64px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -1076,7 +1079,7 @@
         $tr.addClass('editing')
             .find('.cell-code').html(
                 '<input type="text" class="form-control form-control-sm font-monospace" ' +
-                'value="' + escHtml(code) + '" maxlength="10" style="max-width:76px; text-transform:uppercase;">')
+                'value="' + escHtml(code) + '" maxlength="10" style="text-transform:uppercase;">')
             .end()
             .find('.cell-desc').html(
                 '<input type="text" class="form-control form-control-sm" ' +
@@ -1147,8 +1150,8 @@
         }
         var row = '<tr data-id="0" data-type="' + escHtml(type) + '" class="editing">' +
             '<td class="cell-code"><input type="text" class="form-control form-control-sm font-monospace" ' +
-                'placeholder="CODE" maxlength="10" style="max-width:76px; text-transform:uppercase;"></td>' +
-            '<td class="cell-desc"><input type="text" class="form-control form-control-sm" ' +
+                'placeholder="CODE" maxlength="10" style="text-transform:uppercase;"></td>' +
+            '<td class="cell-desc col-desc"><input type="text" class="form-control form-control-sm" ' +
                 'placeholder="Description" maxlength="200"></td>' +
             '<td class="text-center text-nowrap">' +
                 '<button class="btn btn-success btn-sm py-0 px-1 btn-save-lookup" title="Save">' +
