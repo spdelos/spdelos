@@ -15,11 +15,11 @@ namespace CSDBPortal.Models
         [Required, MaxLength(2)]
         public string EqCode { get; set; } = "";        // Seg 2: 70-80
 
-        [Required, MaxLength(3)]
-        public string ModCode { get; set; } = "";       // Seg 3: EGN, FAN…
+        [Required, MaxLength(1)]
+        public string ModCode { get; set; } = "";       // Seg 3: single digit
 
-        [Required, MaxLength(3)]
-        public string SubAsmCode { get; set; } = "";    // Seg 4: FCA…
+        [Required, MaxLength(1)]
+        public string SubAsmCode { get; set; } = "";    // Seg 4: single digit
 
         [Required, MaxLength(10)]
         public string DesignOffice { get; set; } = "";  // Seg 5: Design Office Responsibility (dropdown)

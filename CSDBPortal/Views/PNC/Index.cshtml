@@ -1147,9 +1147,11 @@
             $tbody.find('tr[data-id="0"] input:first').focus();
             return;
         }
+        var codeMaxLen = (type === 'ModCode' || type === 'SubAsm') ? 1 : 10;
+        var codePlaceholder = (type === 'ModCode' || type === 'SubAsm') ? '0–9' : 'CODE';
         var row = '<tr data-id="0" data-type="' + escHtml(type) + '" class="editing">' +
             '<td class="cell-code"><input type="text" class="form-control form-control-sm font-monospace" ' +
-                'placeholder="CODE" maxlength="10" style="text-transform:uppercase;"></td>' +
+                'placeholder="' + codePlaceholder + '" maxlength="' + codeMaxLen + '" style="text-transform:uppercase;"></td>' +
             '<td class="cell-desc"><input type="text" class="form-control form-control-sm" ' +
                 'placeholder="Description" maxlength="200"></td>' +
             '<td class="text-center text-nowrap">' +

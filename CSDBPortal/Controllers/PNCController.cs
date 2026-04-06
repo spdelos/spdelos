@@ -47,6 +47,11 @@ namespace CSDBPortal.Controllers
             row.Description = row.Description.Trim();
             row.LookupType  = row.LookupType?.Trim() ?? "";
 
+            // Section and Sub Sec codes must be a single digit
+            if ((row.LookupType == "ModCode" || row.LookupType == "SubAsm") &&
+                !System.Text.RegularExpressions.Regex.IsMatch(row.Code, @"^[0-9]$"))
+                return Json(new { success = false, message = "Code must be a single digit (0–9) for this table." });
+
             try
             {
                 // Check for duplicate code within same type (excluding self on update)
@@ -74,7 +79,7 @@ namespace CSDBPortal.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Database error: " + ex.Message });
+                return Json(new { success = false, message = ex.Message.Contains("Invalid object name") ? "Reference tables do not exist yet — run: dotnet ef database update" : "Database error: " + ex.Message });
             }
         }
 
@@ -95,7 +100,7 @@ namespace CSDBPortal.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Database error: " + ex.Message });
+                return Json(new { success = false, message = ex.Message.Contains("Invalid object name") ? "Reference tables do not exist yet — run: dotnet ef database update" : "Database error: " + ex.Message });
             }
         }
 
@@ -228,7 +233,7 @@ namespace CSDBPortal.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Database error: " + ex.Message });
+                return Json(new { success = false, message = ex.Message.Contains("Invalid object name") ? "Reference tables do not exist yet — run: dotnet ef database update" : "Database error: " + ex.Message });
             }
         }
 
@@ -250,7 +255,7 @@ namespace CSDBPortal.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Database error: " + ex.Message });
+                return Json(new { success = false, message = ex.Message.Contains("Invalid object name") ? "Reference tables do not exist yet — run: dotnet ef database update" : "Database error: " + ex.Message });
             }
         }
 
@@ -550,10 +555,10 @@ namespace CSDBPortal.Controllers
                 return $"ModelId '{p.ModelId}' is invalid (2-4 letters, optional trailing digit).";
             if (string.IsNullOrWhiteSpace(p.EqCode))
                 return "Chapter (EqCode) is required.";
-            if (string.IsNullOrWhiteSpace(p.ModCode))
-                return "Section (ModCode) is required.";
-            if (string.IsNullOrWhiteSpace(p.SubAsmCode))
-                return "Sub Sec (SubAsmCode) is required.";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.ModCode ?? "", @"^[0-9]$"))
+                return $"Section must be a single digit (0–9).";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(p.SubAsmCode ?? "", @"^[0-9]$"))
+                return $"Sub Sec must be a single digit (0–9).";
             if (string.IsNullOrWhiteSpace(p.DesignOffice))
                 return "Design Office is required.";
             if (!System.Text.RegularExpressions.Regex.IsMatch(p.DrawingSeqNo, @"^[0-9]{3}$"))
