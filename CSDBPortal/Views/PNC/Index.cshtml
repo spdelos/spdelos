@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "PNC";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var isAdmin = User.IsInRole("Administrator");
 }
 
 <style>
@@ -302,13 +303,15 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Equipment Codes</span>
+                    @if (isAdmin) {
                     <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="EqCode" title="Add row">
                         <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
                     </button>
+                    }
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_EqCode">
-                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="width:52px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -318,13 +321,15 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Module Codes</span>
+                    @if (isAdmin) {
                     <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="ModCode" title="Add row">
                         <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
                     </button>
+                    }
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_ModCode">
-                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="width:52px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -334,13 +339,15 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Sub-Assembly Codes</span>
+                    @if (isAdmin) {
                     <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="SubAsm" title="Add row">
                         <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
                     </button>
+                    }
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_SubAsm">
-                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="width:52px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -350,13 +357,15 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header fw-semibold d-flex align-items-center justify-content-between py-2">
                     <span>Maintenance Level</span>
+                    @if (isAdmin) {
                     <button class="btn btn-outline-primary btn-sm py-0 px-1 btn-add-lookup" data-type="MaintLevel" title="Add row">
                         <i class="fa-solid fa-plus" style="font-size:.7rem;"></i>
                     </button>
+                    }
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm table-bordered ref-table mb-0" id="refTable_MaintLevel">
-                        <thead><tr><th>Code</th><th>Description</th><th style="width:52px;"></th></tr></thead>
+                        <thead><tr><th>Code</th><th>Description</th>@if(isAdmin){<th style="width:52px;"></th>}</tr></thead>
                         <tbody><tr><td colspan="3" class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></td></tr></tbody>
                     </table>
                 </div>
@@ -937,7 +946,8 @@
 
     // ── Reference Tables ──────────────────────────────────────────────
     // Maps lookup type → segment select id
-    var refSegMap = { EqCode: 'seg2', ModCode: 'seg3', SubAsm: 'seg4', MaintLevel: 'seg6' };
+    var refSegMap  = { EqCode: 'seg2', ModCode: 'seg3', SubAsm: 'seg4', MaintLevel: 'seg6' };
+    var pncIsAdmin = @Json.Serialize(isAdmin);
 
     function loadRefTable(type) {
         var $tbody = $('#refTable_' + type + ' tbody');
@@ -963,17 +973,20 @@
     function renderRefRows(type, data) {
         var html = '';
         $.each(data, function(_, row) {
+            var actionCell = pncIsAdmin
+                ? '<td class="text-center text-nowrap" style="width:52px;">' +
+                      '<button class="btn btn-outline-primary btn-sm py-0 px-1 btn-edit-lookup" title="Edit">' +
+                          '<i class="fa-solid fa-pencil" style="font-size:.6rem;"></i>' +
+                      '</button> ' +
+                      '<button class="btn btn-outline-danger btn-sm py-0 px-1 btn-del-lookup" title="Delete">' +
+                          '<i class="fa-solid fa-trash" style="font-size:.6rem;"></i>' +
+                      '</button>' +
+                  '</td>'
+                : '';
             html += '<tr data-id="' + row.id + '" data-type="' + escHtml(type) + '">' +
                 '<td class="font-monospace cell-code">' + escHtml(row.code) + '</td>' +
                 '<td class="cell-desc">' + escHtml(row.description) + '</td>' +
-                '<td class="text-center text-nowrap" style="width:52px;">' +
-                    '<button class="btn btn-outline-primary btn-sm py-0 px-1 btn-edit-lookup" title="Edit">' +
-                        '<i class="fa-solid fa-pencil" style="font-size:.6rem;"></i>' +
-                    '</button> ' +
-                    '<button class="btn btn-outline-danger btn-sm py-0 px-1 btn-del-lookup" title="Delete">' +
-                        '<i class="fa-solid fa-trash" style="font-size:.6rem;"></i>' +
-                    '</button>' +
-                '</td></tr>';
+                actionCell + '</tr>';
         });
         $('#refTable_' + type + ' tbody').html(html);
     }
