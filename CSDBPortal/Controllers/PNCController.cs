@@ -240,7 +240,7 @@ namespace CSDBPortal.Controllers
             {
                 var pnc = await _db.PartNumberCodes.FindAsync(id);
                 if (pnc == null) return Json(new { success = false, message = "Not found." });
-                if (pnc.IsObsolete) return Json(new { success = false, message = "Already obsolete." });
+                if (pnc.IsObsolete) return Json(new { success = false, message = "Already deactivated." });
 
                 pnc.IsObsolete  = true;
                 pnc.ObsoletedBy = User.Identity?.Name;
@@ -284,7 +284,7 @@ namespace CSDBPortal.Controllers
                                   "Design Office", "Drawing Seq. No.",
                                   "Seq. No.", "Tech Spec No.", "Colour", "Full PNS", "Part Name",
                                   "Status", "Created By", "Created On",
-                                  "Obsoleted By", "Obsoleted On" };
+                                  "DeActivated By", "DeActivated On" };
             for (int c = 0; c < headers.Length; c++)
             {
                 var cell = ws.Cell(1, c + 1);
@@ -307,7 +307,7 @@ namespace CSDBPortal.Controllers
                 ws.Cell(r, 9).Value  = p.RevSuffix;
                 ws.Cell(r, 10).Value = p.FullPNC;
                 ws.Cell(r, 11).Value = p.PartName    ?? "";
-                ws.Cell(r, 12).Value = p.IsObsolete ? "Obsolete" : "Active";
+                ws.Cell(r, 12).Value = p.IsObsolete ? "DeActivated" : "Active";
                 ws.Cell(r, 13).Value = p.CreatedBy   ?? "";
                 ws.Cell(r, 14).Value = p.CreatedOn.ToString("yyyy-MM-dd HH:mm");
                 ws.Cell(r, 15).Value = p.ObsoletedBy ?? "";
