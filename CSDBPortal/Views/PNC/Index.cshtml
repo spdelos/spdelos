@@ -104,7 +104,7 @@
                         <i class="fa-regular fa-copy"></i> Copy
                     </button>
                     <button class="btn btn-sm btn-success" id="btnSavePNC" disabled>
-                        <i class="fa-solid fa-floppy-disk me-1"></i> Save PNS
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save PNo
                     </button>
                 </div>
             </div>
@@ -718,7 +718,7 @@
                 }
             })
             .fail(function() { $('#pncValidMsg').html('<span class="text-danger">Server error.</span>'); })
-            .always(function() { $('#btnSavePNC').prop('disabled', false).html('<i class="fa-solid fa-floppy-disk me-1"></i> Save PNS'); });
+            .always(function() { $('#btnSavePNC').prop('disabled', false).html('<i class="fa-solid fa-floppy-disk me-1"></i> Save PNo'); });
     });
 
     // ── Copy ──────────────────────────────────────────────────────────
