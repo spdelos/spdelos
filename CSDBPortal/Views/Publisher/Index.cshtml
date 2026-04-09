@@ -54,6 +54,20 @@
 
                 <div class="pub-section-grid">
 
+                    <!-- ── Package Type ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-box me-1"></i>Package Type
+                        </div>
+                        <div style="max-width:260px;">
+                            <select id="ietpPackageType" class="form-select">
+                                <option value="PMC">PMC — Project Management Code</option>
+                                <option value="DDN">DDN — Data Distribution Notice</option>
+                            </select>
+                            <div class="form-text">Used as prefix in the output filename: <span id="pkgFilenameSample" class="fw-semibold">PMC_&lt;project&gt;.nav</span></div>
+                        </div>
+                    </div>
+
                     <!-- ── OEM Logo ── -->
                     <div class="pub-section">
                         <div class="pub-section-title">
@@ -358,10 +372,19 @@
     $("#publisherlink").addClass("active");
 
     // ── Enable Publish button only when a project is selected ──
-    $("#pubProjectSelect").on("change", function () {
-        var hasProject = !!$(this).val();
+    $("#pubProjectSelect, #ietpPackageType").on("change", function () {
+        var hasProject = !!$("#pubProjectSelect").val();
         $("#btnPublishIetp").prop("disabled", !hasProject);
+        _updateFilenameSample();
     });
+
+    function _updateFilenameSample() {
+        var pkg  = $("#ietpPackageType").val() || "PMC";
+        var proj = $("#pubProjectSelect option:selected").text().split("—")[0].trim() || "<project>";
+        var clean = proj.replace(/[^a-zA-Z0-9_\-]/g, "_").replace(/__+/g, "_");
+        $("#pkgFilenameSample").text(pkg + "_" + clean + ".nav");
+    }
+    _updateFilenameSample();
 
     // ── OEM Logo preview ──
     $("#ietpLogoSelect").on("change", function () {
@@ -428,11 +451,12 @@
         $("#btnPublishIetp").prop("disabled", true);
 
         var formData = new FormData();
-        formData.append("projectId",  projectId);
-        formData.append("logoId",     $("#ietpLogoSelect").val() || "");
-        formData.append("security",   $("input[name='ietpSecurity']:checked").val());
-        formData.append("status",     $("input[name='ietpStatus']:checked").val());
-        formData.append("htmlSource", htmlSource);
+        formData.append("projectId",   projectId);
+        formData.append("packageType", $("#ietpPackageType").val() || "PMC");
+        formData.append("logoId",      $("#ietpLogoSelect").val() || "");
+        formData.append("security",    $("input[name='ietpSecurity']:checked").val());
+        formData.append("status",      $("input[name='ietpStatus']:checked").val());
+        formData.append("htmlSource",  htmlSource);
 
         if (htmlSource === "upload") {
             formData.append("htmlFile", $("#ietpHtmlFile")[0].files[0]);
@@ -441,27 +465,52 @@
             });
         }
 
-        $.ajax({
-            type:        "POST",
-            url:         "/Publisher/PublishIetp",
-            data:        formData,
-            processData: false,
-            contentType: false,
-            success: function (result) {
-                if (result && result.success) {
-                    _showPubAlert("success", result.message || "Published successfully.");
+        // Use XHR directly so we can handle both file download (blob) and JSON error responses
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/Publisher/PublishIetp", true);
+        xhr.responseType = "blob";
+        xhr.onload = function () {
+            $("#pubIetpSpinner").hide();
+            $("#btnPublishIetp").prop("disabled", !$("#pubProjectSelect").val());
+            if (xhr.status === 200) {
+                // Try to detect a JSON error response (content-type check)
+                var ct = xhr.getResponseHeader("Content-Type") || "";
+                if (ct.indexOf("application/json") !== -1) {
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            var obj = JSON.parse(reader.result);
+                            _showPubAlert("error", obj.message || "Publish failed.");
+                        } catch (e) {
+                            _showPubAlert("error", "Publish failed.");
+                        }
+                    };
+                    reader.readAsText(xhr.response);
                 } else {
-                    _showPubAlert("error", (result && result.message) || "Publish failed.");
+                    // It's the .nav file — trigger browser download
+                    var cd = xhr.getResponseHeader("Content-Disposition") || "";
+                    var fnMatch = cd.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    var filename = fnMatch ? fnMatch[1].replace(/['"]/g, "") : "package.nav";
+                    var url = window.URL.createObjectURL(xhr.response);
+                    var a = document.createElement("a");
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    _showPubAlert("success", "Published successfully. Download starting…");
                 }
-            },
-            error: function () {
-                _showPubAlert("error", "An error occurred. Please try again.");
-            },
-            complete: function () {
-                $("#pubIetpSpinner").hide();
-                $("#btnPublishIetp").prop("disabled", !$("#pubProjectSelect").val());
+            } else {
+                _showPubAlert("error", "Server error (" + xhr.status + "). Please try again.");
             }
-        });
+        };
+        xhr.onerror = function () {
+            $("#pubIetpSpinner").hide();
+            $("#btnPublishIetp").prop("disabled", !$("#pubProjectSelect").val());
+            _showPubAlert("error", "An error occurred. Please try again.");
+        };
+        xhr.send(formData);
     });
 
     function _showPubAlert(type, msg) {

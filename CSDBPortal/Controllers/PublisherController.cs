@@ -3,6 +3,10 @@ using CSDBPortal.Models;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
+using System.Security;
+using System.Text;
+using System.Text.Json;
 
 namespace CSDBPortal.Controllers
 {
@@ -41,20 +45,172 @@ namespace CSDBPortal.Controllers
         }
 
         /// <summary>
-        /// Publish IETP package. Full implementation to be added when publish logic is provided.
+        /// Generates and downloads a .nav IETP package for the selected project.
+        /// The .nav file is a ZIP archive containing data module XML files,
+        /// a navigation.xml site map, optional cover page and logo, and metadata.
         /// </summary>
         [HttpPost]
-        public IActionResult PublishIetp(
-            int projectId,
-            int? logoId,
+        public async Task<IActionResult> PublishIetp(
+            int    projectId,
+            string packageType,
+            int?   logoId,
             string security,
             string status,
             string htmlSource,
             IFormFile? htmlFile,
             IFormFileCollection? assets)
         {
-            // TODO: implement IETP publish logic
-            return Json(new { success = false, message = "IETP publishing not yet implemented." });
+            // ── Validate inputs ──────────────────────────────────────────────
+            var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+            if (project == null)
+                return Json(new { success = false, message = "Project not found." });
+
+            var dataModules = await _db.DataModuleCodes
+                .Where(d => d.ProjectId == projectId && !d.IsDeleted && !d.IsBrexXml)
+                .OrderBy(d => d.DMC)
+                .ToListAsync();
+
+            if (!dataModules.Any())
+                return Json(new { success = false, message = "No data modules found for this project." });
+
+            // ── Sanitise package type and build output filename ──────────────
+            var pkg      = (packageType ?? "PMC").Trim().ToUpper();
+            if (pkg != "PMC" && pkg != "DDN") pkg = "PMC";
+            var cleanName = SanitiseFilename(project.Name ?? project.Title ?? "project");
+            var navFileName = $"{pkg}_{cleanName}.nav";
+
+            // ── Build navigation.xml ─────────────────────────────────────────
+            var navXml  = BuildNavigationXml(project, dataModules);
+
+            // ── Build nav_metadata.json ──────────────────────────────────────
+            bool isSecured = string.Equals(security, "Secured", StringComparison.OrdinalIgnoreCase);
+            bool isDraft   = string.Equals(status,   "Draft",   StringComparison.OrdinalIgnoreCase);
+
+            var metadata = new
+            {
+                builderVersion     = "1.0.0",
+                createdDate        = DateTime.UtcNow,
+                fileType           = isSecured ? "Secured" : "Unsecured",
+                deliveryType       = isDraft   ? "Draft"   : "Final",
+                isEncrypted        = false,
+                encryptionAlgorithm= "None",
+                description        = $"NavIETM project: {project.Name}",
+                customProperties   = new Dictionary<string, string>
+                {
+                    ["ProjectName"]     = project.Name ?? "",
+                    ["LicenseRequired"] = isSecured.ToString(),
+                    ["HasWatermark"]    = isDraft.ToString(),
+                    ["PackageType"]     = pkg
+                }
+            };
+            var metadataJson = JsonSerializer.Serialize(metadata,
+                new JsonSerializerOptions { WriteIndented = true });
+
+            // ── Package everything into a MemoryStream ZIP ───────────────────
+            using var ms = new MemoryStream();
+            using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                // 1. Data module XML files
+                foreach (var dm in dataModules)
+                {
+                    if (string.IsNullOrWhiteSpace(dm.xml)) continue;
+                    var entryName = $"{dm.DMC}.xml";
+                    var entry = zip.CreateEntry(entryName, CompressionLevel.Optimal);
+                    using var ew = entry.Open();
+                    await ew.WriteAsync(Encoding.UTF8.GetBytes(dm.xml));
+                }
+
+                // 2. navigation.xml
+                var navEntry = zip.CreateEntry("navigation.xml", CompressionLevel.Optimal);
+                using (var ew = navEntry.Open())
+                    await ew.WriteAsync(Encoding.UTF8.GetBytes(navXml));
+
+                // 3. nav_metadata.json
+                var metaEntry = zip.CreateEntry("nav_metadata.json", CompressionLevel.Optimal);
+                using (var ew = metaEntry.Open())
+                    await ew.WriteAsync(Encoding.UTF8.GetBytes(metadataJson));
+
+                // 4. Cover page HTML (optional)
+                if (htmlSource == "upload" && htmlFile != null && htmlFile.Length > 0)
+                {
+                    var htmlEntry = zip.CreateEntry("custom/welcome.html", CompressionLevel.Optimal);
+                    using var ew = htmlEntry.Open();
+                    await htmlFile.CopyToAsync(ew);
+
+                    // Associated assets (images, css, js)
+                    if (assets != null)
+                    {
+                        foreach (var asset in assets)
+                        {
+                            var assetEntry = zip.CreateEntry(
+                                $"custom/{Path.GetFileName(asset.FileName)}", CompressionLevel.Optimal);
+                            using var ae = assetEntry.Open();
+                            await asset.CopyToAsync(ae);
+                        }
+                    }
+                }
+
+                // 5. OEM Logo (optional)
+                if (logoId.HasValue && logoId.Value > 0)
+                {
+                    var logoAsset = await _db.ImageAssets.FirstOrDefaultAsync(i => i.Id == logoId.Value);
+                    if (!string.IsNullOrWhiteSpace(logoAsset?.Data))
+                    {
+                        // Data is base64 (may have a data-URI prefix)
+                        var b64 = logoAsset.Data;
+                        var commaIdx = b64.IndexOf(',');
+                        if (commaIdx >= 0) b64 = b64[(commaIdx + 1)..];
+                        var logoBytes = Convert.FromBase64String(b64);
+                        var logoEntry = zip.CreateEntry("custom/logo_right.png", CompressionLevel.Optimal);
+                        using var ew = logoEntry.Open();
+                        await ew.WriteAsync(logoBytes);
+                    }
+                }
+            }
+
+            ms.Position = 0;
+            return File(ms.ToArray(), "application/octet-stream", navFileName);
+        }
+
+        // ── Helpers ─────────────────────────────────────────────────────────
+
+        /// <summary>Builds the navigation.xml siteMap from the project's data modules.</summary>
+        private static string BuildNavigationXml(Project project, List<DataModuleCode> modules)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            sb.AppendLine("<!--Arbortext, Inc., 1988-2018, v.4002-->");
+            sb.AppendLine("<siteMap>");
+
+            string rootTitle = SecurityElement.Escape(project.Title ?? project.Name ?? "IETP");
+            // Root node points to the first data module
+            string firstUrl  = modules.Any()
+                ? SecurityElement.Escape($"~/frames/IETP.aspx?DM={modules[0].DMC}.xml")
+                : "#";
+            sb.AppendLine($"    <siteMapNode title=\"{rootTitle}\" url=\"{firstUrl}\">");
+
+            foreach (var dm in modules)
+            {
+                if (string.IsNullOrWhiteSpace(dm.DMC)) continue;
+                string title = SecurityElement.Escape(
+                    !string.IsNullOrWhiteSpace(dm.TechName) ? dm.TechName :
+                    !string.IsNullOrWhiteSpace(dm.InfoName) ? dm.InfoName :
+                    dm.DMC);
+                string url = SecurityElement.Escape($"~/frames/IETP.aspx?DM={dm.DMC}.xml");
+                sb.AppendLine($"        <siteMapNode title=\"{title}\" url=\"{url}\" />");
+            }
+
+            sb.AppendLine("    </siteMapNode>");
+            sb.AppendLine("</siteMap>");
+            return sb.ToString();
+        }
+
+        /// <summary>Removes characters that are invalid in filenames.</summary>
+        private static string SanitiseFilename(string name)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+                name = name.Replace(c, '_');
+            return name.Replace(' ', '_').Replace('.', '_').Trim('_');
         }
     }
 }
