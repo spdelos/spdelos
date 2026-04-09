@@ -1,5 +1,6 @@
 using CSDBPortal.Data;
 using CSDBPortal.Models;
+using CSDBPortal.Services;
 using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -92,8 +93,8 @@ namespace CSDBPortal.Controllers
                 createdDate        = DateTime.UtcNow,
                 fileType           = isSecured ? "Secured" : "Unsecured",
                 deliveryType       = isDraft   ? "Draft"   : "Final",
-                isEncrypted        = false,
-                encryptionAlgorithm= "None",
+                isEncrypted        = true,
+                encryptionAlgorithm= "AES-128-CBC",
                 description        = $"NavIETM project: {project.Name}",
                 customProperties   = new Dictionary<string, string>
                 {
@@ -110,20 +111,24 @@ namespace CSDBPortal.Controllers
             using var ms = new MemoryStream();
             using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
             {
-                // 1. Data module XML files
+                // 1. Data module XML files (encrypted so the Viewer can open them)
                 foreach (var dm in dataModules)
                 {
                     if (string.IsNullOrWhiteSpace(dm.xml)) continue;
                     var entryName = $"{dm.DMC}.xml";
                     var entry = zip.CreateEntry(entryName, CompressionLevel.Optimal);
                     using var ew = entry.Open();
-                    await ew.WriteAsync(Encoding.UTF8.GetBytes(dm.xml));
+                    var encrypted = NavXmlEncryptionService.EncryptXml(dm.xml);
+                    await ew.WriteAsync(encrypted);
                 }
 
-                // 2. navigation.xml
+                // 2. navigation.xml (encrypted — Viewer expects it encrypted)
                 var navEntry = zip.CreateEntry("navigation.xml", CompressionLevel.Optimal);
                 using (var ew = navEntry.Open())
-                    await ew.WriteAsync(Encoding.UTF8.GetBytes(navXml));
+                {
+                    var encryptedNav = NavXmlEncryptionService.EncryptXml(navXml);
+                    await ew.WriteAsync(encryptedNav);
+                }
 
                 // 3. nav_metadata.json
                 var metaEntry = zip.CreateEntry("nav_metadata.json", CompressionLevel.Optimal);
