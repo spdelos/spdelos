@@ -22,9 +22,12 @@ namespace CSDBPortal.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var canIetp    = HasPermission(Features.PublisherIetp);
-            var canPdf     = HasPermission(Features.PublisherPdf);
-            var canLicense = HasPermission(Features.PublisherLicense);
+            // Legacy "Publisher" claim grants access to all three tabs so that roles
+            // created before the granular permissions were introduced keep working.
+            var hasLegacy  = HasPermission(Features.Publisher);
+            var canIetp    = hasLegacy || HasPermission(Features.PublisherIetp);
+            var canPdf     = hasLegacy || HasPermission(Features.PublisherPdf);
+            var canLicense = hasLegacy || HasPermission(Features.PublisherLicense);
 
             var vm = new PublisherViewModel
             {
@@ -77,7 +80,7 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public async Task<IActionResult> RegenerateProviderKey()
         {
-            if (!HasPermission(Features.PublisherLicense))
+            if (!HasPermission(Features.Publisher) && !HasPermission(Features.PublisherLicense))
                 return PermissionDenied();
 
             var licenseService = new NavLicenseService(_db);
@@ -91,7 +94,7 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportPdf(int projectId, string status)
         {
-            if (!HasPermission(Features.PublisherPdf))
+            if (!HasPermission(Features.Publisher) && !HasPermission(Features.PublisherPdf))
                 return PermissionDenied();
 
             var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
@@ -123,7 +126,7 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveLicenseKey(int id, string? licenseKey)
         {
-            if (!HasPermission(Features.PublisherLicense))
+            if (!HasPermission(Features.Publisher) && !HasPermission(Features.PublisherLicense))
                 return PermissionDenied();
 
             var record = await _db.IetpLicenses.FirstOrDefaultAsync(l => l.Id == id);
@@ -151,7 +154,7 @@ namespace CSDBPortal.Controllers
             IFormFile? htmlFile,
             IFormFileCollection? assets)
         {
-            if (!HasPermission(Features.PublisherIetp))
+            if (!HasPermission(Features.Publisher) && !HasPermission(Features.PublisherIetp))
                 return PermissionDenied();
 
             // ── Validate inputs ──────────────────────────────────────────────
