@@ -132,7 +132,8 @@ namespace CSDBPortal.Controllers
                     var entryName = $"{dm.DMC}.xml";
                     var entry = zip.CreateEntry(entryName, CompressionLevel.Optimal);
                     using var ew = entry.Open();
-                    var encrypted = NavXmlEncryptionService.EncryptXml(dm.xml);
+                    var xmlContent = isDraft ? NavWatermarkService.WatermarkXml(dm.xml) : dm.xml;
+                    var encrypted = NavXmlEncryptionService.EncryptXml(xmlContent);
                     await ew.WriteAsync(encrypted);
                 }
 
