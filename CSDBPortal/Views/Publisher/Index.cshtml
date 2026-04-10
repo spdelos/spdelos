@@ -39,7 +39,7 @@ else
             <option value="">— Select a project —</option>
             @foreach (var p in Model.Projects)
             {
-                <option value="@p.Id">@p.Name — @p.Title</option>
+                <option value="@p.Id" data-mi="@(p.ModelIdentification ?? "")">@p.Name — @p.Title</option>
             }
         </select>
     </div>
@@ -98,13 +98,93 @@ else
                         <div class="pub-section-title">
                             <i class="fa-solid fa-box me-1"></i>Package Type
                         </div>
-                        <div style="max-width:260px;">
-                            <select id="ietpPackageType" class="form-select">
-                                <option value="PMC">PMC — Project Management Code</option>
-                                <option value="DDN">DDN — Data Distribution Notice</option>
-                            </select>
-                            <div class="form-text">Used as prefix in the output filename: <span id="pkgFilenameSample" class="fw-semibold">PMC_&lt;project&gt;.nav</span></div>
+
+                        <!-- Type radio cards -->
+                        <div class="d-flex gap-4 mb-3">
+                            <div class="form-check pub-radio-card" id="pkgPmcCard">
+                                <input class="form-check-input" type="radio" name="ietpPackageType"
+                                       id="pkgTypePmc" value="PMC" checked>
+                                <label class="form-check-label" for="pkgTypePmc">
+                                    <span class="fw-semibold">PMC</span>
+                                    <div class="pub-radio-desc">Publication Module Code</div>
+                                </label>
+                            </div>
+                            <div class="form-check pub-radio-card" id="pkgDdnCard">
+                                <input class="form-check-input" type="radio" name="ietpPackageType"
+                                       id="pkgTypeDdn" value="DDN">
+                                <label class="form-check-label" for="pkgTypeDdn">
+                                    <span class="fw-semibold">DDN</span>
+                                    <div class="pub-radio-desc">Data Dispatch Note</div>
+                                </label>
+                            </div>
                         </div>
+
+                        <!-- PMC code builder -->
+                        <div id="pmcBuilderPanel">
+                            <div class="pkg-builder-grid">
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Model Identification (MI)</label>
+                                    <input type="text" id="pmcMi" class="form-control form-control-sm font-monospace"
+                                           placeholder="Auto-filled from project" readonly>
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Issuing Authority <span class="text-muted fw-normal">(5 chars)</span></label>
+                                    <input type="text" id="pmcIssuingAuth" class="form-control form-control-sm font-monospace"
+                                           maxlength="5" placeholder="AAAAA">
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Number <span class="text-muted fw-normal">(5 chars)</span></label>
+                                    <input type="text" id="pmcNumber" class="form-control form-control-sm font-monospace"
+                                           maxlength="5" placeholder="NNNNN">
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Volume <span class="text-muted fw-normal">(2 chars)</span></label>
+                                    <input type="text" id="pmcVolume" class="form-control form-control-sm font-monospace"
+                                           maxlength="2" placeholder="VV">
+                                </div>
+                            </div>
+                            <div class="pkg-code-preview mt-2">
+                                <span class="pkg-code-label">Code preview</span>
+                                <code id="pmcCodePreview" class="ms-2">PMC-MI-AAAAA-NNNNN-VV</code>
+                            </div>
+                        </div>
+
+                        <!-- DDN code builder -->
+                        <div id="ddnBuilderPanel" style="display:none;">
+                            <div class="pkg-builder-grid">
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Model Identification (MI)</label>
+                                    <input type="text" id="ddnMi" class="form-control form-control-sm font-monospace"
+                                           placeholder="Auto-filled from project" readonly>
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Sender NCAGE <span class="text-muted fw-normal">(5 chars)</span></label>
+                                    <input type="text" id="ddnSenderNcage" class="form-control form-control-sm font-monospace"
+                                           maxlength="5" placeholder="SSSSS">
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Receiver NCAGE <span class="text-muted fw-normal">(5 chars)</span></label>
+                                    <input type="text" id="ddnReceiverNcage" class="form-control form-control-sm font-monospace"
+                                           maxlength="5" placeholder="RRRRR">
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Year <span class="text-muted fw-normal">(4 digits)</span></label>
+                                    <input type="text" id="ddnYear" class="form-control form-control-sm font-monospace"
+                                           maxlength="4" placeholder="YYYY" value="@DateTime.UtcNow.Year">
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary">Sequential Nr <span class="text-muted fw-normal">(5 chars)</span></label>
+                                    <input type="text" id="ddnSeqNr" class="form-control form-control-sm font-monospace"
+                                           maxlength="5" placeholder="NNNNN">
+                                </div>
+                            </div>
+                            <div class="pkg-code-preview mt-2">
+                                <span class="pkg-code-label">Code preview</span>
+                                <code id="ddnCodePreview" class="ms-2">DDN-MI-SSSSS-RRRRR-YYYY-NNNNN</code>
+                            </div>
+                        </div>
+
+                        <div class="form-text mt-2">Output filename: <span id="pkgFilenameSample" class="fw-semibold">PMC-MI-AAAAA-NNNNN-VV.nav</span></div>
                     </div>
 
                     <!-- ── OEM Logo ── -->
@@ -617,6 +697,38 @@ else
     white-space: nowrap;
 }
 .lic-table td { vertical-align: middle; }
+
+/* ── Package code builder ── */
+.pkg-builder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+.pkg-code-preview {
+    display: flex;
+    align-items: center;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+    padding: 7px 14px;
+}
+.pkg-code-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.pkg-code-preview code {
+    font-size: 13px;
+    color: #0369a1;
+    letter-spacing: 0.03em;
+    word-break: break-all;
+}
 </style>
 
 <script type="text/javascript">
@@ -626,19 +738,84 @@ else
     $("#publisherlink").addClass("active");
 
     // ── Enable publish/export buttons when a project is selected ──
-    $("#pubProjectSelect, #ietpPackageType").on("change", function () {
-        var hasProject = !!$("#pubProjectSelect").val();
+    $("#pubProjectSelect").on("change", function () {
+        var hasProject = !!$(this).val();
         $("#btnPublishIetp").prop("disabled", !hasProject);
         $("#btnExportPdf").prop("disabled", !hasProject);
+        // Auto-fill MI from the project's data-mi attribute
+        var mi = $(this).find(":selected").data("mi") || "";
+        $("#pmcMi").val(mi);
+        $("#ddnMi").val(mi);
+        _updatePmcPreview();
+        _updateDdnPreview();
         _updateFilenameSample();
     });
 
-    function _updateFilenameSample() {
-        var pkg  = $("#ietpPackageType").val() || "PMC";
-        var proj = $("#pubProjectSelect option:selected").text().split("—")[0].trim() || "<project>";
-        var clean = proj.replace(/[^a-zA-Z0-9_\-]/g, "_").replace(/__+/g, "_");
-        $("#pkgFilenameSample").text(pkg + "_" + clean + ".nav");
+    // ── Package type radio cards ──
+    $("input[name='ietpPackageType']").on("change", function () {
+        var pkg = $(this).val();
+        $("#pmcBuilderPanel").toggle(pkg === "PMC");
+        $("#ddnBuilderPanel").toggle(pkg === "DDN");
+        _updateFilenameSample();
+    });
+
+    // ── Builder field changes → live preview + filename ──
+    $("#pmcMi, #pmcIssuingAuth, #pmcNumber, #pmcVolume").on("input", function () {
+        _updatePmcPreview();
+        _updateFilenameSample();
+    });
+    $("#ddnMi, #ddnSenderNcage, #ddnReceiverNcage, #ddnYear, #ddnSeqNr").on("input", function () {
+        _updateDdnPreview();
+        _updateFilenameSample();
+    });
+
+    function _updatePmcPreview() {
+        var parts = [
+            $("#pmcMi").val()          || "MI",
+            $("#pmcIssuingAuth").val() || "AAAAA",
+            $("#pmcNumber").val()      || "NNNNN",
+            $("#pmcVolume").val()      || "VV"
+        ];
+        $("#pmcCodePreview").text("PMC-" + parts.join("-"));
     }
+
+    function _updateDdnPreview() {
+        var parts = [
+            $("#ddnMi").val()           || "MI",
+            $("#ddnSenderNcage").val()  || "SSSSS",
+            $("#ddnReceiverNcage").val()|| "RRRRR",
+            $("#ddnYear").val()         || new Date().getFullYear(),
+            $("#ddnSeqNr").val()        || "NNNNN"
+        ];
+        $("#ddnCodePreview").text("DDN-" + parts.join("-"));
+    }
+
+    function _buildPackageCode() {
+        var pkg = $("input[name='ietpPackageType']:checked").val() || "PMC";
+        if (pkg === "PMC") {
+            return "PMC-" + [
+                $("#pmcMi").val()          || "MI",
+                $("#pmcIssuingAuth").val() || "AAAAA",
+                $("#pmcNumber").val()      || "NNNNN",
+                $("#pmcVolume").val()      || "VV"
+            ].join("-");
+        } else {
+            return "DDN-" + [
+                $("#ddnMi").val()           || "MI",
+                $("#ddnSenderNcage").val()  || "SSSSS",
+                $("#ddnReceiverNcage").val()|| "RRRRR",
+                $("#ddnYear").val()         || new Date().getFullYear(),
+                $("#ddnSeqNr").val()        || "NNNNN"
+            ].join("-");
+        }
+    }
+
+    function _updateFilenameSample() {
+        var code = _buildPackageCode();
+        $("#pkgFilenameSample").text(code + ".nav");
+    }
+    _updatePmcPreview();
+    _updateDdnPreview();
     _updateFilenameSample();
 
     // ── OEM Logo preview ──
@@ -707,7 +884,8 @@ else
 
         var formData = new FormData();
         formData.append("projectId",   projectId);
-        formData.append("packageType", $("#ietpPackageType").val() || "PMC");
+        formData.append("packageType", $("input[name='ietpPackageType']:checked").val() || "PMC");
+        formData.append("packageCode", _buildPackageCode());
         formData.append("logoId",      $("#ietpLogoSelect").val() || "");
         formData.append("security",    $("input[name='ietpSecurity']:checked").val());
         formData.append("status",      $("input[name='ietpStatus']:checked").val());

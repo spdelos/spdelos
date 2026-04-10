@@ -147,6 +147,7 @@ namespace CSDBPortal.Controllers
         public async Task<IActionResult> PublishIetp(
             int    projectId,
             string packageType,
+            string? packageCode,
             int?   logoId,
             string security,
             string status,
@@ -174,7 +175,11 @@ namespace CSDBPortal.Controllers
             var pkg      = (packageType ?? "PMC").Trim().ToUpper();
             if (pkg != "PMC" && pkg != "DDN") pkg = "PMC";
             var cleanName = SanitiseFilename(project.Name ?? project.Title ?? "project");
-            var navFileName = $"{pkg}_{cleanName}.nav";
+            // Prefer the structured package code (PMC-/DDN- code built in the UI);
+            // fall back to the legacy "PKG_ProjectName" format if none supplied.
+            var navFileName = !string.IsNullOrWhiteSpace(packageCode)
+                ? $"{SanitiseFilename(packageCode.Trim())}.nav"
+                : $"{pkg}_{cleanName}.nav";
 
             // ── Build navigation.xml ─────────────────────────────────────────
             var navXml  = BuildNavigationXml(project, dataModules);
@@ -211,7 +216,8 @@ namespace CSDBPortal.Controllers
                     ["ProjectName"]     = project.Name ?? "",
                     ["LicenseRequired"] = isSecured.ToString(),
                     ["HasWatermark"]    = isDraft.ToString(),
-                    ["PackageType"]     = pkg
+                    ["PackageType"]     = pkg,
+                    ["PackageCode"]     = packageCode?.Trim() ?? ""
                 }
             };
             var metadataJson = JsonSerializer.Serialize(metadata,
