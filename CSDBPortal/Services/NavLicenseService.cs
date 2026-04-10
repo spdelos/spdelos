@@ -22,7 +22,7 @@ namespace CSDBPortal.Services
     {
         private static readonly byte[] Key = new UnicodeEncoding().GetBytes("!@#$%^&*");
 
-        private const string ProviderKeySettingName = "NavPublishProviderKey";
+        public const string ProviderKeySettingName = "NavPublishProviderKey";
 
         private readonly ApplicationDbContext _db;
 
@@ -49,6 +49,36 @@ namespace CSDBPortal.Services
             var keyBytes = new byte[32];
             RandomNumberGenerator.Fill(keyBytes);
             var newKey = Convert.ToBase64String(keyBytes);
+
+            if (setting == null)
+            {
+                _db.ApplicationSettings.Add(new ApplicationSetting
+                {
+                    Key   = ProviderKeySettingName,
+                    Value = newKey
+                });
+            }
+            else
+            {
+                setting.Value = newKey;
+            }
+
+            await _db.SaveChangesAsync();
+            return newKey;
+        }
+
+        /// <summary>
+        /// Replaces the portal's ProviderKey with a newly generated one and persists it.
+        /// All previously-published Secured packages will stop validating against this key.
+        /// </summary>
+        public async Task<string> RegenerateProviderKeyAsync()
+        {
+            var keyBytes = new byte[32];
+            RandomNumberGenerator.Fill(keyBytes);
+            var newKey = Convert.ToBase64String(keyBytes);
+
+            var setting = await _db.ApplicationSettings
+                .FirstOrDefaultAsync(s => s.Key == ProviderKeySettingName);
 
             if (setting == null)
             {

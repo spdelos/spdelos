@@ -22,6 +22,9 @@ namespace CSDBPortal.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var providerKeySetting = await _db.ApplicationSettings
+                .FirstOrDefaultAsync(s => s.Key == NavLicenseService.ProviderKeySettingName);
+
             var vm = new PublisherViewModel
             {
                 Projects = await _db.Projects
@@ -39,10 +42,42 @@ namespace CSDBPortal.Controllers
                         MimeType = i.MimeType
                         // Data intentionally omitted; loaded on demand via /Manage/ViewImageAsset
                     })
+                    .ToListAsync(),
+
+                ProviderKey = providerKeySetting?.Value,
+
+                IetpLicenses = await _db.IetpLicenses
+                    .OrderByDescending(l => l.CreationTime)
                     .ToListAsync()
             };
 
             return View(vm);
+        }
+
+        /// <summary>
+        /// Regenerates the portal's provider key. Invalidates all existing Secured packages.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> RegenerateProviderKey()
+        {
+            var licenseService = new NavLicenseService(_db);
+            var newKey = await licenseService.RegenerateProviderKeyAsync();
+            return Json(new { success = true, key = newKey });
+        }
+
+        /// <summary>
+        /// Saves a LicenseKey value against a published .nav package record.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> SaveLicenseKey(int id, string? licenseKey)
+        {
+            var record = await _db.IetpLicenses.FirstOrDefaultAsync(l => l.Id == id);
+            if (record == null)
+                return Json(new { success = false, message = "Record not found." });
+
+            record.LicenseKey = string.IsNullOrWhiteSpace(licenseKey) ? null : licenseKey.Trim();
+            await _db.SaveChangesAsync();
+            return Json(new { success = true });
         }
 
         /// <summary>

@@ -45,6 +45,13 @@
                     <i class="fa-solid fa-file-pdf me-1"></i>PDF
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-license" data-bs-toggle="tab"
+                        data-bs-target="#pane-license" type="button" role="tab"
+                        aria-controls="pane-license" aria-selected="false">
+                    <i class="fa-solid fa-key me-1"></i>License
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content pub-tab-content" id="pubTabContent">
@@ -223,6 +230,131 @@
                 </div>
             </div>
 
+            <!-- ══════════════════ LICENSE TAB ══════════════════ -->
+            <div class="tab-pane fade" id="pane-license" role="tabpanel" aria-labelledby="tab-license">
+                <div class="pub-section-grid">
+
+                    <!-- ── Provider Key ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-fingerprint me-1"></i>Provider Key
+                        </div>
+                        <p class="text-muted mb-3" style="font-size:13px;">
+                            This portal's unique identity key. It is embedded in every <strong>Secured</strong>
+                            .nav package so the NavIETM Viewer can tie the package back to this installation.
+                            Share it with the Viewer administrator to enable license activation.
+                        </p>
+
+                        @if (Model.ProviderKey != null)
+                        {
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+                                <div class="lic-key-box">
+                                    <input type="password" id="providerKeyInput" class="lic-key-input form-control font-monospace"
+                                           value="@Model.ProviderKey" readonly autocomplete="off" />
+                                    <button class="btn btn-sm btn-outline-secondary lic-key-reveal" id="btnRevealKey"
+                                            title="Show / hide key">
+                                        <i class="fa-solid fa-eye" id="revealIcon"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" id="btnCopyKey" title="Copy to clipboard">
+                                    <i class="fa-solid fa-copy me-1"></i>Copy
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="pub-coming-soon mb-3">
+                                <i class="fa-solid fa-circle-info me-1"></i>
+                                No key yet. Publish a <strong>Secured</strong> IETP package to generate one automatically.
+                            </div>
+                        }
+
+                        <button class="btn btn-sm btn-outline-danger" id="btnRegenKey"
+                                @(Model.ProviderKey == null ? "" : "")>
+                            <i class="fa-solid fa-rotate me-1"></i>Regenerate Key
+                        </button>
+                        <div class="form-text mt-1 text-danger-emphasis">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                            Regenerating invalidates all previously published Secured packages.
+                        </div>
+                    </div>
+
+                    <!-- ── Published Packages ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-boxes-stacked me-1"></i>Published Packages
+                        </div>
+
+                        @if (!Model.IetpLicenses.Any())
+                        {
+                            <div class="pub-coming-soon">
+                                <i class="fa-solid fa-inbox me-1"></i>No packages published yet.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm lic-table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Package</th>
+                                            <th class="text-center">Secured</th>
+                                            <th class="text-center">Trial</th>
+                                            <th>License Key</th>
+                                            <th>Published</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var lic in Model.IetpLicenses)
+                                        {
+                                            <tr data-licid="@lic.Id">
+                                                <td class="font-monospace" style="font-size:12px;">@lic.IETP</td>
+                                                <td class="text-center">
+                                                    @if (lic.IsSecured)
+                                                    {
+                                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock me-1"></i>Secured</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-success"><i class="fa-solid fa-lock-open me-1"></i>Open</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (lic.IsTrial)
+                                                    {
+                                                        <span class="badge bg-secondary">Draft</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-primary">Final</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm lic-key-field font-monospace"
+                                                           value="@(lic.LicenseKey ?? "")"
+                                                           placeholder="Not activated"
+                                                           maxlength="50" style="min-width:160px;" />
+                                                </td>
+                                                <td style="font-size:12px; white-space:nowrap;">
+                                                    @lic.CreationTime.ToString("yyyy-MM-dd HH:mm")
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary btn-save-lickey" title="Save license key">
+                                                        <i class="fa-solid fa-floppy-disk"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+
+                </div><!-- /pub-section-grid -->
+            </div><!-- /pane-license -->
+
         </div><!-- /tab-content -->
     </div><!-- /pub-body -->
 
@@ -363,6 +495,38 @@
 }
 .pub-alert.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
 .pub-alert.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+/* ── License tab ── */
+.lic-key-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 480px;
+    flex: 1;
+}
+.lic-key-input {
+    padding-right: 42px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+}
+.lic-key-reveal {
+    position: absolute;
+    right: 6px;
+    border: none;
+    background: transparent;
+    padding: 2px 6px;
+    color: var(--text-muted);
+}
+.lic-key-reveal:hover { color: var(--text); }
+.lic-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.lic-table td { vertical-align: middle; }
 </style>
 
 <script type="text/javascript">
@@ -518,6 +682,69 @@
         if (!type || !msg) { $a.hide().attr("class", "pub-alert"); return; }
         $a.attr("class", "pub-alert " + type).text(msg).show();
     }
+
+    // ── License tab: reveal / hide provider key ──
+    $("#btnRevealKey").on("click", function () {
+        var $inp = $("#providerKeyInput");
+        var reveal = $inp.attr("type") === "password";
+        $inp.attr("type", reveal ? "text" : "password");
+        $("#revealIcon").toggleClass("fa-eye", !reveal).toggleClass("fa-eye-slash", reveal);
+    });
+
+    // ── License tab: copy provider key ──
+    $("#btnCopyKey").on("click", function () {
+        var key = $("#providerKeyInput").val();
+        if (!key) return;
+        navigator.clipboard.writeText(key).then(function () {
+            var $btn = $("#btnCopyKey");
+            $btn.html('<i class="fa-solid fa-check me-1"></i>Copied');
+            setTimeout(function () {
+                $btn.html('<i class="fa-solid fa-copy me-1"></i>Copy');
+            }, 2000);
+        });
+    });
+
+    // ── License tab: regenerate provider key (confirm first) ──
+    $("#btnRegenKey").on("click", function () {
+        if (!confirm(
+            "Regenerating the provider key will invalidate ALL existing Secured .nav packages.\n\n" +
+            "Viewers that have already activated a package will lose access until re-activated.\n\n" +
+            "Are you sure you want to continue?")) return;
+
+        var $btn = $(this).prop("disabled", true).html('<i class="fa-solid fa-spinner fa-spin me-1"></i>Regenerating…');
+        $.post("/Publisher/RegenerateProviderKey", function (res) {
+            if (res.success) {
+                $("#providerKeyInput").val(res.key).attr("type", "password");
+                $("#revealIcon").removeClass("fa-eye-slash").addClass("fa-eye");
+                alert("Provider key regenerated successfully.");
+            } else {
+                alert("Failed to regenerate key. Please try again.");
+            }
+        }).always(function () {
+            $btn.prop("disabled", false).html('<i class="fa-solid fa-rotate me-1"></i>Regenerate Key');
+        });
+    });
+
+    // ── License tab: save license key for a package ──
+    $(document).on("click", ".btn-save-lickey", function () {
+        var $row  = $(this).closest("tr");
+        var licId = $row.data("licid");
+        var key   = $row.find(".lic-key-field").val().trim();
+        var $btn  = $(this).prop("disabled", true);
+
+        $.post("/Publisher/SaveLicenseKey", { id: licId, licenseKey: key }, function (res) {
+            if (res.success) {
+                $btn.html('<i class="fa-solid fa-check"></i>');
+                setTimeout(function () {
+                    $btn.html('<i class="fa-solid fa-floppy-disk"></i>');
+                }, 2000);
+            } else {
+                alert(res.message || "Save failed.");
+            }
+        }).always(function () {
+            $btn.prop("disabled", false);
+        });
+    });
 
 </script>
 }
