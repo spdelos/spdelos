@@ -222,11 +222,61 @@
 
             <!-- ══════════════════ PDF TAB ══════════════════ -->
             <div class="tab-pane fade" id="pane-pdf" role="tabpanel" aria-labelledby="tab-pdf">
-                <div class="pub-section">
-                    <div class="pub-coming-soon" style="padding:40px 0;">
-                        <i class="fa-solid fa-file-pdf fa-2x mb-3 d-block text-muted"></i>
-                        PDF publishing options coming soon.
+                <div class="pub-section-grid">
+
+                    <!-- ── Publication Status ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-tag me-1"></i>Publication Status
+                        </div>
+                        <div class="d-flex gap-4">
+                            <div class="form-check pub-radio-card" id="pdfDraftCard">
+                                <input class="form-check-input" type="radio" name="pdfStatus"
+                                       id="pdfDraft" value="Draft" checked>
+                                <label class="form-check-label" for="pdfDraft">
+                                    <i class="fa-solid fa-pencil me-1 text-secondary"></i>
+                                    <span class="fw-semibold">Draft</span>
+                                    <div class="pub-radio-desc">DRAFT watermark applied to each page</div>
+                                </label>
+                            </div>
+                            <div class="form-check pub-radio-card" id="pdfFinalCard">
+                                <input class="form-check-input" type="radio" name="pdfStatus"
+                                       id="pdfFinal" value="Final">
+                                <label class="form-check-label" for="pdfFinal">
+                                    <i class="fa-solid fa-circle-check me-1 text-success"></i>
+                                    <span class="fw-semibold">Final</span>
+                                    <div class="pub-radio-desc">Clean output with no watermark</div>
+                                </label>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- ── About ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-circle-info me-1"></i>About PDF Export
+                        </div>
+                        <p class="text-muted mb-0" style="font-size:13px;">
+                            Exports all data modules for the selected project as a single PDF using
+                            Apache FOP. The output follows the S1000D print stylesheet
+                            (<code>print_all_pages.xslt</code>) and requires Java&nbsp;8+ to be
+                            installed on the server.
+                        </p>
+                    </div>
+
+                </div><!-- /pub-section-grid -->
+
+                <!-- ── Export action ── -->
+                <div class="pub-actions">
+                    <div id="pubPdfAlert" class="pub-alert" style="display:none;"></div>
+                    <button id="btnExportPdf" class="btn btn-primary btn-publish" disabled>
+                        <i class="fa-solid fa-file-pdf me-2"></i>Export PDF
+                    </button>
+                    <span id="pubPdfSpinner" class="spinner-border spinner-border-sm text-primary ms-2"
+                          style="display:none;" role="status"></span>
+                    <span id="pubPdfNote" class="text-muted ms-2" style="font-size:12px; display:none;">
+                        Generating PDF — this may take a minute…
+                    </span>
                 </div>
             </div>
 
@@ -535,10 +585,11 @@
     $("#adminlink, #configlink, #mainlink, #icnlink").removeClass("active");
     $("#publisherlink").addClass("active");
 
-    // ── Enable Publish button only when a project is selected ──
+    // ── Enable publish/export buttons when a project is selected ──
     $("#pubProjectSelect, #ietpPackageType").on("change", function () {
         var hasProject = !!$("#pubProjectSelect").val();
         $("#btnPublishIetp").prop("disabled", !hasProject);
+        $("#btnExportPdf").prop("disabled", !hasProject);
         _updateFilenameSample();
     });
 
@@ -679,6 +730,73 @@
 
     function _showPubAlert(type, msg) {
         var $a = $("#pubIetpAlert");
+        if (!type || !msg) { $a.hide().attr("class", "pub-alert"); return; }
+        $a.attr("class", "pub-alert " + type).text(msg).show();
+    }
+
+    // ── PDF tab: Export PDF ──
+    $("#btnExportPdf").on("click", function () {
+        var projectId = $("#pubProjectSelect").val();
+        if (!projectId) {
+            _showPdfAlert("error", "Please select a project before exporting.");
+            return;
+        }
+
+        _showPdfAlert("", "");
+        $("#pubPdfSpinner").show();
+        $("#pubPdfNote").show();
+        $("#btnExportPdf").prop("disabled", true);
+
+        var formData = new FormData();
+        formData.append("projectId", projectId);
+        formData.append("status", $("input[name='pdfStatus']:checked").val());
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/Publisher/ExportPdf", true);
+        xhr.responseType = "blob";
+        xhr.onload = function () {
+            $("#pubPdfSpinner").hide();
+            $("#pubPdfNote").hide();
+            $("#btnExportPdf").prop("disabled", !$("#pubProjectSelect").val());
+
+            if (xhr.status === 200) {
+                var ct = xhr.getResponseHeader("Content-Type") || "";
+                if (ct.indexOf("application/json") !== -1) {
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            var obj = JSON.parse(reader.result);
+                            _showPdfAlert("error", obj.message || "Export failed.");
+                        } catch (e) { _showPdfAlert("error", "Export failed."); }
+                    };
+                    reader.readAsText(xhr.response);
+                } else {
+                    var cd  = xhr.getResponseHeader("Content-Disposition") || "";
+                    var fnM = cd.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    var fn  = fnM ? fnM[1].replace(/['"]/g, "") : "export.pdf";
+                    var url = window.URL.createObjectURL(xhr.response);
+                    var a   = document.createElement("a");
+                    a.href = url; a.download = fn;
+                    document.body.appendChild(a); a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    _showPdfAlert("success", "PDF exported successfully. Download starting…");
+                }
+            } else {
+                _showPdfAlert("error", "Server error (" + xhr.status + "). Please try again.");
+            }
+        };
+        xhr.onerror = function () {
+            $("#pubPdfSpinner").hide();
+            $("#pubPdfNote").hide();
+            $("#btnExportPdf").prop("disabled", !$("#pubProjectSelect").val());
+            _showPdfAlert("error", "An error occurred. Please try again.");
+        };
+        xhr.send(formData);
+    });
+
+    function _showPdfAlert(type, msg) {
+        var $a = $("#pubPdfAlert");
         if (!type || !msg) { $a.hide().attr("class", "pub-alert"); return; }
         $a.attr("class", "pub-alert " + type).text(msg).show();
     }

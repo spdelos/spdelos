@@ -66,6 +66,35 @@ namespace CSDBPortal.Controllers
         }
 
         /// <summary>
+        /// Generates and downloads a PDF for the selected project using Apache FOP.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ExportPdf(int projectId, string status)
+        {
+            var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+            if (project == null)
+                return Json(new { success = false, message = "Project not found." });
+
+            var dataModules = await _db.DataModuleCodes
+                .Where(d => d.ProjectId == projectId && !d.IsDeleted && !d.IsBrexXml)
+                .OrderBy(d => d.DMC)
+                .ToListAsync();
+
+            if (!dataModules.Any())
+                return Json(new { success = false, message = "No data modules found for this project." });
+
+            bool isDraft = string.Equals(status, "Draft", StringComparison.OrdinalIgnoreCase);
+
+            var pdfBytes = await PdfExportService.GeneratePdfAsync(project, dataModules, isDraft);
+
+            var cleanName   = SanitiseFilename(project.Name ?? project.Title ?? "project");
+            var suffix      = isDraft ? "_DRAFT" : "";
+            var pdfFileName = $"{cleanName}{suffix}.pdf";
+
+            return File(pdfBytes, "application/pdf", pdfFileName);
+        }
+
+        /// <summary>
         /// Saves a LicenseKey value against a published .nav package record.
         /// </summary>
         [HttpPost]

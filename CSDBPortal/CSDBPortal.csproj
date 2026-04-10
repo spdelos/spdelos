@@ -12,6 +12,13 @@
     <NoWarn>$(NoWarn);NU1902;NU1701;CS0168;CS0472</NoWarn>
   </PropertyGroup>
 
+  <!-- Apache FOP JARs, XSLT stylesheet, and admonishment images for PDF export -->
+  <ItemGroup>
+    <Content Include="Resources\Jars\**\*"   CopyToOutputDirectory="Always" />
+    <Content Include="Resources\Print\**\*"  CopyToOutputDirectory="Always" />
+    <Content Include="Resources\Images\**\*" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="jquery.datatables" Version="1.10.15" />
