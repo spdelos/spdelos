@@ -14,5 +14,10 @@ namespace CSDBPortal.ViewModels
 
         /// <summary>All published .nav package license records.</summary>
         public List<IetpLicense> IetpLicenses { get; set; } = new();
+
+        // ── Permission flags (set from the signed-in user's claims) ──────────
+        public bool CanPublishIetp    { get; set; }
+        public bool CanExportPdf      { get; set; }
+        public bool CanManageLicense  { get; set; }
     }
 }

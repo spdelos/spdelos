@@ -1,6 +1,9 @@
 @model CSDBPortal.ViewModels.PublisherViewModel
 @{
     ViewData["Title"] = "Publisher";
+    // Determine which tab is active first (the first one the user has permission for)
+    var firstTab = Model.CanPublishIetp ? "ietp" : Model.CanExportPdf ? "pdf" : Model.CanManageLicense ? "license" : "";
+    var hasAny   = firstTab != "";
 }
 
 <div class="pub-shell">
@@ -13,7 +16,21 @@
         <div class="pub-header-sub">Generate and publish IETP and PDF packages</div>
     </div>
 
-    <!-- ── Project selector ── -->
+@if (!hasAny)
+{
+    <div class="pub-body">
+        <div class="pub-section py-5 text-center text-muted">
+            <i class="fa-solid fa-lock fa-2x mb-3 d-block"></i>
+            You do not have permission to access any Publisher features.<br>
+            Contact your administrator to request access.
+        </div>
+    </div>
+}
+else
+{
+    <!-- ── Project selector (only when at least one package tab is available) ── -->
+    @if (Model.CanPublishIetp || Model.CanExportPdf)
+    {
     <div class="pub-project-bar">
         <label class="pub-label" for="pubProjectSelect">
             <i class="fa-solid fa-folder-open me-1"></i>Project
@@ -26,38 +43,53 @@
             }
         </select>
     </div>
+    }
 
     <!-- ── Output-type tabs ── -->
     <div class="pub-body">
 
         <ul class="nav nav-tabs pub-tabs mb-0" id="pubTabs" role="tablist">
+            @if (Model.CanPublishIetp)
+            {
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab-ietp" data-bs-toggle="tab"
-                        data-bs-target="#pane-ietp" type="button" role="tab"
-                        aria-controls="pane-ietp" aria-selected="true">
+                <button class="nav-link @(firstTab == "ietp" ? "active" : "")" id="tab-ietp"
+                        data-bs-toggle="tab" data-bs-target="#pane-ietp"
+                        type="button" role="tab" aria-controls="pane-ietp"
+                        aria-selected="@(firstTab == "ietp" ? "true" : "false")">
                     <i class="fa-solid fa-globe me-1"></i>IETP
                 </button>
             </li>
+            }
+            @if (Model.CanExportPdf)
+            {
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-pdf" data-bs-toggle="tab"
-                        data-bs-target="#pane-pdf" type="button" role="tab"
-                        aria-controls="pane-pdf" aria-selected="false">
+                <button class="nav-link @(firstTab == "pdf" ? "active" : "")" id="tab-pdf"
+                        data-bs-toggle="tab" data-bs-target="#pane-pdf"
+                        type="button" role="tab" aria-controls="pane-pdf"
+                        aria-selected="@(firstTab == "pdf" ? "true" : "false")">
                     <i class="fa-solid fa-file-pdf me-1"></i>PDF
                 </button>
             </li>
+            }
+            @if (Model.CanManageLicense)
+            {
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-license" data-bs-toggle="tab"
-                        data-bs-target="#pane-license" type="button" role="tab"
-                        aria-controls="pane-license" aria-selected="false">
+                <button class="nav-link @(firstTab == "license" ? "active" : "")" id="tab-license"
+                        data-bs-toggle="tab" data-bs-target="#pane-license"
+                        type="button" role="tab" aria-controls="pane-license"
+                        aria-selected="@(firstTab == "license" ? "true" : "false")">
                     <i class="fa-solid fa-key me-1"></i>License
                 </button>
             </li>
+            }
         </ul>
 
         <div class="tab-content pub-tab-content" id="pubTabContent">
 
             <!-- ══════════════════ IETP TAB ══════════════════ -->
-            <div class="tab-pane fade show active" id="pane-ietp" role="tabpanel" aria-labelledby="tab-ietp">
+            @if (Model.CanPublishIetp)
+            {
+            <div class="tab-pane fade @(firstTab == "ietp" ? "show active" : "")" id="pane-ietp" role="tabpanel" aria-labelledby="tab-ietp">
 
                 <div class="pub-section-grid">
 
@@ -219,9 +251,12 @@
                 </div>
 
             </div><!-- /pane-ietp -->
+            } @* end CanPublishIetp *@
 
             <!-- ══════════════════ PDF TAB ══════════════════ -->
-            <div class="tab-pane fade" id="pane-pdf" role="tabpanel" aria-labelledby="tab-pdf">
+            @if (Model.CanExportPdf)
+            {
+            <div class="tab-pane fade @(firstTab == "pdf" ? "show active" : "")" id="pane-pdf" role="tabpanel" aria-labelledby="tab-pdf">
                 <div class="pub-section-grid">
 
                     <!-- ── Publication Status ── -->
@@ -279,9 +314,12 @@
                     </span>
                 </div>
             </div>
+            } @* end CanExportPdf *@
 
             <!-- ══════════════════ LICENSE TAB ══════════════════ -->
-            <div class="tab-pane fade" id="pane-license" role="tabpanel" aria-labelledby="tab-license">
+            @if (Model.CanManageLicense)
+            {
+            <div class="tab-pane fade @(firstTab == "license" ? "show active" : "")" id="pane-license" role="tabpanel" aria-labelledby="tab-license">
                 <div class="pub-section-grid">
 
                     <!-- ── Provider Key ── -->
@@ -404,9 +442,11 @@
 
                 </div><!-- /pub-section-grid -->
             </div><!-- /pane-license -->
+            } @* end CanManageLicense *@
 
         </div><!-- /tab-content -->
     </div><!-- /pub-body -->
+} @* end hasAny *@
 
 </div><!-- /pub-shell -->
 

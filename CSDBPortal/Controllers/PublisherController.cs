@@ -22,16 +22,28 @@ namespace CSDBPortal.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var providerKeySetting = await _db.ApplicationSettings
-                .FirstOrDefaultAsync(s => s.Key == NavLicenseService.ProviderKeySettingName);
+            var canIetp    = HasPermission(Features.PublisherIetp);
+            var canPdf     = HasPermission(Features.PublisherPdf);
+            var canLicense = HasPermission(Features.PublisherLicense);
 
             var vm = new PublisherViewModel
             {
-                Projects = await _db.Projects
-                    .OrderBy(p => p.Name)
-                    .ToListAsync(),
+                CanPublishIetp   = canIetp,
+                CanExportPdf     = canPdf,
+                CanManageLicense = canLicense
+            };
 
-                PngLogos = await _db.ImageAssets
+            // Only load data for the tabs the user can actually see
+            if (canIetp || canPdf)
+            {
+                vm.Projects = await _db.Projects
+                    .OrderBy(p => p.Name)
+                    .ToListAsync();
+            }
+
+            if (canIetp)
+            {
+                vm.PngLogos = await _db.ImageAssets
                     .Where(i => i.MimeType == "image/png")
                     .OrderBy(i => i.Name)
                     .Select(i => new ImageAsset
@@ -42,14 +54,19 @@ namespace CSDBPortal.Controllers
                         MimeType = i.MimeType
                         // Data intentionally omitted; loaded on demand via /Manage/ViewImageAsset
                     })
-                    .ToListAsync(),
+                    .ToListAsync();
+            }
 
-                ProviderKey = providerKeySetting?.Value,
+            if (canLicense)
+            {
+                var providerKeySetting = await _db.ApplicationSettings
+                    .FirstOrDefaultAsync(s => s.Key == NavLicenseService.ProviderKeySettingName);
 
-                IetpLicenses = await _db.IetpLicenses
+                vm.ProviderKey   = providerKeySetting?.Value;
+                vm.IetpLicenses  = await _db.IetpLicenses
                     .OrderByDescending(l => l.CreationTime)
-                    .ToListAsync()
-            };
+                    .ToListAsync();
+            }
 
             return View(vm);
         }
@@ -60,6 +77,9 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public async Task<IActionResult> RegenerateProviderKey()
         {
+            if (!HasPermission(Features.PublisherLicense))
+                return PermissionDenied();
+
             var licenseService = new NavLicenseService(_db);
             var newKey = await licenseService.RegenerateProviderKeyAsync();
             return Json(new { success = true, key = newKey });
@@ -71,6 +91,9 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportPdf(int projectId, string status)
         {
+            if (!HasPermission(Features.PublisherPdf))
+                return PermissionDenied();
+
             var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if (project == null)
                 return Json(new { success = false, message = "Project not found." });
@@ -100,6 +123,9 @@ namespace CSDBPortal.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveLicenseKey(int id, string? licenseKey)
         {
+            if (!HasPermission(Features.PublisherLicense))
+                return PermissionDenied();
+
             var record = await _db.IetpLicenses.FirstOrDefaultAsync(l => l.Id == id);
             if (record == null)
                 return Json(new { success = false, message = "Record not found." });
@@ -125,6 +151,9 @@ namespace CSDBPortal.Controllers
             IFormFile? htmlFile,
             IFormFileCollection? assets)
         {
+            if (!HasPermission(Features.PublisherIetp))
+                return PermissionDenied();
+
             // ── Validate inputs ──────────────────────────────────────────────
             var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
             if (project == null)
