@@ -50,6 +50,7 @@ namespace CSDBPortal.Data
         public virtual DbSet<QuickAccessItem> QuickAccessItems { get; set; } = null!;
         public virtual DbSet<PartNumberCode> PartNumberCodes { get; set; } = null!;
         public virtual DbSet<PNCLookup> PNCLookups { get; set; } = null!;
+        public virtual DbSet<IetpLicense> IetpLicenses { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

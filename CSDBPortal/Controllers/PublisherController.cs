@@ -48,7 +48,7 @@ namespace CSDBPortal.Controllers
         /// <summary>
         /// Generates and downloads a .nav IETP package for the selected project.
         /// The .nav file is a ZIP archive containing data module XML files,
-        /// a navigation.xml site map, optional cover page and logo, and metadata.
+        /// a navigation.xml site map, License.lic, optional cover page and logo, and metadata.
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> PublishIetp(
@@ -83,9 +83,23 @@ namespace CSDBPortal.Controllers
             // ── Build navigation.xml ─────────────────────────────────────────
             var navXml  = BuildNavigationXml(project, dataModules);
 
-            // ── Build nav_metadata.json ──────────────────────────────────────
+            // ── Licensing ────────────────────────────────────────────────────
             bool isSecured = string.Equals(security, "Secured", StringComparison.OrdinalIgnoreCase);
             bool isDraft   = string.Equals(status,   "Draft",   StringComparison.OrdinalIgnoreCase);
+
+            var licenseService = new NavLicenseService(_db);
+
+            // For Secured packages the ProviderKey is embedded in License.lic so the
+            // Viewer can tie the package to this portal installation.
+            string? providerKey = isSecured
+                ? await licenseService.GetOrCreateProviderKeyAsync()
+                : null;
+
+            // Generate the License.lic binary
+            var licenseBytes = licenseService.GenerateLicenseFile(isDraft, providerKey);
+
+            // Persist the publish record (LicenseKey stays null until Viewer admin activates)
+            await licenseService.UpsertLicenseRecordAsync(navFileName, isSecured, isDraft, providerKey);
 
             var metadata = new
             {
@@ -135,7 +149,14 @@ namespace CSDBPortal.Controllers
                 using (var ew = metaEntry.Open())
                     await ew.WriteAsync(Encoding.UTF8.GetBytes(metadataJson));
 
-                // 4. Cover page HTML (optional)
+                // 4. License.lic — always required by the Viewer
+                //    Secured  → file size > 16 bytes (trial flag + encrypted client key)
+                //    Unsecured → file size ≤ 16 bytes (trial flag only)
+                var licEntry = zip.CreateEntry("License.lic", CompressionLevel.Optimal);
+                using (var ew = licEntry.Open())
+                    await ew.WriteAsync(licenseBytes);
+
+                // 5. Cover page HTML (optional)
                 if (htmlSource == "upload" && htmlFile != null && htmlFile.Length > 0)
                 {
                     var htmlEntry = zip.CreateEntry("custom/welcome.html", CompressionLevel.Optimal);
@@ -155,7 +176,7 @@ namespace CSDBPortal.Controllers
                     }
                 }
 
-                // 5. OEM Logo (optional)
+                // 6. OEM Logo (optional)
                 if (logoId.HasValue && logoId.Value > 0)
                 {
                     var logoAsset = await _db.ImageAssets.FirstOrDefaultAsync(i => i.Id == logoId.Value);
