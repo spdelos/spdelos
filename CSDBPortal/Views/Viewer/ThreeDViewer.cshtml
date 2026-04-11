@@ -9,8 +9,24 @@
     <meta charset="utf-8" />
     <title>3D Viewer</title>
     <style>
-        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #1a1a2e; }
-        canvas { display: block; }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            background: #1a1a2e;
+        }
+        #threedContainer {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+        }
+        /* The WebGL canvas Three.js appends must fill the container */
+        #threedContainer canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
         #loadingMsg {
             position: fixed; inset: 0;
             display: flex; align-items: center; justify-content: center;
@@ -45,14 +61,16 @@
 
         function init() {
             var container = document.getElementById('threedContainer');
+            var W = container.clientWidth  || window.innerWidth;
+            var H = container.clientHeight || window.innerHeight;
 
             scene    = new THREE.Scene();
-            camera   = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+            camera   = new THREE.PerspectiveCamera(75, W / H, 0.1, 1000);
             camera.position.set(0, 2, 5);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setPixelRatio(devicePixelRatio);
-            renderer.setSize(innerWidth, innerHeight);
+            renderer.setSize(W, H);
             container.appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -103,9 +121,12 @@
             });
 
             window.addEventListener('resize', function () {
-                camera.aspect = innerWidth / innerHeight;
+                var c = document.getElementById('threedContainer');
+                var W = c.clientWidth  || window.innerWidth;
+                var H = c.clientHeight || window.innerHeight;
+                camera.aspect = W / H;
                 camera.updateProjectionMatrix();
-                renderer.setSize(innerWidth, innerHeight);
+                renderer.setSize(W, H);
             });
         }
 

@@ -9,8 +9,23 @@
     <meta charset="utf-8" />
     <title>CGM Viewer</title>
     <style>
-        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        #cgmViewer { width: 100%; height: 100vh; border: none; }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+        }
+        #cgmViewer {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+        }
+        /* Force every canvas cgmviewIE injects to fill the container */
+        #cgmViewer canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
     </style>
 </head>
 <body>
