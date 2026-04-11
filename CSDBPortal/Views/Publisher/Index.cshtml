@@ -87,9 +87,9 @@ else
                         type="button" role="tab" aria-controls="pane-packages"
                         aria-selected="false">
                     <i class="fa-solid fa-boxes-stacked me-1"></i>Published Packages
-                    @if (Model.IetpLicenses.Any())
+                    @if (Model.AllPackageCodes.Any())
                     {
-                        <span class="badge bg-secondary ms-1" style="font-size:10px;">@Model.IetpLicenses.Count</span>
+                        <span class="badge bg-secondary ms-1" style="font-size:10px;">@Model.AllPackageCodes.Count</span>
                     }
                 </button>
             </li>
@@ -532,15 +532,29 @@ else
                         </div>
                     </div>
 
-                    <!-- ── Package Code Registry ── -->
+                </div><!-- /pub-section-grid -->
+            </div><!-- /pane-license -->
+
+            <!-- ══════════════════ PUBLISHED PACKAGES TAB ══════════════════ -->
+            @if (Model.CanManageLicense)
+            {
+            @{
+                var licByFilename = Model.IetpLicenses
+                    .Where(l => l.IETP != null)
+                    .ToDictionary(l => l.IETP!, l => l);
+            }
+            <div class="tab-pane fade" id="pane-packages" role="tabpanel" aria-labelledby="tab-packages">
+                <div class="pub-section-grid">
+
                     <div class="pub-section">
                         <div class="pub-section-title">
-                            <i class="fa-solid fa-database me-1"></i>Package Code Registry
+                            <i class="fa-solid fa-boxes-stacked me-1"></i>Package Code Registry
                         </div>
                         <p class="text-muted mb-3" style="font-size:13px;">
                             All registered PMC and DDN codes. Once registered a code is permanent and
                             can only be consumed by a single publish operation.
                         </p>
+
                         @if (!Model.AllPackageCodes.Any())
                         {
                             <div class="pub-coming-soon">
@@ -556,17 +570,22 @@ else
                                             <th>Type</th>
                                             <th>Code</th>
                                             <th>Status</th>
+                                            <th class="text-center">Secured</th>
+                                            <th class="text-center">Issue</th>
                                             <th>Created By</th>
                                             <th>Created</th>
                                             <th>Published By</th>
                                             <th>Published</th>
+                                            <th>License Key</th>
                                             <th>Package</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach (var c in Model.AllPackageCodes)
                                         {
-                                            <tr>
+                                            var lic = c.PackageFilename != null && licByFilename.TryGetValue(c.PackageFilename, out var licVal) ? licVal : null;
+                                            <tr data-licid="@(lic?.Id ?? 0)">
                                                 <td>
                                                     <span class="badge @(c.CodeType == "PMC" ? "bg-primary" : "bg-info text-dark")">@c.CodeType</span>
                                                 </td>
@@ -581,11 +600,58 @@ else
                                                         <span class="badge bg-secondary"><i class="fa-solid fa-clock me-1"></i>Available</span>
                                                     }
                                                 </td>
+                                                <td class="text-center">
+                                                    @if (lic != null)
+                                                    {
+                                                        @if (lic.IsSecured)
+                                                        {
+                                                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock me-1"></i>Secured</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-success"><i class="fa-solid fa-lock-open me-1"></i>Open</span>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (lic != null)
+                                                    {
+                                                        @if (lic.IsTrial)
+                                                        {
+                                                            <span class="badge bg-secondary">Draft</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-primary">Final</span>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
+                                                </td>
                                                 <td style="font-size:12px;">@c.CreatedBy</td>
                                                 <td style="font-size:12px; white-space:nowrap;">@c.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                                 <td style="font-size:12px;">@(c.PublishedBy ?? "—")</td>
                                                 <td style="font-size:12px; white-space:nowrap;">
                                                     @(c.PublishedAt.HasValue ? c.PublishedAt.Value.ToString("yyyy-MM-dd HH:mm") : "—")
+                                                </td>
+                                                <td>
+                                                    @if (lic != null)
+                                                    {
+                                                        <input type="text" class="form-control form-control-sm lic-key-field font-monospace"
+                                                               value="@(lic.LicenseKey ?? "")"
+                                                               placeholder="Not activated"
+                                                               maxlength="50" style="min-width:140px;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
                                                 </td>
                                                 <td>
                                                     @if (c.IsPublished && c.PackageFilename != null)
@@ -611,86 +677,13 @@ else
                                                         <span class="text-muted">—</span>
                                                     }
                                                 </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                    </div>
-
-                </div><!-- /pub-section-grid -->
-            </div><!-- /pane-license -->
-
-            <!-- ══════════════════ PUBLISHED PACKAGES TAB ══════════════════ -->
-            @if (Model.CanManageLicense)
-            {
-            <div class="tab-pane fade" id="pane-packages" role="tabpanel" aria-labelledby="tab-packages">
-                <div class="pub-section-grid">
-
-                    <div class="pub-section">
-                        <div class="pub-section-title">
-                            <i class="fa-solid fa-boxes-stacked me-1"></i>Published Packages
-                        </div>
-
-                        @if (!Model.IetpLicenses.Any())
-                        {
-                            <div class="pub-coming-soon">
-                                <i class="fa-solid fa-inbox me-1"></i>No packages published yet.
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="table-responsive">
-                                <table class="table table-sm lic-table align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Package</th>
-                                            <th class="text-center">Secured</th>
-                                            <th class="text-center">Trial</th>
-                                            <th>License Key</th>
-                                            <th>Published</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var lic in Model.IetpLicenses)
-                                        {
-                                            <tr data-licid="@lic.Id">
-                                                <td class="font-monospace" style="font-size:12px;">@lic.IETP</td>
-                                                <td class="text-center">
-                                                    @if (lic.IsSecured)
-                                                    {
-                                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock me-1"></i>Secured</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-success"><i class="fa-solid fa-lock-open me-1"></i>Open</span>
-                                                    }
-                                                </td>
-                                                <td class="text-center">
-                                                    @if (lic.IsTrial)
-                                                    {
-                                                        <span class="badge bg-secondary">Draft</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-primary">Final</span>
-                                                    }
-                                                </td>
                                                 <td>
-                                                    <input type="text" class="form-control form-control-sm lic-key-field font-monospace"
-                                                           value="@(lic.LicenseKey ?? "")"
-                                                           placeholder="Not activated"
-                                                           maxlength="50" style="min-width:160px;" />
-                                                </td>
-                                                <td style="font-size:12px; white-space:nowrap;">
-                                                    @lic.CreationTime.ToString("yyyy-MM-dd HH:mm")
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary btn-save-lickey" title="Save license key">
-                                                        <i class="fa-solid fa-floppy-disk"></i>
-                                                    </button>
+                                                    @if (lic != null)
+                                                    {
+                                                        <button class="btn btn-sm btn-outline-primary btn-save-lickey" title="Save license key">
+                                                            <i class="fa-solid fa-floppy-disk"></i>
+                                                        </button>
+                                                    }
                                                 </td>
                                             </tr>
                                         }
