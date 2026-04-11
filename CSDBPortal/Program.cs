@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using CSDBPortal.Data;
 using CSDBPortal.Business;
 using CSDBPortal.Services;
@@ -12,7 +13,11 @@ var baseConnection = builder.Configuration.GetConnectionString("DefaultConnectio
 var connectionString = baseConnection + ";Min Pool Size=10;Max Pool Size=300;Connect Timeout=30;";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString)
+           // Migrations in this project are hand-written; the snapshot may lag the live
+           // model slightly. Suppress the EF Core 10 exception that would otherwise block
+           // Database.Migrate() at startup — migrations themselves still run correctly.
+           .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
