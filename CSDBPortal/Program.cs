@@ -30,13 +30,22 @@ builder.Services.AddSingleton<ActiveSessionTracker>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.Events.OnValidatePrincipal = context =>
+    // Keep the cookie alive as long as the user is active.
+    // SlidingExpiration resets the expiry on each request so the cookie
+    // only expires after a true period of inactivity.
+    options.SlidingExpiration = true;
+    options.ExpireTimeSpan    = TimeSpan.FromHours(8);
+
+    options.Events.OnValidatePrincipal = async context =>
     {
         var tracker = context.HttpContext.RequestServices.GetRequiredService<ActiveSessionTracker>();
-        var userId = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId  = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (userId != null)
             tracker.Touch(userId);
-        return Task.CompletedTask;
+
+        // Reissue the cookie so the client-side expiry slides in sync with the server.
+        context.ShouldRenew = true;
+        await Task.CompletedTask;
     };
 });
 

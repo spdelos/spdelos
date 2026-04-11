@@ -194,6 +194,18 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
+    // ── Global AJAX 401 guard ─────────────────────────────────────────────
+    // When the session cookie expires any $.ajax / $.post call gets a 401.
+    // Intercept it and redirect to login so the user isn't left on a broken page.
+    $(document).ajaxError(function (event, jqXHR) {
+        if (jqXHR.status === 401) {
+            window.location.href = "/Identity/Account/Login?returnUrl=" +
+                encodeURIComponent(window.location.pathname + window.location.search);
+        }
+    });
+    </script>
+
+    <script>
     // Make all Bootstrap modals draggable (by header) and resizable
     $(document).on('shown.bs.modal', '.modal', function () {
         var $modal   = $(this);
