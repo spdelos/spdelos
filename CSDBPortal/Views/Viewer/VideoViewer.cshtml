@@ -1,0 +1,50 @@
+@{
+    Layout = null;
+    var dmcId   = ViewBag.DmcId?.ToString()   ?? "";
+    var videoId = ViewBag.VideoId?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Video Viewer</title>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; background: #000; }
+        video { width: 100%; height: 100vh; display: block; }
+    </style>
+</head>
+<body>
+    <video id="videoViewer" autoplay muted controls></video>
+
+    <script>
+        var dmcId   = @Html.Raw(Json.Serialize(dmcId));
+        var videoId = @Html.Raw(Json.Serialize(videoId));
+
+        function getUrlParam(name) {
+            var rx = new RegExp('[?&]' + name + '=([^&#]*)');
+            var r  = rx.exec(location.search);
+            return r ? decodeURIComponent(r[1].replace(/\+/g, ' ')) : '';
+        }
+        videoId = getUrlParam('videoId') || videoId;
+        dmcId   = getUrlParam('dmcId')   || dmcId;
+
+        var vid = document.getElementById('videoViewer');
+
+        function loadViewer() {
+            var src = '/Viewer/GetMedia?dmcId=' + encodeURIComponent(dmcId)
+                    + '&filename='              + encodeURIComponent(videoId + '.mp4');
+            vid.src = src;
+            vid.load();
+            vid.play().catch(function () {});
+        }
+
+        if (videoId) loadViewer();
+
+        window.addEventListener('beforeunload', function () {
+            vid.pause();
+            vid.removeAttribute('src');
+            vid.load();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+@{
+    Layout = null;   // standalone page — no sidebar/navbar
+    var dmcId   = ViewBag.DmcId?.ToString()   ?? "";
+    var imageId = ViewBag.ImageId?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>CGM Viewer</title>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        #cgmViewer { width: 100%; height: 100vh; border: none; }
+    </style>
+</head>
+<body>
+    <div id="cgmViewer"></div>
+
+    <script src="~/js/ietp-viewer/jquery-3.5.1.min.js"></script>
+    <script src="~/js/ietp-viewer/fabric.js"></script>
+    <script src="~/js/ietp-viewer/pako.js"></script>
+    <script src="~/js/ietp-viewer/cgmviewIE.js"></script>
+    <script>
+        var dmcId   = @Html.Raw(Json.Serialize(dmcId));
+        var imageId = @Html.Raw(Json.Serialize(imageId));
+
+        // Also accept URL overrides (when opened as a popup / link)
+        function getUrlParam(name) {
+            var rx = new RegExp('[?&]' + name + '=([^&#]*)');
+            var r  = rx.exec(location.search);
+            return r ? decodeURIComponent(r[1].replace(/\+/g, ' ')) : '';
+        }
+        imageId = getUrlParam('imageId') || imageId;
+        dmcId   = getUrlParam('dmcId')   || dmcId;
+
+        function deleteChildren() {
+            var el = document.getElementById('cgmViewer');
+            while (el && el.firstChild) el.removeChild(el.firstChild);
+        }
+
+        function loadViewer() {
+            deleteChildren();
+            // Media is served from /Viewer/GetMedia?dmcId=X&filename=Y.cgm
+            var cgmPath = '/Viewer/GetMedia?dmcId=' + encodeURIComponent(dmcId)
+                        + '&filename='              + encodeURIComponent(imageId + '.cgm');
+            document.getElementById('cgmViewer').setAttribute('src', cgmPath);
+            cgmparse('cgmViewer', 1, '/js/ietp-viewer/');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (imageId) loadViewer();
+        });
+
+        window.addEventListener('resize', function () {
+            clearTimeout(window._rszTimer);
+            window._rszTimer = setTimeout(loadViewer, 120);
+        });
+    </script>
+</body>
+</html>

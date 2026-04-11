@@ -1,0 +1,123 @@
+@{
+    Layout = null;
+    var dmcId   = ViewBag.DmcId?.ToString()   ?? "";
+    var mediaId = ViewBag.MediaId?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>3D Viewer</title>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #1a1a2e; }
+        canvas { display: block; }
+        #loadingMsg {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-family: sans-serif; font-size: 14px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="threedContainer"></div>
+    <div id="loadingMsg">Loading 3D model…</div>
+
+    <script src="~/js/ietp-viewer/three.min.js"></script>
+    <script src="~/js/ietp-viewer/GLTFLoader.js"></script>
+    <script src="~/js/ietp-viewer/DRACOLoader.js"></script>
+    <script src="~/js/ietp-viewer/OrbitControls.js"></script>
+    <script src="~/js/ietp-viewer/RoomEnvironment.js"></script>
+    <script>
+        var dmcId   = @Html.Raw(Json.Serialize(dmcId));
+        var mediaId = @Html.Raw(Json.Serialize(mediaId));
+
+        function getUrlParam(name) {
+            var rx = new RegExp('[?&]' + name + '=([^&#]*)');
+            var r  = rx.exec(location.search);
+            return r ? decodeURIComponent(r[1].replace(/\+/g, ' ')) : '';
+        }
+        mediaId = getUrlParam('mediaId') || mediaId;
+        dmcId   = getUrlParam('dmcId')   || dmcId;
+
+        var scene, camera, renderer, controls, mixer;
+        var clock = new THREE.Clock();
+
+        function init() {
+            var container = document.getElementById('threedContainer');
+
+            scene    = new THREE.Scene();
+            camera   = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(devicePixelRatio);
+            renderer.setSize(innerWidth, innerHeight);
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping  = true;
+            controls.dampingFactor  = 0.05;
+            controls.autoRotate     = true;
+            controls.maxPolarAngle  = Math.PI / 2;
+
+            scene.add(new THREE.DirectionalLight(0xffffff, 1).position.set(5, 5, 5));
+            scene.add(new THREE.AmbientLight(0x404040));
+
+            var pmrem = new THREE.PMREMGenerator(renderer);
+            pmrem.compileEquirectangularShader();
+            scene.environment = pmrem.fromScene(new THREE.RoomEnvironment()).texture;
+
+            var mgr   = new THREE.LoadingManager();
+            var draco = new THREE.DRACOLoader(mgr)
+                            .setDecoderPath('/js/ietp-viewer/gltf/');
+            var loader = new THREE.GLTFLoader(mgr);
+            loader.setDRACOLoader(draco);
+
+            var modelUrl = '/Viewer/GetMedia?dmcId=' + encodeURIComponent(dmcId)
+                         + '&filename='              + encodeURIComponent(mediaId + '.glb');
+
+            loader.load(modelUrl, function (gltf) {
+                document.getElementById('loadingMsg').style.display = 'none';
+                var model = gltf.scene;
+                scene.add(model);
+
+                var box    = new THREE.Box3().setFromObject(model);
+                var size   = box.getSize(new THREE.Vector3()).length();
+                var center = box.getCenter(new THREE.Vector3());
+
+                model.position.sub(center);
+                controls.maxDistance = size * 10;
+                camera.near = size / 100;
+                camera.far  = size * 100;
+                camera.updateProjectionMatrix();
+                controls.saveState();
+
+                if (gltf.animations && gltf.animations.length) {
+                    mixer = new THREE.AnimationMixer(model);
+                    gltf.animations.forEach(clip => mixer.clipAction(clip).play());
+                }
+            }, undefined, function (err) {
+                document.getElementById('loadingMsg').textContent = 'Failed to load model.';
+                console.error(err);
+            });
+
+            window.addEventListener('resize', function () {
+                camera.aspect = innerWidth / innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(innerWidth, innerHeight);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (mixer) mixer.update(clock.getDelta());
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+* {
+    box-sizing: border-box;
+}
+print { 
+     display:none ;
+ }
+#tCanvas {
+    border: 1px solid black;
+    display: none;
+    position: absolute;
+    pointer-events: none;
+}
+#sdi_canvas1 {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+     
+}
+#sdi_canvas1canvas1 {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+ 
+}
+
+#sdi_canvas1canvas2 {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+ 
+}
+
+#sdi_canvas1canvas3 {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+ 
+}	
+
+#context-menu {
+position: fixed;
+z-index: 10000;
+width: 180px;
+background: #ffaaaa;
+border-radius: 5px;
+display: none;
+}
+
+
+
+#context-menu.item {
+padding: 2px 4px;
+font-size: 12px;
+color: #eee;
+cursor: pointer;
+border-radius: inherit;
+}
+
+
+
+.tooltip-inner {
+    white-space: pre-wrap;
+
+}
+
+.modeless {
+    top: 60px;
+    left: 0px;
+    width: 300px;
+
+}
+#myrot {
+
+overflow: visible;
+}

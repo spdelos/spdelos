@@ -1,0 +1,135 @@
+/* Override Bootstrap CSS with styles for SDI Software icons */
+
+/* Modal window controls for Settings panel */
+.modeless {
+    top: 60px;
+    left: 0px;
+    width: 350px;
+}
+
+modal-sm {
+    
+    top: 60px;
+    left: 0px;
+    width: 300px;
+}
+
+modal-md {
+    
+    top: 60px;
+    left: 0px;
+    width: 450px;
+}
+
+modal-lg {
+    
+    top: 60px;
+    left: 0px;
+    width: 600px;
+}
+
+/* Icon settings control for SVG labels and Context Menu icons */
+.icon {
+    color: #212529;
+    fill: currentColor;
+    vertical-align: middle;
+    height: auto;
+    width: 24px;
+}
+
+.icon-xsm {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-sm {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-md {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-lg {
+    width: 48px;
+    height: 48px;
+}
+
+
+/* Button overrides for Navigation bar, etc. */
+.btn svg {
+    color: #000000;
+    fill: #000000;
+    
+    vertical-align:auto;
+    justify-content: center;
+    width: 48px;
+    height: auto;
+}
+
+.btn-md svg {
+    width: 32px;
+}
+
+.btn-ssm svg {
+    width: 16px;
+}
+
+.btn-sm svg {
+    width: 24px;
+}
+
+.btn-lg svg {
+    width: 48px;
+}
+
+.btn-xlg svg {
+    width: 64px;
+}
+
+/* Boostrap btn-primary background is BLUE, so icon is WHITE */
+.btn-primary svg, .btn-primary:hover svg, .btn-primary.hover svg, .btn-primary:focus svg, .btn-primary.focus svg{
+    color: #fff;
+}
+
+/* Bootstrap btn-secondary background is DARK GRAY, so icon is WHITE */
+.btn-secondary svg, .btn-secondary:focus svg, .btn-secondary.focus svg{
+    color: #000;
+}
+
+.btn-secondary:hover svg{
+    color: lightgreen;
+}
+
+/* Boostrap btn-success background is GREEN, so icon is WHITE */
+.btn-success svg, .btn-success:hover svg, .btn-success:focus svg, .btn-success.hover svg, .btn-success.focus svg{
+    color: #fff;
+}
+
+/* Bootstrap btn-light background is WHITE, so Icon is BLACK */
+.btn-light svg, .btn-light:hover svg, .btn-light:hover svg, .btn-light:focus svg, .btn-light.focus svg{
+    color: #212529;
+  }
+
+.btn-redline svg{
+    color: currentColor;
+}
+
+.btn-redline:hover svg, .btn-redline:active svg {
+    color: red;
+}
+
+
+.btn-hotspot svg{
+    color: currentColor;
+}
+
+.btn-hotspot:hover svg, .btn-hotspot:active svg {
+    color: yellow;
+}
+
+.navbar {
+    background: linear-gradient(to right,rgba(34, 68, 85, 1.0), rgba(119, 136, 153, 1.0), rgba(68, 102, 119, 1.0), rgba(0, 51, 68, 1.0));
+}
