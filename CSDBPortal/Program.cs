@@ -68,6 +68,16 @@ builder.Services.AddScoped<BrexValidationEngine>();
 
 var app = builder.Build();
 
+// Auto-apply any pending EF Core migrations on startup.
+// This avoids needing 'dotnet ef database update' to be run manually
+// on the server whenever a new migration is deployed.
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider
+         .GetRequiredService<ApplicationDbContext>()
+         .Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
