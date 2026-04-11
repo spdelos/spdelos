@@ -1,9 +1,22 @@
 @model CSDBPortal.ViewModels.PublisherViewModel
 @{
     ViewData["Title"] = "Publisher";
-    // Determine which tab is active first (the first one the user has permission for)
     var firstTab = Model.CanPublishIetp ? "ietp" : Model.CanExportPdf ? "pdf" : Model.CanManageLicense ? "license" : "";
     var hasAny   = firstTab != "";
+
+    // Pre-join package codes with their license records for the Published Packages table.
+    // Avoids code statements inside @foreach bodies which confuse the Razor parser.
+    var licByFilename = Model.IetpLicenses
+        .Where(l => l.IETP != null)
+        .ToDictionary(l => l.IETP!, l => l);
+    var packageRows = Model.AllPackageCodes
+        .Select(c => (
+            Code:    c,
+            License: (c.PackageFilename != null && licByFilename.ContainsKey(c.PackageFilename))
+                         ? licByFilename[c.PackageFilename]
+                         : null
+        ))
+        .ToList();
 }
 
 <div class="pub-shell">
@@ -536,11 +549,6 @@ else
             </div><!-- /pane-license -->
 
             <!-- ══════════════════ PUBLISHED PACKAGES TAB ══════════════════ -->
-            @{
-                var licByFilename = Model.IetpLicenses
-                    .Where(l => l.IETP != null)
-                    .ToDictionary(l => l.IETP!, l => l);
-            }
             @if (Model.CanManageLicense)
             {
             <div class="tab-pane fade" id="pane-packages" role="tabpanel" aria-labelledby="tab-packages">
@@ -582,16 +590,22 @@ else
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var c in Model.AllPackageCodes)
+                                        @foreach (var row in packageRows)
                                         {
-                                            var lic = c.PackageFilename != null && licByFilename.TryGetValue(c.PackageFilename, out var licVal) ? licVal : null;
-                                            <tr data-licid="@(lic?.Id ?? 0)">
+                                            <tr data-licid="@(row.License != null ? row.License.Id.ToString() : "0")">
                                                 <td>
-                                                    <span class="badge @(c.CodeType == "PMC" ? "bg-primary" : "bg-info text-dark")">@c.CodeType</span>
+                                                    @if (row.Code.CodeType == "PMC")
+                                                    {
+                                                        <span class="badge bg-primary">PMC</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-info text-dark">DDN</span>
+                                                    }
                                                 </td>
-                                                <td class="font-monospace" style="font-size:12px;">@c.Code</td>
+                                                <td class="font-monospace" style="font-size:12px;">@row.Code.Code</td>
                                                 <td>
-                                                    @if (c.IsPublished)
+                                                    @if (row.Code.IsPublished)
                                                     {
                                                         <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Published</span>
                                                     }
@@ -601,9 +615,9 @@ else
                                                     }
                                                 </td>
                                                 <td class="text-center">
-                                                    @if (lic != null)
+                                                    @if (row.License != null)
                                                     {
-                                                        @if (lic.IsSecured)
+                                                        @if (row.License.IsSecured)
                                                         {
                                                             <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock me-1"></i>Secured</span>
                                                         }
@@ -618,9 +632,9 @@ else
                                                     }
                                                 </td>
                                                 <td class="text-center">
-                                                    @if (lic != null)
+                                                    @if (row.License != null)
                                                     {
-                                                        @if (lic.IsTrial)
+                                                        @if (row.License.IsTrial)
                                                         {
                                                             <span class="badge bg-secondary">Draft</span>
                                                         }
@@ -634,17 +648,17 @@ else
                                                         <span class="text-muted">—</span>
                                                     }
                                                 </td>
-                                                <td style="font-size:12px;">@c.CreatedBy</td>
-                                                <td style="font-size:12px; white-space:nowrap;">@c.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                                <td style="font-size:12px;">@(c.PublishedBy ?? "—")</td>
+                                                <td style="font-size:12px;">@row.Code.CreatedBy</td>
+                                                <td style="font-size:12px; white-space:nowrap;">@row.Code.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                                <td style="font-size:12px;">@(row.Code.PublishedBy ?? "—")</td>
                                                 <td style="font-size:12px; white-space:nowrap;">
-                                                    @(c.PublishedAt.HasValue ? c.PublishedAt.Value.ToString("yyyy-MM-dd HH:mm") : "—")
+                                                    @(row.Code.PublishedAt.HasValue ? row.Code.PublishedAt.Value.ToString("yyyy-MM-dd HH:mm") : "—")
                                                 </td>
                                                 <td>
-                                                    @if (lic != null)
+                                                    @if (row.License != null)
                                                     {
                                                         <input type="text" class="form-control form-control-sm lic-key-field font-monospace"
-                                                               value="@(lic.LicenseKey ?? "")"
+                                                               value="@(row.License.LicenseKey ?? "")"
                                                                placeholder="Not activated"
                                                                maxlength="50" style="min-width:140px;" />
                                                     }
@@ -654,21 +668,21 @@ else
                                                     }
                                                 </td>
                                                 <td>
-                                                    @if (c.IsPublished && c.PackageFilename != null)
+                                                    @if (row.Code.IsPublished && row.Code.PackageFilename != null)
                                                     {
-                                                        @if (Model.PackageFileStatus.TryGetValue(c.Id, out var fileExists) && fileExists)
+                                                        @if (Model.PackageFileStatus.ContainsKey(row.Code.Id) && Model.PackageFileStatus[row.Code.Id])
                                                         {
-                                                            <a href="/Publisher/DownloadNavPackage?id=@c.Id"
+                                                            <a href="/Publisher/DownloadNavPackage?id=@row.Code.Id"
                                                                class="btn btn-sm btn-outline-secondary"
-                                                               title="Download @c.PackageFilename">
-                                                                <i class="fa-solid fa-download me-1"></i><span style="font-size:11px;">@c.PackageFilename</span>
+                                                               title="Download @row.Code.PackageFilename">
+                                                                <i class="fa-solid fa-download me-1"></i><span style="font-size:11px;">@row.Code.PackageFilename</span>
                                                             </a>
                                                         }
                                                         else
                                                         {
                                                             <span class="text-muted" style="font-size:12px;">
-                                                                <i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>@c.PackageFilename
-                                                                <br><small class="text-danger">File deleted</small>
+                                                                <i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>@row.Code.PackageFilename
+                                                                <br /><small class="text-danger">File deleted</small>
                                                             </span>
                                                         }
                                                     }
@@ -678,7 +692,7 @@ else
                                                     }
                                                 </td>
                                                 <td>
-                                                    @if (lic != null)
+                                                    @if (row.License != null)
                                                     {
                                                         <button class="btn btn-sm btn-outline-primary btn-save-lickey" title="Save license key">
                                                             <i class="fa-solid fa-floppy-disk"></i>
