@@ -81,6 +81,18 @@ else
                     <i class="fa-solid fa-key me-1"></i>License
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-packages"
+                        data-bs-toggle="tab" data-bs-target="#pane-packages"
+                        type="button" role="tab" aria-controls="pane-packages"
+                        aria-selected="false">
+                    <i class="fa-solid fa-boxes-stacked me-1"></i>Published Packages
+                    @if (Model.IetpLicenses.Any())
+                    {
+                        <span class="badge bg-secondary ms-1" style="font-size:10px;">@Model.IetpLicenses.Count</span>
+                    }
+                </button>
+            </li>
             }
         </ul>
 
@@ -520,79 +532,6 @@ else
                         </div>
                     </div>
 
-                    <!-- ── Published Packages ── -->
-                    <div class="pub-section">
-                        <div class="pub-section-title">
-                            <i class="fa-solid fa-boxes-stacked me-1"></i>Published Packages
-                        </div>
-
-                        @if (!Model.IetpLicenses.Any())
-                        {
-                            <div class="pub-coming-soon">
-                                <i class="fa-solid fa-inbox me-1"></i>No packages published yet.
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="table-responsive">
-                                <table class="table table-sm lic-table align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Package</th>
-                                            <th class="text-center">Secured</th>
-                                            <th class="text-center">Trial</th>
-                                            <th>License Key</th>
-                                            <th>Published</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var lic in Model.IetpLicenses)
-                                        {
-                                            <tr data-licid="@lic.Id">
-                                                <td class="font-monospace" style="font-size:12px;">@lic.IETP</td>
-                                                <td class="text-center">
-                                                    @if (lic.IsSecured)
-                                                    {
-                                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock me-1"></i>Secured</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-success"><i class="fa-solid fa-lock-open me-1"></i>Open</span>
-                                                    }
-                                                </td>
-                                                <td class="text-center">
-                                                    @if (lic.IsTrial)
-                                                    {
-                                                        <span class="badge bg-secondary">Draft</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-primary">Final</span>
-                                                    }
-                                                </td>
-                                                <td>
-                                                    <input type="text" class="form-control form-control-sm lic-key-field font-monospace"
-                                                           value="@(lic.LicenseKey ?? "")"
-                                                           placeholder="Not activated"
-                                                           maxlength="50" style="min-width:160px;" />
-                                                </td>
-                                                <td style="font-size:12px; white-space:nowrap;">
-                                                    @lic.CreationTime.ToString("yyyy-MM-dd HH:mm")
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary btn-save-lickey" title="Save license key">
-                                                        <i class="fa-solid fa-floppy-disk"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                    </div>
-
                     <!-- ── Package Code Registry ── -->
                     <div class="pub-section">
                         <div class="pub-section-title">
@@ -682,7 +621,88 @@ else
 
                 </div><!-- /pub-section-grid -->
             </div><!-- /pane-license -->
-            } @* end CanManageLicense *@
+
+            <!-- ══════════════════ PUBLISHED PACKAGES TAB ══════════════════ -->
+            @if (Model.CanManageLicense)
+            {
+            <div class="tab-pane fade" id="pane-packages" role="tabpanel" aria-labelledby="tab-packages">
+                <div class="pub-section-grid">
+
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-boxes-stacked me-1"></i>Published Packages
+                        </div>
+
+                        @if (!Model.IetpLicenses.Any())
+                        {
+                            <div class="pub-coming-soon">
+                                <i class="fa-solid fa-inbox me-1"></i>No packages published yet.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm lic-table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Package</th>
+                                            <th class="text-center">Secured</th>
+                                            <th class="text-center">Trial</th>
+                                            <th>License Key</th>
+                                            <th>Published</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var lic in Model.IetpLicenses)
+                                        {
+                                            <tr data-licid="@lic.Id">
+                                                <td class="font-monospace" style="font-size:12px;">@lic.IETP</td>
+                                                <td class="text-center">
+                                                    @if (lic.IsSecured)
+                                                    {
+                                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock me-1"></i>Secured</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-success"><i class="fa-solid fa-lock-open me-1"></i>Open</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (lic.IsTrial)
+                                                    {
+                                                        <span class="badge bg-secondary">Draft</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-primary">Final</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm lic-key-field font-monospace"
+                                                           value="@(lic.LicenseKey ?? "")"
+                                                           placeholder="Not activated"
+                                                           maxlength="50" style="min-width:160px;" />
+                                                </td>
+                                                <td style="font-size:12px; white-space:nowrap;">
+                                                    @lic.CreationTime.ToString("yyyy-MM-dd HH:mm")
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary btn-save-lickey" title="Save license key">
+                                                        <i class="fa-solid fa-floppy-disk"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+
+                </div><!-- /pub-section-grid -->
+            </div><!-- /pane-packages -->
+            } @* end CanManageLicense (packages) *@
 
         </div><!-- /tab-content -->
     </div><!-- /pub-body -->
