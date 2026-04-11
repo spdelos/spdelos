@@ -9,6 +9,9 @@ namespace CSDBPortal.ViewModels
         /// <summary>PNG-only image assets available as OEM logos.</summary>
         public List<ImageAsset> PngLogos { get; set; } = new();
 
+        /// <summary>XSLT stylesheets available for PDF export (from Manage → Stylesheet).</summary>
+        public List<Stylesheet> PdfStylesheets { get; set; } = new();
+
         /// <summary>Portal-wide provider key stored in ApplicationSettings. Null if not yet generated.</summary>
         public string? ProviderKey { get; set; }
 

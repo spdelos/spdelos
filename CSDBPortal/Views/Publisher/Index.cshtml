@@ -416,6 +416,30 @@ else
                         </div>
                     </div>
 
+                    <!-- ── Stylesheet ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-code me-1"></i>Stylesheet
+                        </div>
+                        <div style="max-width:480px;">
+                            <select id="pdfStylesheetSelect" class="form-select">
+                                <option value="">— Built-in default (print_all_pages.xslt) —</option>
+                                @foreach (var s in Model.PdfStylesheets)
+                                {
+                                    <option value="@s.Id">@s.Name (@s.FileName)</option>
+                                }
+                            </select>
+                            <div class="form-text">
+                                Uploaded stylesheets are managed in
+                                <a href="/Manage" target="_blank">Manage → Stylesheet</a>.
+                                @if (!Model.PdfStylesheets.Any())
+                                {
+                                    <span class="text-muted"> No custom stylesheets uploaded yet.</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- ── About ── -->
                     <div class="pub-section">
                         <div class="pub-section-title">
@@ -423,9 +447,8 @@ else
                         </div>
                         <p class="text-muted mb-0" style="font-size:13px;">
                             Exports all data modules for the selected project as a single PDF using
-                            Apache FOP. The output follows the S1000D print stylesheet
-                            (<code>print_all_pages.xslt</code>) and requires Java&nbsp;8+ to be
-                            installed on the server.
+                            Apache FOP. The output is transformed by the selected stylesheet
+                            and requires Java&nbsp;8+ to be installed on the server.
                         </p>
                     </div>
 
@@ -1233,8 +1256,9 @@ else
         $("#btnExportPdf").prop("disabled", true);
 
         var formData = new FormData();
-        formData.append("projectId", projectId);
-        formData.append("status", $("input[name='pdfStatus']:checked").val());
+        formData.append("projectId",    projectId);
+        formData.append("status",       $("input[name='pdfStatus']:checked").val());
+        formData.append("stylesheetId", $("#pdfStylesheetSelect").val() || "");
 
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "/Publisher/ExportPdf", true);

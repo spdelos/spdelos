@@ -49,6 +49,20 @@ namespace CSDBPortal.Controllers
                     .ToListAsync();
             }
 
+            if (canPdf)
+            {
+                vm.PdfStylesheets = await _db.Stylesheets
+                    .OrderBy(s => s.Name)
+                    .Select(s => new Stylesheet
+                    {
+                        Id       = s.Id,
+                        Name     = s.Name,
+                        FileName = s.FileName
+                        // Content omitted — only loaded when the user submits the export
+                    })
+                    .ToListAsync();
+            }
+
             if (canIetp)
             {
                 vm.PngLogos = await _db.ImageAssets
@@ -115,9 +129,11 @@ namespace CSDBPortal.Controllers
 
         /// <summary>
         /// Generates and downloads a PDF for the selected project using Apache FOP.
+        /// An optional <paramref name="stylesheetId"/> selects an uploaded XSLT stylesheet;
+        /// if omitted the built-in print_all_pages.xslt is used.
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> ExportPdf(int projectId, string status)
+        public async Task<IActionResult> ExportPdf(int projectId, string status, int? stylesheetId)
         {
             if (!HasPermission(Features.Publisher) && !HasPermission(Features.PublisherPdf))
                 return PermissionDenied();
@@ -136,7 +152,16 @@ namespace CSDBPortal.Controllers
 
             bool isDraft = string.Equals(status, "Draft", StringComparison.OrdinalIgnoreCase);
 
-            var pdfBytes = await PdfExportService.GeneratePdfAsync(project, dataModules, isDraft);
+            // Load the selected stylesheet's XSLT content (null → use built-in default)
+            string? xsltContent = null;
+            if (stylesheetId.HasValue && stylesheetId.Value > 0)
+            {
+                var ss = await _db.Stylesheets.FirstOrDefaultAsync(s => s.Id == stylesheetId.Value);
+                if (ss != null && !string.IsNullOrWhiteSpace(ss.Content))
+                    xsltContent = ss.Content;
+            }
+
+            var pdfBytes = await PdfExportService.GeneratePdfAsync(project, dataModules, isDraft, xsltContent);
 
             var cleanName   = SanitiseFilename(project.Name ?? project.Title ?? "project");
             var suffix      = isDraft ? "_DRAFT" : "";

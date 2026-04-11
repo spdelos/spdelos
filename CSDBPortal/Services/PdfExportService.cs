@@ -21,10 +21,15 @@ namespace CSDBPortal.Services
         /// <summary>
         /// Generates a PDF for the given project and returns its raw bytes.
         /// </summary>
+        /// <param name="customXsltContent">
+        /// Optional XSLT stylesheet content loaded from the database (Manage → Stylesheet).
+        /// When null the built-in <c>Resources/Print/print_all_pages.xslt</c> is used.
+        /// </param>
         public static async Task<byte[]> GeneratePdfAsync(
             Project project,
             List<DataModuleCode> dataModules,
-            bool isDraft)
+            bool isDraft,
+            string? customXsltContent = null)
         {
             var tempDir = Path.Combine(Path.GetTempPath(), $"csdb_pdf_{Guid.NewGuid():N}");
             Directory.CreateDirectory(tempDir);
@@ -47,13 +52,24 @@ namespace CSDBPortal.Services
                 // 3. Copy admonishment images (Warning / Note / Caution)
                 CopyAdmonishmentImages(tempDir);
 
-                // 4. Locate XSLT and JAR resources
-                var appDir  = AppContext.BaseDirectory;
-                var xsltPath = Path.Combine(appDir, "Resources", "Print", "print_all_pages.xslt");
-                var jarDir   = Path.Combine(appDir, "Resources", "Jars");
+                // 4. Resolve XSLT path — custom (from DB) takes priority over built-in
+                var appDir = AppContext.BaseDirectory;
+                var jarDir = Path.Combine(appDir, "Resources", "Jars");
 
-                if (!File.Exists(xsltPath))
-                    throw new FileNotFoundException($"XSLT not found: {xsltPath}");
+                string xsltPath;
+                if (!string.IsNullOrWhiteSpace(customXsltContent))
+                {
+                    // Write the DB stylesheet to a temp file so XmlReader can load it
+                    xsltPath = Path.Combine(tempDir, "custom_stylesheet.xslt");
+                    File.WriteAllText(xsltPath, customXsltContent, Encoding.UTF8);
+                }
+                else
+                {
+                    xsltPath = Path.Combine(appDir, "Resources", "Print", "print_all_pages.xslt");
+                    if (!File.Exists(xsltPath))
+                        throw new FileNotFoundException($"Built-in XSLT not found: {xsltPath}");
+                }
+
                 if (!Directory.Exists(jarDir))
                     throw new DirectoryNotFoundException($"JAR directory not found: {jarDir}");
 
