@@ -592,7 +592,7 @@ else
                                     <tbody>
                                         @foreach (var row in packageRows)
                                         {
-                                            <tr data-licid="@(row.License != null ? row.License.Id.ToString() : "0")">
+                                            <tr data-licid="@(row.License?.Id ?? 0)">
                                                 <td>
                                                     @if (row.Code.CodeType == "PMC")
                                                     {
@@ -658,7 +658,7 @@ else
                                                     @if (row.License != null)
                                                     {
                                                         <input type="text" class="form-control form-control-sm lic-key-field font-monospace"
-                                                               value="@(row.License.LicenseKey ?? "")"
+                                                               value="@row.License.LicenseKey"
                                                                placeholder="Not activated"
                                                                maxlength="50" style="min-width:140px;" />
                                                     }
