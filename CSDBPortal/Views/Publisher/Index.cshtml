@@ -538,11 +538,9 @@ else
             <!-- ══════════════════ PUBLISHED PACKAGES TAB ══════════════════ -->
             @if (Model.CanManageLicense)
             {
-            @{
                 var licByFilename = Model.IetpLicenses
                     .Where(l => l.IETP != null)
                     .ToDictionary(l => l.IETP!, l => l);
-            }
             <div class="tab-pane fade" id="pane-packages" role="tabpanel" aria-labelledby="tab-packages">
                 <div class="pub-section-grid">
 
