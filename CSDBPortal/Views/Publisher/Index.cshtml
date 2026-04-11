@@ -184,7 +184,57 @@ else
                             </div>
                         </div>
 
-                        <div class="form-text mt-2">Output filename: <span id="pkgFilenameSample" class="fw-semibold">PMC-MI-AAAAA-NNNNN-VV.nav</span></div>
+                        <!-- Register action -->
+                        <div class="d-flex align-items-center gap-3 mt-3">
+                            <button type="button" id="btnRegisterCode" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-plus me-1"></i>Register Code
+                            </button>
+                            <span id="regCodeStatus" style="font-size:12px;"></span>
+                        </div>
+
+                        <!-- Available codes (one must be selected before publishing) -->
+                        <div class="pkg-codes-section mt-3">
+                            <div class="pkg-codes-header">
+                                <span class="pkg-codes-title"><i class="fa-solid fa-list-check me-1"></i>Available Codes</span>
+                                <span class="text-muted" style="font-size:11px;">Select one — required for publishing</span>
+                            </div>
+                            <div id="pmcAvailablePanel">
+                                @if (!Model.AvailablePmcCodes.Any())
+                                {
+                                    <div class="pkg-no-codes" id="pmcNoCodes">No available PMC codes. Build one above and click Register.</div>
+                                }
+                                <div id="pmcCodesList">
+                                    @foreach (var c in Model.AvailablePmcCodes)
+                                    {
+                                        <div class="pkg-code-item" data-codeid="@c.Id">
+                                            <input type="radio" name="availableCodeRadio" class="form-check-input flex-shrink-0"
+                                                   value="@c.Id" style="pointer-events:none;">
+                                            <span class="pkg-code-item-code font-monospace">@c.Code</span>
+                                            <span class="pkg-code-item-meta">@c.CreatedBy &middot; @c.CreatedAt.ToString("yyyy-MM-dd")</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div id="ddnAvailablePanel" style="display:none;">
+                                @if (!Model.AvailableDdnCodes.Any())
+                                {
+                                    <div class="pkg-no-codes" id="ddnNoCodes">No available DDN codes. Build one above and click Register.</div>
+                                }
+                                <div id="ddnCodesList">
+                                    @foreach (var c in Model.AvailableDdnCodes)
+                                    {
+                                        <div class="pkg-code-item" data-codeid="@c.Id">
+                                            <input type="radio" name="availableCodeRadio" class="form-check-input flex-shrink-0"
+                                                   value="@c.Id" style="pointer-events:none;">
+                                            <span class="pkg-code-item-code font-monospace">@c.Code</span>
+                                            <span class="pkg-code-item-meta">@c.CreatedBy &middot; @c.CreatedAt.ToString("yyyy-MM-dd")</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-text mt-2">Output filename: <span id="pkgFilenameSample" class="fw-semibold text-muted">select a code above</span></div>
                     </div>
 
                     <!-- ── OEM Logo ── -->
@@ -520,6 +570,93 @@ else
                         }
                     </div>
 
+                    <!-- ── Package Code Registry ── -->
+                    <div class="pub-section">
+                        <div class="pub-section-title">
+                            <i class="fa-solid fa-database me-1"></i>Package Code Registry
+                        </div>
+                        <p class="text-muted mb-3" style="font-size:13px;">
+                            All registered PMC and DDN codes. Once registered a code is permanent and
+                            can only be consumed by a single publish operation.
+                        </p>
+                        @if (!Model.AllPackageCodes.Any())
+                        {
+                            <div class="pub-coming-soon">
+                                <i class="fa-solid fa-inbox me-1"></i>No package codes registered yet.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm reg-table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Code</th>
+                                            <th>Status</th>
+                                            <th>Created By</th>
+                                            <th>Created</th>
+                                            <th>Published By</th>
+                                            <th>Published</th>
+                                            <th>Package</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var c in Model.AllPackageCodes)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <span class="badge @(c.CodeType == "PMC" ? "bg-primary" : "bg-info text-dark")">@c.CodeType</span>
+                                                </td>
+                                                <td class="font-monospace" style="font-size:12px;">@c.Code</td>
+                                                <td>
+                                                    @if (c.IsPublished)
+                                                    {
+                                                        <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Published</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="fa-solid fa-clock me-1"></i>Available</span>
+                                                    }
+                                                </td>
+                                                <td style="font-size:12px;">@c.CreatedBy</td>
+                                                <td style="font-size:12px; white-space:nowrap;">@c.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                                <td style="font-size:12px;">@(c.PublishedBy ?? "—")</td>
+                                                <td style="font-size:12px; white-space:nowrap;">
+                                                    @(c.PublishedAt.HasValue ? c.PublishedAt.Value.ToString("yyyy-MM-dd HH:mm") : "—")
+                                                </td>
+                                                <td>
+                                                    @if (c.IsPublished && c.PackageFilename != null)
+                                                    {
+                                                        @if (Model.PackageFileStatus.TryGetValue(c.Id, out var fileExists) && fileExists)
+                                                        {
+                                                            <a href="/Publisher/DownloadNavPackage?id=@c.Id"
+                                                               class="btn btn-sm btn-outline-secondary"
+                                                               title="Download @c.PackageFilename">
+                                                                <i class="fa-solid fa-download me-1"></i><span style="font-size:11px;">@c.PackageFilename</span>
+                                                            </a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted" style="font-size:12px;">
+                                                                <i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>@c.PackageFilename
+                                                                <br><small class="text-danger">File deleted</small>
+                                                            </span>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+
                 </div><!-- /pub-section-grid -->
             </div><!-- /pane-license -->
             } @* end CanManageLicense *@
@@ -729,6 +866,60 @@ else
     letter-spacing: 0.03em;
     word-break: break-all;
 }
+
+/* ── Available code list ── */
+.pkg-codes-section {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.pkg-codes-header {
+    background: #f9fafb;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.pkg-codes-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+.pkg-code-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.12s;
+    user-select: none;
+}
+.pkg-code-item:last-child { border-bottom: none; }
+.pkg-code-item:hover { background: #f0f9ff; }
+.pkg-code-item.selected {
+    background: #eff6ff;
+    border-left: 3px solid var(--primary);
+    padding-left: 11px;
+}
+.pkg-code-item-code { flex: 1; font-size: 13px; }
+.pkg-code-item-meta { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.pkg-no-codes { padding: 16px 14px; text-align: center; font-size: 13px; color: var(--text-muted); }
+
+/* ── Package code registry table ── */
+.reg-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.reg-table td { vertical-align: middle; }
 </style>
 
 <script type="text/javascript">
@@ -740,7 +931,6 @@ else
     // ── Enable publish/export buttons when a project is selected ──
     $("#pubProjectSelect").on("change", function () {
         var hasProject = !!$(this).val();
-        $("#btnPublishIetp").prop("disabled", !hasProject);
         $("#btnExportPdf").prop("disabled", !hasProject);
         // Auto-fill MI from the project's data-mi attribute
         var mi = $(this).find(":selected").data("mi") || "";
@@ -749,6 +939,7 @@ else
         _updatePmcPreview();
         _updateDdnPreview();
         _updateFilenameSample();
+        _updatePublishButtonState();
     });
 
     // ── Package type radio cards ──
@@ -756,7 +947,10 @@ else
         var pkg = $(this).val();
         $("#pmcBuilderPanel").toggle(pkg === "PMC");
         $("#ddnBuilderPanel").toggle(pkg === "DDN");
+        $("#pmcAvailablePanel").toggle(pkg === "PMC");
+        $("#ddnAvailablePanel").toggle(pkg === "DDN");
         _updateFilenameSample();
+        _updatePublishButtonState();
     });
 
     // ── Builder field changes → live preview + filename ──
@@ -811,12 +1005,76 @@ else
     }
 
     function _updateFilenameSample() {
-        var code = _buildPackageCode();
-        $("#pkgFilenameSample").text(code + ".nav");
+        var selected = $(".pkg-code-item.selected .pkg-code-item-code").first().text().trim();
+        if (selected) {
+            $("#pkgFilenameSample").text(selected + ".nav").removeClass("text-muted");
+        } else {
+            var code = _buildPackageCode();
+            $("#pkgFilenameSample").text(code + ".nav").addClass("text-muted");
+        }
     }
+
+    function _updatePublishButtonState() {
+        var hasProject = !!$("#pubProjectSelect").val();
+        var hasCode    = !!$("input[name='availableCodeRadio']:checked").val();
+        $("#btnPublishIetp").prop("disabled", !hasProject || !hasCode);
+    }
+
+    // ── Available code item click → select ──
+    $(document).on("click", ".pkg-code-item", function () {
+        var $list = $(this).closest("#pmcCodesList, #ddnCodesList");
+        $list.find(".pkg-code-item").removeClass("selected")
+             .find("input[type='radio']").prop("checked", false);
+        $(this).addClass("selected")
+               .find("input[type='radio']").prop("checked", true);
+        _updateFilenameSample();
+        _updatePublishButtonState();
+    });
+
+    // ── Register a new code ──
+    $("#btnRegisterCode").on("click", function () {
+        var pkg  = $("input[name='ietpPackageType']:checked").val() || "PMC";
+        var code = _buildPackageCode();
+        var $btn = $(this).prop("disabled", true).html('<i class="fa-solid fa-spinner fa-spin me-1"></i>Registering…');
+        var $st  = $("#regCodeStatus").text("").removeClass("text-success text-danger");
+
+        $.post("/Publisher/RegisterPackageCode", { code: code, codeType: pkg })
+            .done(function (res) {
+                if (res.success) {
+                    $st.addClass("text-success").text("✓ " + res.code + " registered");
+                    var listId = pkg === "PMC" ? "#pmcCodesList" : "#ddnCodesList";
+                    var noId   = pkg === "PMC" ? "#pmcNoCodes"   : "#ddnNoCodes";
+                    $(noId).hide();
+                    $(listId).find(".pkg-code-item").removeClass("selected")
+                             .find("input[type='radio']").prop("checked", false);
+                    var safeCode = $("<span>").text(res.code).html();
+                    var safeBy   = $("<span>").text(res.createdBy).html();
+                    $(listId).prepend(
+                        '<div class="pkg-code-item selected" data-codeid="' + res.id + '">' +
+                        '<input type="radio" name="availableCodeRadio" class="form-check-input flex-shrink-0"' +
+                        ' value="' + res.id + '" checked style="pointer-events:none;">' +
+                        '<span class="pkg-code-item-code font-monospace">' + safeCode + '</span>' +
+                        '<span class="pkg-code-item-meta">' + safeBy + ' &middot; ' + res.createdAt + '</span>' +
+                        '</div>'
+                    );
+                    _updateFilenameSample();
+                    _updatePublishButtonState();
+                } else {
+                    $st.addClass("text-danger").text(res.message || "Registration failed.");
+                }
+            })
+            .fail(function () {
+                $st.addClass("text-danger").text("An error occurred. Please try again.");
+            })
+            .always(function () {
+                $btn.prop("disabled", false).html('<i class="fa-solid fa-plus me-1"></i>Register Code');
+            });
+    });
+
     _updatePmcPreview();
     _updateDdnPreview();
     _updateFilenameSample();
+    _updatePublishButtonState();
 
     // ── OEM Logo preview ──
     $("#ietpLogoSelect").on("change", function () {
@@ -869,6 +1127,12 @@ else
             return;
         }
 
+        var selectedCodeId = $("input[name='availableCodeRadio']:checked").val();
+        if (!selectedCodeId) {
+            _showPubAlert("error", "Please select a registered package code from the Available Codes list.");
+            return;
+        }
+
         var htmlSource = $("input[name='ietpHtmlSource']:checked").val();
         if (htmlSource === "upload") {
             var htmlFile = $("#ietpHtmlFile")[0].files;
@@ -883,10 +1147,10 @@ else
         $("#btnPublishIetp").prop("disabled", true);
 
         var formData = new FormData();
-        formData.append("projectId",   projectId);
-        formData.append("packageType", $("input[name='ietpPackageType']:checked").val() || "PMC");
-        formData.append("packageCode", _buildPackageCode());
-        formData.append("logoId",      $("#ietpLogoSelect").val() || "");
+        formData.append("projectId",      projectId);
+        formData.append("packageType",    $("input[name='ietpPackageType']:checked").val() || "PMC");
+        formData.append("selectedCodeId", selectedCodeId);
+        formData.append("logoId",         $("#ietpLogoSelect").val() || "");
         formData.append("security",    $("input[name='ietpSecurity']:checked").val());
         formData.append("status",      $("input[name='ietpStatus']:checked").val());
         formData.append("htmlSource",  htmlSource);
@@ -904,7 +1168,7 @@ else
         xhr.responseType = "blob";
         xhr.onload = function () {
             $("#pubIetpSpinner").hide();
-            $("#btnPublishIetp").prop("disabled", !$("#pubProjectSelect").val());
+            _updatePublishButtonState();
             if (xhr.status === 200) {
                 // Try to detect a JSON error response (content-type check)
                 var ct = xhr.getResponseHeader("Content-Type") || "";
@@ -933,6 +1197,9 @@ else
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                     _showPubAlert("success", "Published successfully. Download starting…");
+                    // Remove the consumed code from the available list
+                    $(".pkg-code-item[data-codeid='" + selectedCodeId + "']").fadeOut(400, function () { $(this).remove(); });
+                    _updatePublishButtonState();
                 }
             } else {
                 _showPubAlert("error", "Server error (" + xhr.status + "). Please try again.");
@@ -940,7 +1207,7 @@ else
         };
         xhr.onerror = function () {
             $("#pubIetpSpinner").hide();
-            $("#btnPublishIetp").prop("disabled", !$("#pubProjectSelect").val());
+            _updatePublishButtonState();
             _showPubAlert("error", "An error occurred. Please try again.");
         };
         xhr.send(formData);

@@ -51,6 +51,7 @@ namespace CSDBPortal.Data
         public virtual DbSet<PartNumberCode> PartNumberCodes { get; set; } = null!;
         public virtual DbSet<PNCLookup> PNCLookups { get; set; } = null!;
         public virtual DbSet<IetpLicense> IetpLicenses { get; set; } = null!;
+        public virtual DbSet<PackageCode> PackageCodes { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -127,6 +128,10 @@ namespace CSDBPortal.Data
             // QuickAccessItem — queried by IsActive and ordered by SortOrder
             modelBuilder.Entity<QuickAccessItem>().HasIndex(q => q.IsActive).HasDatabaseName("IX_QuickAccessItem_IsActive");
             modelBuilder.Entity<QuickAccessItem>().HasIndex(q => q.SortOrder).HasDatabaseName("IX_QuickAccessItem_SortOrder");
+
+            // PackageCode — Code must be unique; commonly filtered by type + publish status
+            modelBuilder.Entity<PackageCode>().HasIndex(p => p.Code).IsUnique().HasDatabaseName("UX_PackageCodes_Code");
+            modelBuilder.Entity<PackageCode>().HasIndex(p => new { p.CodeType, p.IsPublished }).HasDatabaseName("IX_PackageCodes_CodeType_IsPublished");
         }
     }
 }

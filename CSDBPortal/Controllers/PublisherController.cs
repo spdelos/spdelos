@@ -13,11 +13,16 @@ namespace CSDBPortal.Controllers
 {
     public class PublisherController : BaseController
     {
-        private readonly ApplicationDbContext _db;
+        private readonly ApplicationDbContext  _db;
+        private readonly IWebHostEnvironment   _env;
 
-        public PublisherController(ApplicationDbContext db)
+        /// <summary>Folder (inside ContentRoot) where published .nav files are archived.</summary>
+        private string NavPackagesDir => Path.Combine(_env.ContentRootPath, "NavPackages");
+
+        public PublisherController(ApplicationDbContext db, IWebHostEnvironment env)
         {
-            _db = db;
+            _db  = db;
+            _env = env;
         }
 
         public async Task<IActionResult> Index()
@@ -58,6 +63,16 @@ namespace CSDBPortal.Controllers
                         // Data intentionally omitted; loaded on demand via /Manage/ViewImageAsset
                     })
                     .ToListAsync();
+
+                vm.AvailablePmcCodes = await _db.PackageCodes
+                    .Where(c => c.CodeType == "PMC" && !c.IsPublished)
+                    .OrderByDescending(c => c.CreatedAt)
+                    .ToListAsync();
+
+                vm.AvailableDdnCodes = await _db.PackageCodes
+                    .Where(c => c.CodeType == "DDN" && !c.IsPublished)
+                    .OrderByDescending(c => c.CreatedAt)
+                    .ToListAsync();
             }
 
             if (canLicense)
@@ -69,6 +84,16 @@ namespace CSDBPortal.Controllers
                 vm.IetpLicenses  = await _db.IetpLicenses
                     .OrderByDescending(l => l.CreationTime)
                     .ToListAsync();
+                vm.AllPackageCodes = await _db.PackageCodes
+                    .OrderByDescending(c => c.CreatedAt)
+                    .ToListAsync();
+
+                // Check whether each archived .nav file still exists on disk
+                foreach (var c in vm.AllPackageCodes.Where(c => c.IsPublished && c.PackageFilename != null))
+                {
+                    var path = Path.Combine(NavPackagesDir, c.PackageFilename!);
+                    vm.PackageFileStatus[c.Id] = System.IO.File.Exists(path);
+                }
             }
 
             return View(vm);
@@ -139,6 +164,73 @@ namespace CSDBPortal.Controllers
         }
 
         /// <summary>
+        /// Re-downloads a previously published .nav package from the server archive.
+        /// Returns 404 if the file has been deleted from the archive directory.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> DownloadNavPackage(int id)
+        {
+            if (!HasPermission(Features.Publisher) && !HasPermission(Features.PublisherIetp) &&
+                !HasPermission(Features.PublisherLicense))
+                return PermissionDenied();
+
+            var code = await _db.PackageCodes.FirstOrDefaultAsync(c => c.Id == id);
+            if (code == null || !code.IsPublished || code.PackageFilename == null)
+                return NotFound("Package record not found.");
+
+            var path = Path.Combine(NavPackagesDir, code.PackageFilename);
+            if (!System.IO.File.Exists(path))
+                return NotFound("The archived .nav file no longer exists on the server.");
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(path);
+            return File(bytes, "application/octet-stream", code.PackageFilename);
+        }
+
+        /// <summary>
+        /// Registers a new PMC or DDN code. Codes are permanent — they can never be deleted,
+        /// only consumed (marked IsPublished = true) when used in a publish operation.
+        /// Returns the new record's Id so the UI can select it immediately.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> RegisterPackageCode(string code, string codeType)
+        {
+            if (!HasPermission(Features.Publisher) && !HasPermission(Features.PublisherIetp))
+                return PermissionDenied();
+
+            code     = code?.Trim() ?? "";
+            codeType = (codeType ?? "PMC").Trim().ToUpper();
+
+            if (string.IsNullOrEmpty(code))
+                return Json(new { success = false, message = "Code cannot be empty." });
+            if (codeType != "PMC" && codeType != "DDN")
+                return Json(new { success = false, message = "Invalid code type." });
+
+            var exists = await _db.PackageCodes.AnyAsync(c => c.Code == code);
+            if (exists)
+                return Json(new { success = false, message = $"Code '{code}' is already registered." });
+
+            var entry = new PackageCode
+            {
+                Code      = code,
+                CodeType  = codeType,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = User.Identity?.Name ?? "unknown"
+            };
+            _db.PackageCodes.Add(entry);
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                success     = true,
+                id          = entry.Id,
+                code        = entry.Code,
+                codeType    = entry.CodeType,
+                createdBy   = entry.CreatedBy,
+                createdAt   = entry.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+            });
+        }
+
+        /// <summary>
         /// Generates and downloads a .nav IETP package for the selected project.
         /// The .nav file is a ZIP archive containing data module XML files,
         /// a navigation.xml site map, License.lic, optional cover page and logo, and metadata.
@@ -147,7 +239,7 @@ namespace CSDBPortal.Controllers
         public async Task<IActionResult> PublishIetp(
             int    projectId,
             string packageType,
-            string? packageCode,
+            int    selectedCodeId,
             int?   logoId,
             string security,
             string status,
@@ -171,15 +263,17 @@ namespace CSDBPortal.Controllers
             if (!dataModules.Any())
                 return Json(new { success = false, message = "No data modules found for this project." });
 
+            // ── Validate the registered package code ─────────────────────────
+            var codeRecord = await _db.PackageCodes.FirstOrDefaultAsync(c => c.Id == selectedCodeId);
+            if (codeRecord == null)
+                return Json(new { success = false, message = "No package code selected. Please register a PMC or DDN code first." });
+            if (codeRecord.IsPublished)
+                return Json(new { success = false, message = $"Code '{codeRecord.Code}' has already been used in a previous publish and cannot be reused." });
+
             // ── Sanitise package type and build output filename ──────────────
-            var pkg      = (packageType ?? "PMC").Trim().ToUpper();
+            var pkg       = (packageType ?? "PMC").Trim().ToUpper();
             if (pkg != "PMC" && pkg != "DDN") pkg = "PMC";
-            var cleanName = SanitiseFilename(project.Name ?? project.Title ?? "project");
-            // Prefer the structured package code (PMC-/DDN- code built in the UI);
-            // fall back to the legacy "PKG_ProjectName" format if none supplied.
-            var navFileName = !string.IsNullOrWhiteSpace(packageCode)
-                ? $"{SanitiseFilename(packageCode.Trim())}.nav"
-                : $"{pkg}_{cleanName}.nav";
+            var navFileName = $"{SanitiseFilename(codeRecord.Code)}.nav";
 
             // ── Build navigation.xml ─────────────────────────────────────────
             var navXml  = BuildNavigationXml(project, dataModules);
@@ -217,7 +311,7 @@ namespace CSDBPortal.Controllers
                     ["LicenseRequired"] = isSecured.ToString(),
                     ["HasWatermark"]    = isDraft.ToString(),
                     ["PackageType"]     = pkg,
-                    ["PackageCode"]     = packageCode?.Trim() ?? ""
+                    ["PackageCode"]     = codeRecord.Code
                 }
             };
             var metadataJson = JsonSerializer.Serialize(metadata,
@@ -296,6 +390,21 @@ namespace CSDBPortal.Controllers
                     }
                 }
             }
+
+            // ── Archive the .nav file to disk so it can be re-downloaded ────
+            ms.Position = 0;
+            Directory.CreateDirectory(NavPackagesDir);
+            var archivePath = Path.Combine(NavPackagesDir, navFileName);
+            await System.IO.File.WriteAllBytesAsync(archivePath, ms.ToArray());
+
+            // ── Mark the package code as consumed ────────────────────────────
+            codeRecord.IsPublished     = true;
+            codeRecord.PublishedAt     = DateTime.UtcNow;
+            codeRecord.PublishedBy     = User.Identity?.Name ?? "unknown";
+            codeRecord.PackageFilename = navFileName;
+            codeRecord.ProjectId       = project.Id;
+            codeRecord.ProjectName     = project.Name;
+            await _db.SaveChangesAsync();
 
             ms.Position = 0;
             return File(ms.ToArray(), "application/octet-stream", navFileName);
