@@ -379,6 +379,69 @@ namespace CSDBPortal.Controllers
             return File(Encoding.UTF8.GetBytes(csvHeader.ToString()), "text/plain", "DMCTemplate.csv");
         }
 
+        [HttpGet]
+        public async Task<FileResult> DownloadDMRL(int projectId = 0)
+        {
+            var baseQuery = from dmc in _db.DataModuleCodes
+                            join p   in _db.Projects          on dmc.ProjectId        equals p.Id
+                            join ic  in _db.InformationCodes  on dmc.InformationCodeId equals ic.Id
+                            join lc  in _db.LocationCodes     on dmc.LocationCodeId    equals lc.Id
+                            join itf in _db.IssueTypeFiles    on dmc.IssueFileId       equals itf.Id into itfGroup
+                            from itf in itfGroup.DefaultIfEmpty()
+                            where !dmc.IsDeleted
+                            select new
+                            {
+                                ProjectName     = p.Name,
+                                dmc.TechName,
+                                dmc.InfoName,
+                                SchemaFile      = itf != null ? itf.Name : "",
+                                dmc.StandardNumberingSystem,
+                                DC              = dmc.DC ?? "",
+                                dmc.DCV,
+                                InformationCode = ic.Code,
+                                ICV             = dmc.ICV ?? "",
+                                LocationCode    = lc.Code,
+                                dmc.ProjectId,
+                                DMC             = dmc.DMC ?? ""
+                            };
+
+            if (projectId > 0)
+                baseQuery = baseQuery.Where(x => x.ProjectId == projectId);
+
+            var rows = await baseQuery.OrderBy(x => x.ProjectName).ThenBy(x => x.DMC).ToListAsync();
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Project Name,Tech Name,Info Name,Schema File,SNS,DC,DCV,Information Code,ICV,Location Code");
+            foreach (var r in rows)
+            {
+                csv.AppendLine(string.Join(",",
+                    CsvEscape(r.ProjectName),
+                    CsvEscape(r.TechName),
+                    CsvEscape(r.InfoName),
+                    CsvEscape(r.SchemaFile),
+                    CsvEscape(r.StandardNumberingSystem),
+                    CsvEscape(r.DC),
+                    CsvEscape(r.DCV),
+                    CsvEscape(r.InformationCode),
+                    CsvEscape(r.ICV),
+                    CsvEscape(r.LocationCode)));
+            }
+
+            var filename = projectId > 0
+                ? $"DMRL_{rows.FirstOrDefault()?.ProjectName ?? projectId.ToString()}.csv"
+                : "DMRL_All.csv";
+
+            return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", filename);
+        }
+
+        private static string CsvEscape(string? value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+                return "\"" + value.Replace("\"", "\"\"") + "\"";
+            return value;
+        }
+
         [HttpPost]
         public async Task<IActionResult> UploadDMC()
         {

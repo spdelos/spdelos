@@ -206,6 +206,9 @@
                                 <a href="#" class="btn" id="btnCreateDMC">
                                     <i class="fas fa-plus"></i> Create DMC
                                 </a>
+                                <a href="/Manage/DownloadDMRL" class="btn" id="btnDownloadDMRL">
+                                    <i class="fas fa-download"></i> Download DMRL
+                                </a>
                                 <a href="/Manage/DownloadDMCTemplate" class="btn" id="btnDownloadDMCTemplate">
                                     DMRL Template
                                 </a>
@@ -1523,6 +1526,8 @@
             $('#dmrlProjectFilter').on('change', function () {
                 var pid = $(this).val();
                 tableDMC.column(1).search(pid ? '^' + pid + '$' : '', true, false).draw();
+                var url = '/Manage/DownloadDMRL' + (pid ? '?projectId=' + pid : '');
+                $('#btnDownloadDMRL').attr('href', url);
             });
             $("#adminlink").removeClass("active");
             $("#configlink").removeClass("active");
