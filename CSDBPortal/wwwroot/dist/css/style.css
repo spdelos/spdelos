@@ -934,28 +934,27 @@ a:hover { text-decoration: none !important; }
 }
 
 .login-navietm-wrap {
-    display: block;
-    position: relative;
-    line-height: 0;
+    display: flex;
+    align-items: flex-start;
 }
 
 .login-logo-navietm {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     height: auto;
     display: block;
     background: transparent;
 }
 
 .login-navietm-reg {
-    position: absolute;
-    top: 0;
-    right: 0;
+    flex: none;
     color: #1985C8;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     font-family: Arial, Helvetica, sans-serif;
     line-height: 1;
-    vertical-align: top;
+    margin-top: 2px;
+    margin-left: 2px;
 }
 
 .login-hero {
