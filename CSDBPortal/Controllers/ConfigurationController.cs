@@ -5,6 +5,7 @@ using CSDBPortal.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.Json;
 
 namespace CSDBPortal.Controllers
 {
@@ -39,6 +40,8 @@ namespace CSDBPortal.Controllers
             {
                 int issueNoId = Convert.ToInt32(Request.Form["hdnId"]);
                 IssueNo issueNo;
+                List<DataModuleType> existingDMTypes = new();
+
                 if (issueNoId <= 0)
                 {
                     issueNo = new IssueNo();
@@ -49,36 +52,83 @@ namespace CSDBPortal.Controllers
                 else
                 {
                     issueNo = await _db.IssueNos.Include(i => i.IssueTypeFiles).FirstOrDefaultAsync(i => i.Id == issueNoId);
+                    existingDMTypes = await _db.DataModuleTypes.Where(d => d.IssueNo == issueNoId).ToListAsync();
                 }
 
                 issueNo.Name = Request.Form["txtIssueNo"];
 
-                foreach (IFormFile file in Request.Form.Files)
+                // Handle BREX XML file upload
+                var brexFile = Request.Form.Files["brexFile"];
+                if (brexFile != null && brexFile.Length > 0)
                 {
                     var fileContent = new StringBuilder();
-                    using (var reader = new StreamReader(file.OpenReadStream()))
+                    using (var reader = new StreamReader(brexFile.OpenReadStream()))
                     {
                         while (reader.Peek() >= 0)
                             fileContent.AppendLine(await reader.ReadLineAsync());
                     }
-
-                    string extension = Path.GetExtension(file.FileName);
-                    if (!string.IsNullOrEmpty(extension) && extension.ToLower() == ".xml")
-                    {
-                        issueNo.BrexTemplate = fileContent.ToString();
-                    }
-                    else
-                    {
-                        issueNo.IssueTypeFiles.Add(new IssueTypeFile
-                        {
-                            Name = file.FileName, CreatedBy = User.Identity.Name,
-                            CreateOn = DateTime.UtcNow, Data = fileContent.ToString()
-                        });
-                    }
+                    issueNo.BrexTemplate = fileContent.ToString();
                 }
 
+                // Save IssueNo first so we have its Id for FK references
                 if (issueNoId <= 0)
                     _db.IssueNos.Add(issueNo);
+                await _db.SaveChangesAsync();
+
+                // Process schema file types submitted as JSON
+                string schemaTypesJson = Request.Form["schemaTypes"];
+                if (!string.IsNullOrEmpty(schemaTypesJson))
+                {
+                    var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var submittedTypes = JsonSerializer.Deserialize<List<SchemaTypeDto>>(schemaTypesJson, opts) ?? new();
+
+                    // In edit mode: remove DataModuleTypes no longer in the submitted list
+                    var submittedFileNames = submittedTypes.Select(t => t.FileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    foreach (var existing in existingDMTypes)
+                    {
+                        if (!submittedFileNames.Contains(existing.FileName))
+                            _db.DataModuleTypes.Remove(existing);
+                    }
+
+                    foreach (var typeDto in submittedTypes)
+                    {
+                        var existingDMT = existingDMTypes.FirstOrDefault(d =>
+                            string.Equals(d.FileName, typeDto.FileName, StringComparison.OrdinalIgnoreCase));
+
+                        if (existingDMT != null)
+                        {
+                            // Update name if changed
+                            existingDMT.Name = typeDto.Name;
+                            existingDMT.UpdatedBy = User.Identity.Name;
+                            existingDMT.UpdatedOn = DateTime.UtcNow;
+                            _db.Entry(existingDMT).State = EntityState.Modified;
+                        }
+                        else
+                        {
+                            // New schema type: create DataModuleType record
+                            _db.DataModuleTypes.Add(new DataModuleType
+                            {
+                                Name = typeDto.Name,
+                                FileName = typeDto.FileName,
+                                IssueNo = issueNo.Id,
+                                CreatedBy = User.Identity.Name,
+                                CreatedOn = DateTime.UtcNow,
+                                UpdatedBy = User.Identity.Name,
+                                UpdatedOn = DateTime.UtcNow
+                            });
+
+                            // Create blank S1000D XML template as IssueTypeFile
+                            issueNo.IssueTypeFiles.Add(new IssueTypeFile
+                            {
+                                Name = typeDto.FileName,
+                                IssueNoId = issueNo.Id,
+                                CreatedBy = User.Identity.Name,
+                                CreateOn = DateTime.UtcNow,
+                                Data = GenerateBlankDmoduleXml(typeDto.FileName)
+                            });
+                        }
+                    }
+                }
 
                 await _db.SaveChangesAsync();
                 return RedirectToAction("Index", "Configuration");
@@ -87,6 +137,56 @@ namespace CSDBPortal.Controllers
             {
                 return View("failed");
             }
+        }
+
+        private static string GenerateBlankDmoduleXml(string xsdFileName) =>
+            $"""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <dmodule xmlns:dc="http://www.purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.s1000d.org/S1000D_4-2/xml_schema_flat/{xsdFileName}">
+              <Description>
+                <creator></creator>
+                <title></title>
+                <subject></subject>
+                <publisher></publisher>
+                <contributor></contributor>
+                <date></date>
+                <type></type>
+                <format></format>
+                <identifier></identifier>
+                <language></language>
+                <rights></rights>
+              </Description>
+              <identAndStatusSection>
+                <dmAddress>
+                  <dmIdent>
+                    <language countryIsoCode="" languageIsoCode=""/>
+                    <issueInfo inWork="" issueNumber=""/>
+                  </dmIdent>
+                  <dmAddressItems>
+                    <issueDate day="" month="" year=""/>
+                    <dmTitle>
+                      <techName></techName>
+                      <infoName></infoName>
+                    </dmTitle>
+                  </dmAddressItems>
+                </dmAddress>
+                <dmStatus>
+                  <brexDmRef>
+                    <dmRef>
+                      <dmRefIdent>
+                        <dmCode assyCode="" disassyCode="" disassyCodeVariant="" infoCode="" infoCodeVariant="" itemLocationCode="" modelIdentCode="" subSubSystemCode="" subSystemCode="" systemCode="" systemDiffCode=""/>
+                      </dmRefIdent>
+                    </dmRef>
+                  </brexDmRef>
+                </dmStatus>
+              </identAndStatusSection>
+            </dmodule>
+            """;
+
+        private sealed class SchemaTypeDto
+        {
+            public string Name { get; set; } = "";
+            public string FileName { get; set; } = "";
         }
 
         public async Task<JsonResult> DeleteIssueNo(int id)

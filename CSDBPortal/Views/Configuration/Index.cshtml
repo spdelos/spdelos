@@ -9,7 +9,6 @@
     bool hasLocCodeSet  = User.HasClaim("Permission", Features.LocationCodeSetAdministration);
     bool hasLocCode     = User.HasClaim("Permission", Features.LocationCodeAdministration);
     bool hasRPC         = User.HasClaim("Permission", Features.RPCAdministration);
-    bool hasDMType      = User.HasClaim("Permission", Features.DataModuleTypeAdministration);
 
     bool _c = true;
     bool issuFirst        = _c && hasIssu;        if (hasIssu)        _c = false;
@@ -18,8 +17,7 @@
     bool icnFormatFirst   = _c && hasIcnFormat;    if (hasIcnFormat)   _c = false;
     bool locCodeSetFirst  = _c && hasLocCodeSet;   if (hasLocCodeSet)  _c = false;
     bool locCodeFirst     = _c && hasLocCode;      if (hasLocCode)     _c = false;
-    bool rpcFirst         = _c && hasRPC;          if (hasRPC)         _c = false;
-    bool dmTypeFirst      = _c && hasDMType;
+    bool rpcFirst         = _c && hasRPC;
 }
 
 <div class="page-body">
@@ -84,14 +82,6 @@
                 <span class="vi-label">RPC</span>
             </a>
         }
-        @if (hasDMType)
-        {
-            <a class="vtab-item @(dmTypeFirst ? "active" : "")" id="pills-tab-9"
-               data-bs-toggle="tab" href="#pills-9" role="tab">
-                <span class="vi-icon"><i class="fa-solid fa-layer-group"></i></span>
-                <span class="vi-label">Data Module Types</span>
-            </a>
-        }
     </nav>
 
     <!-- ── Tab Content ── -->
@@ -117,6 +107,7 @@
                                     <tr>
                                         <th style="display:none">Issue No</th>
                                         <th>Issue No</th>
+                                        <th>Schema Types</th>
                                         <th>Created By</th>
                                         <th>Action</th>
                                     </tr>
@@ -124,9 +115,13 @@
                                 <tbody>
                                     @foreach (var m in Model.IssueNos)
                                     {
-                                        <tr>
+                                        var schemaTypes = Model.DataModuleTypes
+                                            .Where(d => d.IssueNo == m.Id)
+                                            .Select(d => new { name = d.Name, fileName = d.FileName });
+                                        <tr data-schema-types="@Html.Raw(System.Text.Json.JsonSerializer.Serialize(schemaTypes))">
                                             <td style="display:none">@m.Id</td>
                                             <td>@m.Name</td>
+                                            <td>@Model.DataModuleTypes.Count(d => d.IssueNo == m.Id)</td>
                                             <td>@m.CreatedBy</td>
                                             <td>
                                                 <a class="btn edit_button editIssue"> Edit </a>
@@ -459,52 +454,6 @@
                 </div>
                 <!-- /. tab-8 end -->
             }
-            @if (User.HasClaim("Permission", Features.DataModuleTypeAdministration))
-            {
-                <!-- tab-9 start -->
-                <div class="tab-pane fade @(dmTypeFirst ? "show active" : "")" id="pills-9" role="tabpanel" aria-labelledby="pills-tab-9">
-                    <div class="actions mb-3">
-                        <div class="row">
-                            <div class="col-12 text-right">
-                                <a href="#" class="btn" id="CreateDataModuleType">
-                                    <i class="fas fa-plus"></i> Create New
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card" style="padding:15px;">
-                        <div class="table-responsive table-striped">
-                            <table class="table table-bordered" width="100%" id="dataModuleTypeTable">
-                                <thead class="thead">
-                                    <tr>
-                                        <th style="display:none"> </th>
-                                        <th>Name </th>
-                                        <th>File Name</th>
-                                        <th>Created By</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var d in Model.DataModuleTypes)
-                                    {
-                                        <tr style="background:#fff">
-                                            <td style="display:none">@d.Id</td>
-                                            <td>@d.Name</td>
-                                            <td>@d.FileName</td>
-                                            <td>@d.CreatedBy</td>
-                                            <td>
-                                                <a class="btn edit_button editDataTypeModule"> Edit </a>
-                                                <a class="btn deleteDataTypeModule"> Delete </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <!-- /. tab-9 end -->
-            }
         </div>
     </div>
     <!-- /. vtab-content -->
@@ -635,43 +584,6 @@
     </div>
 </div>
 
-@* Data Module Type *@
-<div class="modal fade" id="DataModuleTypeModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header btn">
-                <h4 class="modal-title modelTitle">Create Data Module Type</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="row">
-                            <label id="errorDMTMsg" style="color:red"></label>
-                            <div class="col-md-12">
-                                <input class="form-control" type="hidden" id="hdnModuleId" />
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">Name</label><span style="color: red;">*</span>
-                                    <input class="form-control" type="text" id="txtDataTypeModule" />
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="example-text-input" class="form-label">File Name</label><span style="color: red;">*</span>
-                                    <input class="form-control" type="text" id="txtDataTypeFileName" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="btnDMTypeSave" class="btn btn-primary" value="Save">Save</button>
-                            <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="modal fade" style=" -moz-border-radius:10px;" id="Configurationmdl" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -682,40 +594,37 @@
             </div>
             <div class="modal-body">
                 <form asp-action="CreateIssueNo" asp-controller="Configuration" method="post" enctype="multipart/form-data">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="row">
-                                <label id="errorMsg" style="color:red"></label>
-                                <div class="col-md-12">
-                                    <input class="form-control" type="text" name="hdnId" id="hdnId" style="display:none" />
-                                    @*<input class="form-control" type="hidden" id="" />*@
-                                    <div class="form-group">
-                                        <label for="example-text-input" class="form-label">Issue No</label><span style="color: red;">*</span>
-                                        <input class="form-control" type="text" name="txtIssueNo" id="txtIssueNo" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label for="example-text-input" class="form-label">Files</label><span style="color: red;">*</span>
-                                        <input class="form-control" type="file" name="name" id="issueFiles" multiple>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label for="example-text-input" class="form-label">Brex File Template</label><span style="color: red;">*</span>
-                                        <input class="form-control" type="file" name="brexFile" id="brexFile" accept=".xml">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button id="btnSaveIssueNo" class="btn btn-primary" value="Save">Save</button>
-                                <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </div>
+                    <input type="hidden" name="hdnId" id="hdnId" value="0" />
+                    <input type="hidden" name="schemaTypes" id="hdnSchemaTypes" />
+                    <label id="errorMsg" style="color:red"></label>
+                    <div class="mb-3">
+                        <label class="form-label">Issue No <span style="color:red">*</span></label>
+                        <input class="form-control" type="text" name="txtIssueNo" id="txtIssueNo" />
+                    </div>
+                    <div class="mb-3" id="brexFileRow">
+                        <label class="form-label">BREX File Template <span style="color:red" id="brexRequired">*</span></label>
+                        <input class="form-control" type="file" name="brexFile" id="brexFile" accept=".xml">
+                        <small class="text-muted" id="brexEditHint" style="display:none">Leave empty to keep existing template</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Schema File Types</label>
+                        <table class="table table-sm table-bordered mb-1" id="schemaTypesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>XSD Filename</th>
+                                    <th style="width:38px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="schemaTypesBody"></tbody>
+                        </table>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnAddSchemaType">
+                            <i class="fas fa-plus"></i> Add Type
+                        </button>
+                    </div>
+                    <div class="modal-footer px-0">
+                        <button id="btnSaveIssueNo" type="button" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-default modelCancel" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -941,36 +850,55 @@
 
     $(document).ready( function() {
 
-        $("#btnSaveIssueNo").click(function (e){
+        // ── Schema Types helpers ──────────────────────────────────────────────
+        function addSchemaRow(name, fileName) {
+            var row = '<tr>' +
+                '<td><input type="text" class="form-control form-control-sm schema-name" value="' + (name || '') + '" placeholder="e.g. Descriptive" /></td>' +
+                '<td><input type="text" class="form-control form-control-sm schema-filename" value="' + (fileName || '') + '" placeholder="e.g. descript.xsd" /></td>' +
+                '<td><button type="button" class="btn btn-sm btn-danger remove-schema-row"><i class="fas fa-times"></i></button></td>' +
+                '</tr>';
+            $('#schemaTypesBody').append(row);
+        }
 
-            var isValid = true;            
-            if ($('#txtIssueNo').val() == '') {
+        function getSchemaTypes() {
+            var types = [];
+            $('#schemaTypesBody tr').each(function () {
+                var name = $(this).find('.schema-name').val().trim();
+                var fileName = $(this).find('.schema-filename').val().trim();
+                if (name || fileName) types.push({ Name: name, FileName: fileName });
+            });
+            return types;
+        }
+
+        $('#btnAddSchemaType').click(function () { addSchemaRow('', ''); });
+
+        $(document).on('click', '.remove-schema-row', function () {
+            $(this).closest('tr').remove();
+        });
+
+        // ── Issue No save (submit form programmatically) ──────────────────────
+        $("#btnSaveIssueNo").click(function () {
+            var isValid = true;
+            if ($('#txtIssueNo').val() === '') {
                 $('#txtIssueNo').css('border-color', 'red');
                 isValid = false;
-            }
-            else {
+            } else {
                 $('#txtIssueNo').css('border-color', '');
             }
-            if ($('#issueFiles')[0].files.length <= 0 ) {
-                $('#issueFiles').css('border-color', 'red');
-                isValid = false;
-            }
-            else {
-                $('#issueFiles').css('border-color', '');
-            }
 
-            if ($('#brexFile')[0].files.length <= 0 ) {
+            var isCreate = ($('#hdnId').val() === '0' || $('#hdnId').val() === '');
+            if (isCreate && $('#brexFile')[0].files.length <= 0) {
                 $('#brexFile').css('border-color', 'red');
                 isValid = false;
-            }
-            else {
+            } else {
                 $('#brexFile').css('border-color', '');
             }
 
-            if (isValid == false)
-            {
-                e.preventDefault();
-            }
+            if (!isValid) return;
+
+            $('#hdnSchemaTypes').val(JSON.stringify(getSchemaTypes()));
+            // Submit the enclosing form
+            $('#hdnId').closest('form').submit();
         });
 
         // Persist active tab (Bootstrap 5)
@@ -1031,9 +959,12 @@
     /*Issue No - Start*/
     var issueTable=  $('#issueTable').DataTable();
     $("#btnCreateNewIssue").click(function () {
-
         $('#hdnId').val('0');
         $('#txtIssueNo').val('');
+        $('#brexFile').val('');
+        $('#schemaTypesBody').empty();
+        $('#brexRequired').show();
+        $('#brexEditHint').hide();
         $("#errorMsg").html('');
         $(".modelIssueNoTitle").html("Create Issue");
         $("#btnSave").html("Save");
@@ -1116,11 +1047,22 @@
 
     //edit Issue
     $('#issueTable tbody').on('click', '.editIssue', function () {
-            var rowobj =$(this).closest("tr");
-            var id =  rowobj.find("td:eq(0)").text();
-            var issue =  rowobj.find("td:eq(1)").text();
+            var rowobj = $(this).closest("tr");
+            var id     = rowobj.find("td:eq(0)").text();
+            var issue  = rowobj.find("td:eq(1)").text();
             $("#txtIssueNo").val(issue);
             $("#hdnId").val(id);
+            $('#brexFile').val('');
+            $('#brexRequired').hide();
+            $('#brexEditHint').show();
+
+            // Pre-populate schema types table from row data attribute
+            var schemaTypes = rowobj.data('schema-types') || [];
+            $('#schemaTypesBody').empty();
+            $.each(schemaTypes, function (_, st) {
+                addSchemaRow(st.name, st.fileName);
+            });
+
             $("#btnSave").html("Update");
             $(".modelIssueNoTitle").html("Edit Issue");
             $("#Configurationmdl").modal('show');
@@ -1725,72 +1667,5 @@
     });
     /*RPC - End*/
 
-    /*Data Module Type - Start*/
-    var dataModuleTypeTable = $('#dataModuleTypeTable').DataTable();
-    $("#CreateDataModuleType").click(function () {
-        $('#hdnModuleId').val('0');
-        $('#txtDataTypeModule').val('');
-        $('#txtDataTypeFileName').val('');
-        $("#errorDMTMsg").html('');
-        $(".modelTitle").html("Create Data Module Type");
-        $("#btnDMTypeSave").html("Save");
-        $("#DataModuleTypeModel").modal('show');
-    });
-
-    $("#btnDMTypeSave").click(function () {
-        if ($('#txtDataTypeModule').val() == '') {
-            $('#txtDataTypeModule').css('border-color', 'red');
-            return false;
-        } else {
-            $('#txtDataTypeModule').css('border-color', '');
-        }
-        var dataModuleType = {};
-        dataModuleType.Id = $('#hdnModuleId').val();
-        dataModuleType.Name = $('#txtDataTypeModule').val();
-        dataModuleType.FileName = $('#txtDataTypeFileName').val();
-        $.ajax({
-            type: "POST",
-            url: "Manage/CreateDataTypeModule",
-            data: { dataModuleType: dataModuleType },
-            dataType: "json",
-            success: function (data) {
-                if (data == 'Duplicate') {
-                    $("#errorDMTMsg").html("Duplicate Record.");
-                } else {
-                    $("#DataModuleTypeModel").modal('hide');
-                    location.reload();
-                }
-            }
-        });
-    });
-
-    $('#dataModuleTypeTable tbody').on('click', '.editDataTypeModule', function () {
-        var rowobj = $(this).closest("tr");
-        var id = rowobj.find("td:eq(0)").text();
-        var name = rowobj.find("td:eq(1)").text();
-        var filename = rowobj.find("td:eq(2)").text();
-        $("#txtDataTypeModule").val(name);
-        $("#txtDataTypeFileName").val(filename);
-        $("#hdnModuleId").val(id);
-        $("#btnDMTypeSave").html("Update");
-        $(".modelTitle").html("Edit Data Module Type");
-        $("#DataModuleTypeModel").modal('show');
-    });
-
-    $('#dataModuleTypeTable tbody').on('click', '.deleteDataTypeModule', function () {
-        var Id = $(this).closest("tr").find("td:eq(0)").text();
-        $.confirmModal('Are you sure to delete this record?', function (el) {
-            $.ajax({
-                type: "POST",
-                url: "Manage/DeleteDataTypeModule",
-                data: { id: Id },
-                dataType: "json",
-                success: function (data) {
-                    location.reload();
-                }
-            });
-        });
-    });
-    /*Data Module Type - End*/
 </script>
 }
