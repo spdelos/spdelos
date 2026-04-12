@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 17500 2664"
+     viewBox="0 0 16000 2664"
      width="225" height="37"
      preserveAspectRatio="xMidYMid meet"
      style="background:transparent">
@@ -25,10 +25,5 @@ c77 -94 100 -113 124 -103 8 3 47 46 88 95 l74 91 3 -85 c3 -88 15 -116 47
 -96 105 -87 21 8 168 192 170 213 1 9 -8 17 -20 19 -17 2 -37 -15 -85 -75 -34
 -43 -66 -82 -70 -86 -4 -5 -38 30 -75 77 -47 59 -76 86 -90 86 -15 0 -45 -31
 -103 -105z"/>
-<g transform="translate(2220,238) scale(1,-1)">
-  <text x="0" y="0"
-        font-family="Arial,Helvetica,sans-serif"
-        font-size="83" font-weight="600">&#174;</text>
-</g>
 </g>
 </svg>
