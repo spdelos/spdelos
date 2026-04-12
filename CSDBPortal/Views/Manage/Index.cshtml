@@ -51,7 +51,7 @@
                 <a class="maint-nav-item @(dmcFirst ? "active" : "")" id="pills-tab-7"
                    data-bs-toggle="tab" href="#pills-7" role="tab">
                     <span class="mni-icon"><i class="fa-solid fa-file-code"></i></span>
-                    <span>DMC</span>
+                    <span>DMRL</span>
                 </a>
             }
             @if (hasAllocation)
@@ -180,6 +180,7 @@
                                             <td width="30%">
                                                 <a href="#" class="btn btn-sm edit_button edit_project">Edit</a>
                                                 <a href="#" class="btn btn-sm btn-secondary project_sns_button">SNS</a>
+                                                <a href="#" class="btn btn-sm btn-info project_dmrl_button">DMRL</a>
                                                 <a href="#" class="btn btn-sm btn-primary project_dmc_button">DMC</a>
                                                 <a href="#" class="btn btn-sm btn-primary project_dmc_generate_button">Brex</a>
                                                 <a href="#" class="btn btn-sm btn-primary project_brex_rules_button">Brex Rules</a>
@@ -203,15 +204,31 @@
                         <div class="row">
                             <div class="col-12 text-right">
                                 <a href="#" class="btn" id="btnCreateDMC">
-                                    <i class="fas fa-plus"></i> Create New
+                                    <i class="fas fa-plus"></i> Create DMC
                                 </a>
                                 <a href="/Manage/DownloadDMCTemplate" class="btn" id="btnDownloadDMCTemplate">
-                                    Download Template
+                                    DMRL Template
                                 </a>
                                 <form class="d-inline" asp-action="UploadDMC" asp-controller="Manage" method="post" enctype="multipart/form-data">
                                     <input id="upload" name="upload" style="display:none" type="file" onchange="this.form.submit();" />
-                                    <a class="btn" id="btnUploadDMC" name="uploadbutton">Upload</a>
+                                    <a class="btn" id="btnUploadDMC" name="uploadbutton">Upload DMRL</a>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <label for="dmrlProjectFilter" class="col-form-label fw-semibold">Project</label>
+                            </div>
+                            <div class="col-sm-4">
+                                <select id="dmrlProjectFilter" class="form-select form-select-sm">
+                                    <option value="">— All Projects —</option>
+                                    @foreach (var proj in Model.Projects)
+                                    {
+                                        <option value="@proj.Id">@proj.Name</option>
+                                    }
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -224,8 +241,7 @@
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
                                         <th style="display:none"></th>
-                                        <th width="13%">Project Name</th>
-                                        <th width="27%">DMC</th>
+                                        <th width="35%">DMC</th>
                                         <th width="10%">XML</th>
                                         <th width="6%">BREX</th>
                                         <th width="8%">Status</th>
@@ -243,8 +259,7 @@
                                             <td style="display:none">@p.InformationCodeId</td>
                                             <td style="display:none">@p.LocationCodeId</td>
 
-                                            <td width="13%">@p.ProjectName</td>
-                                            <td width="27%">@p.DMC</td>
+                                            <td width="35%">@p.DMC</td>
                                             @if (p.xml != null)
                                             {
                                                 <td width="10%">
@@ -1502,7 +1517,13 @@
 
 
             // Only initialise #tableDMC here; #tableProject is initialised below with its own call
-            $('#tableDMC').DataTable();
+            var tableDMC = $('#tableDMC').DataTable();
+
+            // DMRL project dropdown filter (column 1 = ProjectId hidden col)
+            $('#dmrlProjectFilter').on('change', function () {
+                var pid = $(this).val();
+                tableDMC.column(1).search(pid ? '^' + pid + '$' : '', true, false).draw();
+            });
             $("#adminlink").removeClass("active");
             $("#configlink").removeClass("active");
             $("#mainlink").addClass("active");
@@ -1940,6 +1961,18 @@
                 $("#btnDMCSave").html("Save");
 
                 $("#DMCModel").modal('show');
+            });
+
+            $(".project_dmrl_button").click(function () {
+                var rowobj = $(this).closest("tr");
+                var projectId = rowobj.find("td:eq(0)").text();
+
+                // Switch to DMRL (pills-7) tab
+                var dmrlTab = document.querySelector('#pills-tab-7');
+                if (dmrlTab) bootstrap.Tab.getOrCreateInstance(dmrlTab).show();
+
+                // Pre-filter by this project
+                $('#dmrlProjectFilter').val(projectId).trigger('change');
             });
 
             $(".project_sns_button").click(function () {
