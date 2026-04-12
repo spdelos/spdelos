@@ -19,10 +19,10 @@
     --danger:         #dc2626;
     --warning:        #d97706;
     --info:           #2563eb;
-    --sidebar-bg:     #0f2540;
+    --sidebar-bg:     #0d1117;
     --sidebar-text:   #c8d6e5;
-    --sidebar-active: #2563a8;
-    --sidebar-hover:  #1a3a5c;
+    --sidebar-active: #1e3a5c;
+    --sidebar-hover:  #151d2b;
     --sidebar-w:      240px;
     --sidebar-w-collapsed: 64px;
     --topbar-h:       60px;
@@ -102,14 +102,11 @@ a:hover { text-decoration: none !important; }
 }
 
 .sidebar-brand-navietm {
-    height: 88px;
+    height: 110px;
     width: auto;
     max-width: calc(100% - 16px);
     object-fit: contain;
     flex-shrink: 0;
-    background: rgba(255,255,255,0.95);
-    border-radius: 10px;
-    padding: 6px 10px;
     transition: height 0.2s ease, width 0.2s ease;
 }
 
@@ -132,10 +129,10 @@ a:hover { text-decoration: none !important; }
     padding: 12px 8px;
 }
 .app-sidebar.collapsed .sidebar-brand-navietm {
-    height: 44px;
-    width: 44px;
+    height: 50px;
+    width: auto;
+    max-width: 48px;
     object-fit: contain;
-    padding: 4px;
 }
 
 .topbar-csdb-logo {
