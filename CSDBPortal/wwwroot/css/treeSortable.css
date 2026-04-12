@@ -303,6 +303,25 @@ summary {
     margin-left: -270px;
 }
 
+/* Toggle (collapse/expand) button — hidden for leaf nodes via JS */
+.toggle-branch {
+    visibility: hidden;
+    color: #555;
+    font-size: 14px;
+    padding: 2px 4px;
+    flex-shrink: 0;
+}
+
+.toggle-branch:hover {
+    color: #1985C8;
+    transform: none;
+}
+
+/* Dim collapsed branches slightly so they're distinguishable */
+.tree-branch.sns-collapsed > .contents .branch-wrapper {
+    background: #f8f9fb;
+}
+
 .branch-path {
     display: block;
     position: absolute;

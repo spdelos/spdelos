@@ -730,7 +730,7 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="example-text-input" class="form-label">Description</label>
-                                    <textarea class="form-control" style="width:325px;height:75px;" id="txtSnsDescription"> </textarea>
+                                    <textarea class="form-control" rows="3" id="txtSnsDescription"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -1202,6 +1202,7 @@
         var content = data.map(sortable.createBranch);
         $("#tree").html(content);
         sortable.run();
+        refreshToggleButtons("#tree");
 
         const delay = () => {
             return new Promise(resolve => {
@@ -1358,24 +1359,64 @@
             $(document).on("click", ".remove-branch", function (e) {
                 e.preventDefault();
 
-                const confirm = window.confirm("Are you sure you want to delete this branch?");
-                if (!confirm) {
-                    return;
-                }
+                if (!window.confirm("Are you sure you want to delete this branch?")) return;
 
-                var selectedParent = $(this).getSelectedBranch();
-
+                var $btn = $(this);
+                var selectedParent = $btn.getSelectedBranch();
                 var id = selectedParent.attributes['data-id'].value;
+                var isProjectSns = $btn.closest('#projectSnsModel').length > 0;
 
-                $.ajax({
-                    type: "POST",
-                    url: "Manage/DeleteSns",
-                    data: { id: id },
-                    dataType: "json",
-                    success: function (data) {
-                        location.reload();
-                    }
+                if (isProjectSns) {
+                    $.ajax({
+                        type: "POST",
+                        url: "Manage/DeleteProjectSns",
+                        data: { snsId: id, projectId: selectedProject },
+                        dataType: "json",
+                        success: function () { location.reload(); }
+                    });
+                } else {
+                    $.ajax({
+                        type: "POST",
+                        url: "Manage/DeleteSns",
+                        data: { id: id },
+                        dataType: "json",
+                        success: function () { location.reload(); }
+                    });
+                }
+            });
+
+            // ── SNS tree: collapse / expand ──────────────────────────────────────
+            function showBranchChildren($branch) {
+                if ($branch.hasClass("sns-collapsed")) return;
+                $branch.getChildren().each(function () {
+                    $(this).show();
+                    showBranchChildren($(this));
                 });
+            }
+
+            function refreshToggleButtons(treeSelector) {
+                $(treeSelector + ' .tree-branch').each(function () {
+                    var hasKids = $(this).getDescendants().length > 0;
+                    $(this).find('> .contents .toggle-branch')
+                           .css('visibility', hasKids ? 'visible' : 'hidden');
+                });
+            }
+
+            $(document).on("click", ".toggle-branch", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var $branch = $(this).closest(".tree-branch");
+                var $icon   = $(this).find('ion-icon');
+
+                if ($branch.hasClass("sns-collapsed")) {
+                    $branch.removeClass("sns-collapsed");
+                    $icon.attr('name', 'chevron-down-outline');
+                    showBranchChildren($branch);
+                } else {
+                    $branch.getDescendants().hide();
+                    $branch.addClass("sns-collapsed");
+                    $icon.attr('name', 'chevron-forward-outline');
+                }
             });
 
             $('#addDMCtoTree').click(function () {
@@ -1996,6 +2037,7 @@
                         var contentproj = result.map(sortableproj.createBranch);
                         $("#projectSnsTree").html(contentproj);
                         sortableproj.run();
+                        refreshToggleButtons("#projectSnsTree");
 
                         $("#SnsParentDropDown option").remove();
 

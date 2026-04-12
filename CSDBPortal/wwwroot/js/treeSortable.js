@@ -98,6 +98,9 @@ function TreeSortable(name) {
                 <span class="${cleanSelector(branchPathSelector)}"></span>
                 <div class="branch-wrapper">
                     <div class="left-sidebar">
+                        <button type="button" class="button toggle-branch" title="Collapse / Expand">
+                            <ion-icon name="chevron-down-outline"></ion-icon>
+                        </button>
                         <div class="${cleanSelector(dragHandlerSelector)}">
                             <ion-icon name="move-outline"></ion-icon>
                         </div>

@@ -244,6 +244,14 @@ namespace CSDBPortal.Controllers
             return Json(await _baseManager.DeleteRecordAsync(sns, ""));
         }
 
+        public async Task<JsonResult> DeleteProjectSns(int snsId, int projectId)
+        {
+            var sns = await _db.ProjectStandardNumberingSystems
+                .FirstOrDefaultAsync(s => s.Snsid == snsId && s.ProjectId == projectId);
+            if (sns == null) return Json(0);
+            return Json(await _baseManager.DeleteRecordAsync(sns, ""));
+        }
+
         public async Task<JsonResult> CreateDMC(DataModuleCode dataModuleCode)
         {
             string mode;
