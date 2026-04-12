@@ -383,15 +383,18 @@ namespace CSDBPortal.Controllers
         public async Task<FileResult> DownloadDMRL(int projectId = 0)
         {
             var baseQuery = from dmc in _db.DataModuleCodes
-                            join p   in _db.Projects          on dmc.ProjectId        equals p.Id
-                            join ic  in _db.InformationCodes  on dmc.InformationCodeId equals ic.Id
-                            join lc  in _db.LocationCodes     on dmc.LocationCodeId    equals lc.Id
-                            join itf in _db.IssueTypeFiles    on dmc.IssueFileId       equals itf.Id into itfGroup
+                            join p   in _db.Projects          on dmc.ProjectId         equals p.Id
+                            join ic  in _db.InformationCodes  on dmc.InformationCodeId  equals ic.Id
+                            join lc  in _db.LocationCodes     on dmc.LocationCodeId     equals lc.Id
+                            join itf in _db.IssueTypeFiles    on dmc.IssueFileId        equals itf.Id  into itfGroup
                             from itf in itfGroup.DefaultIfEmpty()
+                            join xv  in _db.XmlValidations    on dmc.Id                 equals xv.DataModuleId into xvGroup
+                            from xv  in xvGroup.DefaultIfEmpty()
                             where !dmc.IsDeleted
                             select new
                             {
                                 ProjectName     = p.Name,
+                                DMC             = dmc.DMC ?? "",
                                 dmc.TechName,
                                 dmc.InfoName,
                                 SchemaFile      = itf != null ? itf.Name : "",
@@ -401,8 +404,12 @@ namespace CSDBPortal.Controllers
                                 InformationCode = ic.Code,
                                 ICV             = dmc.ICV ?? "",
                                 LocationCode    = lc.Code,
-                                dmc.ProjectId,
-                                DMC             = dmc.DMC ?? ""
+                                HasXml          = dmc.xml != null,
+                                BrexStatus      = xv != null ? (xv.UploadStatus ? "Pass" : "Fail") : "",
+                                Status          = dmc.xml == null ? "" : dmc.CheckoutStatus == "CheckedOut" ? "Checked Out" : "Available",
+                                Owner           = dmc.CheckedOutBy ?? "",
+                                CheckOutDate    = dmc.CheckedOutOn != null ? dmc.CheckedOutOn.Value.ToString("dd MMM yyyy HH:mm") : "",
+                                dmc.ProjectId
                             };
 
             if (projectId > 0)
@@ -411,11 +418,12 @@ namespace CSDBPortal.Controllers
             var rows = await baseQuery.OrderBy(x => x.ProjectName).ThenBy(x => x.DMC).ToListAsync();
 
             var csv = new StringBuilder();
-            csv.AppendLine("Project Name,Tech Name,Info Name,Schema File,SNS,DC,DCV,Information Code,ICV,Location Code");
+            csv.AppendLine("Project Name,DMC,Tech Name,Info Name,Schema File,SNS,DC,DCV,Information Code,ICV,Location Code,XML,BREX,Status,Owner,Check Out Date");
             foreach (var r in rows)
             {
                 csv.AppendLine(string.Join(",",
                     CsvEscape(r.ProjectName),
+                    CsvEscape(r.DMC),
                     CsvEscape(r.TechName),
                     CsvEscape(r.InfoName),
                     CsvEscape(r.SchemaFile),
@@ -424,7 +432,12 @@ namespace CSDBPortal.Controllers
                     CsvEscape(r.DCV),
                     CsvEscape(r.InformationCode),
                     CsvEscape(r.ICV),
-                    CsvEscape(r.LocationCode)));
+                    CsvEscape(r.LocationCode),
+                    r.HasXml ? "Yes" : "No",
+                    CsvEscape(r.BrexStatus),
+                    CsvEscape(r.Status),
+                    CsvEscape(r.Owner),
+                    CsvEscape(r.CheckOutDate)));
             }
 
             var filename = projectId > 0
