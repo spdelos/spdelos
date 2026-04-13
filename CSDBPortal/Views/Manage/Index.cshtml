@@ -1198,7 +1198,23 @@
             @:data.push(obj);
         }
 
-                var sortable = new TreeSortable("#tree");
+        function showBranchChildren($branch) {
+            if ($branch.hasClass("sns-collapsed")) return;
+            $branch.getChildren().each(function () {
+                $(this).show();
+                showBranchChildren($(this));
+            });
+        }
+
+        function refreshToggleButtons(treeSelector) {
+            $(treeSelector + ' .tree-branch').each(function () {
+                var hasKids = $(this).getDescendants().length > 0;
+                $(this).find('> .contents .toggle-branch')
+                       .css('visibility', hasKids ? 'visible' : 'hidden');
+            });
+        }
+
+        var sortable = new TreeSortable("#tree");
         var content = data.map(sortable.createBranch);
         $("#tree").html(content);
         sortable.run();
@@ -1386,22 +1402,6 @@
             });
 
             // ── SNS tree: collapse / expand ──────────────────────────────────────
-            function showBranchChildren($branch) {
-                if ($branch.hasClass("sns-collapsed")) return;
-                $branch.getChildren().each(function () {
-                    $(this).show();
-                    showBranchChildren($(this));
-                });
-            }
-
-            function refreshToggleButtons(treeSelector) {
-                $(treeSelector + ' .tree-branch').each(function () {
-                    var hasKids = $(this).getDescendants().length > 0;
-                    $(this).find('> .contents .toggle-branch')
-                           .css('visibility', hasKids ? 'visible' : 'hidden');
-                });
-            }
-
             $(document).on("click", ".toggle-branch", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1525,6 +1525,7 @@
                 content = data.map(sortable.createBranch);
                 $("#tree").html(content);
                 sortable.run();
+                refreshToggleButtons("#tree");
                 $(".create-dmc").hide();
 
                 $("#SnsParentDropDown option").remove();
@@ -2021,7 +2022,7 @@
                 $('#dmrlProjectFilter').val(projectId).trigger('change');
             });
 
-            $(".project_sns_button").click(function () {
+            $('#tableProject').on('click', '.project_sns_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
@@ -2047,10 +2048,10 @@
                         $.each(result, function (idx, obj) {
                             slelectObj.append('<option value="' + obj.id + '">' + obj.title + '</option>');
                         });
+
+                        $("#projectSnsModel").modal('show');
                     }
                 });
-
-                $("#projectSnsModel").modal('show');
             });
 
             $('#tableBrexRules').on('click', '.editBrexRule', function (e) {
