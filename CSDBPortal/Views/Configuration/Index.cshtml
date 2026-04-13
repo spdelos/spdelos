@@ -118,7 +118,7 @@
                                         var schemaTypes = Model.DataModuleTypes
                                             .Where(d => d.IssueNo == m.Id)
                                             .Select(d => new { name = d.Name, fileName = d.FileName });
-                                        <tr data-schema-types="@Html.Raw(System.Text.Json.JsonSerializer.Serialize(schemaTypes))">
+                                        <tr data-id="@m.Id" data-schema-types="@System.Text.Json.JsonSerializer.Serialize(schemaTypes)">
                                             <td style="display:none">@m.Id</td>
                                             <td>@m.Name</td>
                                             <td>@Model.DataModuleTypes.Count(d => d.IssueNo == m.Id)</td>
@@ -1175,7 +1175,7 @@
     //edit Issue
     $('#issueTable tbody').on('click', '.editIssue', function () {
         var rowobj = $(this).closest("tr");
-        var id     = rowobj.find("td:eq(0)").text();
+        var id     = rowobj.data('id');
         var issue  = rowobj.find("td:eq(1)").text();
         $("#txtIssueNo").val(issue);
         $("#hdnId").val(id);
@@ -1200,7 +1200,7 @@
 
         //Delete Issue
     $('#issueTable tbody').on('click', '.deleteBtn', function () {
-        var Id =$(this).closest("tr").find("td:eq(0)").text();
+        var Id = $(this).closest("tr").data('id');
         $.confirmModal('Are you sure to delete this record?', function(el) {
             $.ajax({
                 type: "POST",
