@@ -595,7 +595,6 @@
             <div class="modal-body">
                 <form asp-action="CreateIssueNo" asp-controller="Configuration" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="hdnId" id="hdnId" value="0" />
-                    <input type="hidden" name="schemaTypes" id="hdnSchemaTypes" />
                     <label id="errorMsg" style="color:red"></label>
                     <div class="mb-3">
                         <label class="form-label">Issue No <span style="color:red">*</span></label>
@@ -607,20 +606,10 @@
                         <small class="text-muted" id="brexEditHint" style="display:none">Leave empty to keep existing template</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Schema File Types</label>
-                        <table class="table table-sm table-bordered mb-1" id="schemaTypesTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Name</th>
-                                    <th>XSD Filename</th>
-                                    <th style="width:38px"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="schemaTypesBody"></tbody>
-                        </table>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnAddSchemaType">
-                            <i class="fas fa-plus"></i> Add Type
-                        </button>
+                        <label class="form-label">XSD Schema Files</label>
+                        <input type="file" class="form-control" id="xsdFilesInput" multiple accept=".xsd">
+                        <div id="xsdMessages" class="mt-1"></div>
+                        <div id="xsdFileList" class="mt-2"></div>
                     </div>
                     <div class="modal-footer px-0">
                         <button id="btnSaveIssueNo" type="button" class="btn btn-primary">Save</button>
@@ -848,35 +837,109 @@
 
 <script type="text/javascript">
 
+    // ── XSD upload state (top-level so accessible from all handlers) ──────────
+    var pendingXsdFiles = {};   // { filename: File }
+    var existingXsdFiles = [];  // [{ fileName, issueNoId }]
+
+    function renderXsdItem(fileName, isPending) {
+        var safeFileName = $('<span>').text(fileName).html();
+        var badge = isPending ? '<span class="badge bg-success me-1">New</span>' : '';
+        return '<div class="d-flex flex-wrap align-items-center gap-2 mb-1 xsd-file-item" ' +
+            'data-filename="' + safeFileName + '" data-pending="' + isPending + '">' +
+            badge +
+            '<span class="flex-grow-1 text-truncate small">' + safeFileName + '</span>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary py-0 btn-view-xsd">View</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger py-0 btn-remove-xsd"><i class="fas fa-times"></i></button>' +
+            '<div class="xsd-content-panel w-100 mt-1" style="display:none">' +
+              '<pre class="border rounded p-2 small mb-0" style="max-height:200px;overflow:auto;background:#f8f9fa;white-space:pre-wrap"></pre>' +
+            '</div>' +
+            '</div>';
+    }
+
+    function renderXsdFileList() {
+        var $list = $('#xsdFileList');
+        $list.empty();
+        existingXsdFiles.forEach(function (xsd) { $list.append(renderXsdItem(xsd.fileName, false)); });
+        $.each(pendingXsdFiles, function (fileName) { $list.append(renderXsdItem(fileName, true)); });
+        if ($list.children().length === 0) {
+            $list.html('<small class="text-muted">No XSD files added.</small>');
+        }
+    }
+
     $(document).ready( function() {
 
-        // ── Schema Types helpers ──────────────────────────────────────────────
-        function addSchemaRow(name, fileName) {
-            var row = '<tr>' +
-                '<td><input type="text" class="form-control form-control-sm schema-name" value="' + (name || '') + '" placeholder="e.g. Descriptive" /></td>' +
-                '<td><input type="text" class="form-control form-control-sm schema-filename" value="' + (fileName || '') + '" placeholder="e.g. descript.xsd" /></td>' +
-                '<td><button type="button" class="btn btn-sm btn-danger remove-schema-row"><i class="fas fa-times"></i></button></td>' +
-                '</tr>';
-            $('#schemaTypesBody').append(row);
-        }
+        // ── XSD file upload change handler ────────────────────────────────────
+        $('#xsdFilesInput').on('change', function () {
+            var files = Array.from(this.files);
+            var messages = [];
 
-        function getSchemaTypes() {
-            var types = [];
-            $('#schemaTypesBody tr').each(function () {
-                var name = $(this).find('.schema-name').val().trim();
-                var fileName = $(this).find('.schema-filename').val().trim();
-                if (name || fileName) types.push({ Name: name, FileName: fileName });
+            var nonXsd = files.filter(function (f) { return !f.name.toLowerCase().endsWith('.xsd'); });
+            var xsdFiles = files.filter(function (f) { return f.name.toLowerCase().endsWith('.xsd'); });
+
+            if (nonXsd.length > 0) {
+                messages.push('<div class="alert alert-warning py-1 mb-1 small">Ignored ' + nonXsd.length + ' non-XSD file(s): ' + nonXsd.map(function (f) { return f.name; }).join(', ') + '</div>');
+            }
+
+            var dupes = [];
+            xsdFiles.forEach(function (f) {
+                var lc = f.name.toLowerCase();
+                var dupeInExisting = existingXsdFiles.some(function (x) { return x.fileName.toLowerCase() === lc; });
+                var dupeInPending  = pendingXsdFiles.hasOwnProperty(f.name);
+                if (dupeInExisting || dupeInPending) {
+                    dupes.push(f.name);
+                } else {
+                    pendingXsdFiles[f.name] = f;
+                }
             });
-            return types;
-        }
 
-        $('#btnAddSchemaType').click(function () { addSchemaRow('', ''); });
+            if (dupes.length > 0) {
+                messages.push('<div class="alert alert-info py-1 mb-1 small">Skipped ' + dupes.length + ' duplicate(s): ' + dupes.join(', ') + '</div>');
+            }
 
-        $(document).on('click', '.remove-schema-row', function () {
-            $(this).closest('tr').remove();
+            $('#xsdMessages').html(messages.join(''));
+            renderXsdFileList();
+            $(this).val('');
         });
 
-        // ── Issue No save (submit form programmatically) ──────────────────────
+        // ── View XSD content (toggle) ─────────────────────────────────────────
+        $(document).on('click', '.btn-view-xsd', function () {
+            var $item   = $(this).closest('.xsd-file-item');
+            var fileName = $item.data('filename');
+            var isPending = $item.data('pending') === true;
+            var $panel  = $item.find('.xsd-content-panel');
+            var $pre    = $panel.find('pre');
+
+            if ($panel.is(':visible')) { $panel.hide(); return; }
+
+            if (isPending) {
+                var file = pendingXsdFiles[fileName];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) { $pre.text(e.target.result); $panel.show(); };
+                    reader.readAsText(file);
+                }
+            } else {
+                $.ajax({
+                    url: '/Configuration/GetSchemaFileContent',
+                    data: { issueNoId: $('#hdnId').val(), fileName: fileName },
+                    success: function (content) { $pre.text(content); $panel.show(); }
+                });
+            }
+        });
+
+        // ── Remove XSD item ───────────────────────────────────────────────────
+        $(document).on('click', '.btn-remove-xsd', function () {
+            var $item    = $(this).closest('.xsd-file-item');
+            var fileName = $item.data('filename');
+            if ($item.data('pending') === true) {
+                delete pendingXsdFiles[fileName];
+            } else {
+                existingXsdFiles = existingXsdFiles.filter(function (x) { return x.fileName !== fileName; });
+            }
+            renderXsdFileList();
+        });
+
+        // ── Issue No save via AJAX FormData ───────────────────────────────────
         $("#btnSaveIssueNo").click(function () {
             var isValid = true;
             if ($('#txtIssueNo').val() === '') {
@@ -896,9 +959,38 @@
 
             if (!isValid) return;
 
-            $('#hdnSchemaTypes').val(JSON.stringify(getSchemaTypes()));
-            // Submit the enclosing form
-            $('#hdnId').closest('form').submit();
+            // Build full file name list (existing + pending)
+            var allFileNames = existingXsdFiles.map(function (x) { return { FileName: x.fileName }; });
+            $.each(pendingXsdFiles, function (fileName) { allFileNames.push({ FileName: fileName }); });
+
+            var formData = new FormData();
+            formData.append('hdnId',       $('#hdnId').val());
+            formData.append('txtIssueNo',  $('#txtIssueNo').val());
+            formData.append('schemaTypes', JSON.stringify(allFileNames));
+
+            var brexFiles = $('#brexFile')[0].files;
+            if (brexFiles.length > 0) formData.append('brexFile', brexFiles[0]);
+
+            $.each(pendingXsdFiles, function (fileName, file) { formData.append('xsdFiles', file); });
+
+            $.ajax({
+                url: '/Configuration/CreateIssueNo',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (result) {
+                    if (result.success) {
+                        $('#Configurationmdl').modal('hide');
+                        location.reload();
+                    } else {
+                        $('#errorMsg').html(result.message || 'Error saving.');
+                    }
+                },
+                error: function () {
+                    $('#errorMsg').html('An error occurred. Please try again.');
+                }
+            });
         });
 
         // Persist active tab (Bootstrap 5)
@@ -962,7 +1054,10 @@
         $('#hdnId').val('0');
         $('#txtIssueNo').val('');
         $('#brexFile').val('');
-        $('#schemaTypesBody').empty();
+        pendingXsdFiles  = {};
+        existingXsdFiles = [];
+        $('#xsdMessages').empty();
+        renderXsdFileList();
         $('#brexRequired').show();
         $('#brexEditHint').hide();
         $("#errorMsg").html('');
@@ -1047,25 +1142,27 @@
 
     //edit Issue
     $('#issueTable tbody').on('click', '.editIssue', function () {
-            var rowobj = $(this).closest("tr");
-            var id     = rowobj.find("td:eq(0)").text();
-            var issue  = rowobj.find("td:eq(1)").text();
-            $("#txtIssueNo").val(issue);
-            $("#hdnId").val(id);
-            $('#brexFile').val('');
-            $('#brexRequired').hide();
-            $('#brexEditHint').show();
+        var rowobj = $(this).closest("tr");
+        var id     = rowobj.find("td:eq(0)").text();
+        var issue  = rowobj.find("td:eq(1)").text();
+        $("#txtIssueNo").val(issue);
+        $("#hdnId").val(id);
+        $('#brexFile').val('');
+        $('#brexRequired').hide();
+        $('#brexEditHint').show();
 
-            // Pre-populate schema types table from row data attribute
-            var schemaTypes = rowobj.data('schema-types') || [];
-            $('#schemaTypesBody').empty();
-            $.each(schemaTypes, function (_, st) {
-                addSchemaRow(st.name, st.fileName);
-            });
+        // Pre-populate existing XSD files from row data attribute
+        var schemaTypes = rowobj.data('schema-types') || [];
+        pendingXsdFiles  = {};
+        existingXsdFiles = schemaTypes.map(function (st) {
+            return { fileName: st.fileName, issueNoId: parseInt(id) };
+        });
+        $('#xsdMessages').empty();
+        renderXsdFileList();
 
-            $("#btnSave").html("Update");
-            $(".modelIssueNoTitle").html("Edit Issue");
-            $("#Configurationmdl").modal('show');
+        $("#btnSave").html("Update");
+        $(".modelIssueNoTitle").html("Edit Issue");
+        $("#Configurationmdl").modal('show');
     });
 
 

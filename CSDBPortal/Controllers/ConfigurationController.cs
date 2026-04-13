@@ -61,13 +61,13 @@ namespace CSDBPortal.Controllers
                 var brexFile = Request.Form.Files["brexFile"];
                 if (brexFile != null && brexFile.Length > 0)
                 {
-                    var fileContent = new StringBuilder();
+                    var sb = new StringBuilder();
                     using (var reader = new StreamReader(brexFile.OpenReadStream()))
                     {
                         while (reader.Peek() >= 0)
-                            fileContent.AppendLine(await reader.ReadLineAsync());
+                            sb.AppendLine(await reader.ReadLineAsync());
                     }
-                    issueNo.BrexTemplate = fileContent.ToString();
+                    issueNo.BrexTemplate = sb.ToString();
                 }
 
                 // Save IssueNo first so we have its Id for FK references
@@ -75,117 +75,87 @@ namespace CSDBPortal.Controllers
                     _db.IssueNos.Add(issueNo);
                 await _db.SaveChangesAsync();
 
-                // Process schema file types submitted as JSON
+                // Build lookup of uploaded XSD files by filename (key = original filename)
+                var uploadedXsd = Request.Form.Files
+                    .Where(f => f.Name == "xsdFiles")
+                    .GroupBy(f => f.FileName, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+                // schemaTypes JSON = [{FileName}] — the complete desired list after save
                 string schemaTypesJson = Request.Form["schemaTypes"];
                 if (!string.IsNullOrEmpty(schemaTypesJson))
                 {
                     var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     var submittedTypes = JsonSerializer.Deserialize<List<SchemaTypeDto>>(schemaTypesJson, opts) ?? new();
+                    var submittedNames = submittedTypes.Select(t => t.FileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    var existingNames  = existingDMTypes.Select(d => d.FileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                    // In edit mode: remove DataModuleTypes no longer in the submitted list
-                    var submittedFileNames = submittedTypes.Select(t => t.FileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    // Remove DataModuleTypes no longer in the submitted list
                     foreach (var existing in existingDMTypes)
                     {
-                        if (!submittedFileNames.Contains(existing.FileName))
+                        if (!submittedNames.Contains(existing.FileName))
                             _db.DataModuleTypes.Remove(existing);
                     }
 
+                    // Add DataModuleType + IssueTypeFile for brand-new entries
                     foreach (var typeDto in submittedTypes)
                     {
-                        var existingDMT = existingDMTypes.FirstOrDefault(d =>
-                            string.Equals(d.FileName, typeDto.FileName, StringComparison.OrdinalIgnoreCase));
+                        if (existingNames.Contains(typeDto.FileName)) continue;   // already in DB, nothing to do
 
-                        if (existingDMT != null)
+                        _db.DataModuleTypes.Add(new DataModuleType
                         {
-                            // Update name if changed
-                            existingDMT.Name = typeDto.Name;
-                            existingDMT.UpdatedBy = User.Identity.Name;
-                            existingDMT.UpdatedOn = DateTime.UtcNow;
-                            _db.Entry(existingDMT).State = EntityState.Modified;
-                        }
-                        else
-                        {
-                            // New schema type: create DataModuleType record
-                            _db.DataModuleTypes.Add(new DataModuleType
-                            {
-                                Name = typeDto.Name,
-                                FileName = typeDto.FileName,
-                                IssueNo = issueNo.Id,
-                                CreatedBy = User.Identity.Name,
-                                CreatedOn = DateTime.UtcNow,
-                                UpdatedBy = User.Identity.Name,
-                                UpdatedOn = DateTime.UtcNow
-                            });
+                            Name     = typeDto.FileName,   // name = filename (XSD filename)
+                            FileName = typeDto.FileName,
+                            IssueNo  = issueNo.Id,
+                            CreatedBy  = User.Identity.Name,
+                            CreatedOn  = DateTime.UtcNow,
+                            UpdatedBy  = User.Identity.Name,
+                            UpdatedOn  = DateTime.UtcNow
+                        });
 
-                            // Create blank S1000D XML template as IssueTypeFile
-                            issueNo.IssueTypeFiles.Add(new IssueTypeFile
+                        // Store XSD file content so it can be viewed later
+                        string xsdContent = "";
+                        if (uploadedXsd.TryGetValue(typeDto.FileName, out var xsdFile))
+                        {
+                            var sb = new StringBuilder();
+                            using (var reader = new StreamReader(xsdFile.OpenReadStream()))
                             {
-                                Name = typeDto.FileName,
-                                IssueNoId = issueNo.Id,
-                                CreatedBy = User.Identity.Name,
-                                CreateOn = DateTime.UtcNow,
-                                Data = GenerateBlankDmoduleXml(typeDto.FileName)
-                            });
+                                while (reader.Peek() >= 0)
+                                    sb.AppendLine(await reader.ReadLineAsync());
+                            }
+                            xsdContent = sb.ToString();
                         }
+
+                        issueNo.IssueTypeFiles.Add(new IssueTypeFile
+                        {
+                            Name       = typeDto.FileName,
+                            IssueNoId  = issueNo.Id,
+                            CreatedBy  = User.Identity.Name,
+                            CreateOn   = DateTime.UtcNow,
+                            Data       = xsdContent
+                        });
                     }
                 }
 
                 await _db.SaveChangesAsync();
-                return RedirectToAction("Index", "Configuration");
+                return Json(new { success = true });
             }
             catch
             {
-                return View("failed");
+                return Json(new { success = false, message = "Error saving issue number." });
             }
         }
 
-        private static string GenerateBlankDmoduleXml(string xsdFileName) =>
-            $"""
-            <?xml version="1.0" encoding="UTF-8"?>
-            <dmodule xmlns:dc="http://www.purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.s1000d.org/S1000D_4-2/xml_schema_flat/{xsdFileName}">
-              <Description>
-                <creator></creator>
-                <title></title>
-                <subject></subject>
-                <publisher></publisher>
-                <contributor></contributor>
-                <date></date>
-                <type></type>
-                <format></format>
-                <identifier></identifier>
-                <language></language>
-                <rights></rights>
-              </Description>
-              <identAndStatusSection>
-                <dmAddress>
-                  <dmIdent>
-                    <language countryIsoCode="" languageIsoCode=""/>
-                    <issueInfo inWork="" issueNumber=""/>
-                  </dmIdent>
-                  <dmAddressItems>
-                    <issueDate day="" month="" year=""/>
-                    <dmTitle>
-                      <techName></techName>
-                      <infoName></infoName>
-                    </dmTitle>
-                  </dmAddressItems>
-                </dmAddress>
-                <dmStatus>
-                  <brexDmRef>
-                    <dmRef>
-                      <dmRefIdent>
-                        <dmCode assyCode="" disassyCode="" disassyCodeVariant="" infoCode="" infoCodeVariant="" itemLocationCode="" modelIdentCode="" subSubSystemCode="" subSystemCode="" systemCode="" systemDiffCode=""/>
-                      </dmRefIdent>
-                    </dmRef>
-                  </brexDmRef>
-                </dmStatus>
-              </identAndStatusSection>
-            </dmodule>
-            """;
+        public async Task<IActionResult> GetSchemaFileContent(int issueNoId, string fileName)
+        {
+            var file = await _db.IssueTypeFiles
+                .FirstOrDefaultAsync(f => f.IssueNoId == issueNoId && f.Name == fileName);
+            return Content(file?.Data ?? "", "text/plain");
+        }
 
         private sealed class SchemaTypeDto
         {
-            public string Name { get; set; } = "";
+            public string Name     { get; set; } = "";
             public string FileName { get; set; } = "";
         }
 

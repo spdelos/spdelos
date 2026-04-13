@@ -714,10 +714,7 @@ namespace CSDBPortal.Controllers
             IssueTypeFile issueTypeFile = await _db.IssueTypeFiles.FirstOrDefaultAsync(i => i.Id == dmc.IssueFileId);
 
             XmlDocument xmlDoc = new XmlDocument();
-            string baseXml = (issueTypeFile != null && !string.IsNullOrEmpty(issueTypeFile.Data))
-                ? issueTypeFile.Data
-                : project.BrexTemplate;
-            xmlDoc.LoadXml(baseXml);
+            xmlDoc.LoadXml(project.BrexTemplate);
             XmlNamespaceManager xMan = new XmlNamespaceManager(xmlDoc.NameTable);
 
             XmlNode node = xmlDoc.SelectSingleNode("/dmodule", xMan);
