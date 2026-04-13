@@ -962,20 +962,56 @@
 
 
 
-<div class="modal fade"  id="projectSnsModel" data-backdrop="true" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content" >
-            <div class="modal-header btn" >
-                <h4 class="modal-title modelprojectSns">Project Standard Numbering System</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+<div class="modal fade" id="projectSnsModel" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header py-2 border-bottom">
+                <h5 class="modal-title fw-semibold mb-0">
+                    <i class="fa-solid fa-sitemap me-2 text-muted"></i>SNS &mdash; <span id="projectSnsProjectName" class="text-primary"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="card">
-                <div class="row">
-                    <div class="table-responsive table-striped">
-                        <ul id="projectSnsTree"></ul>
+
+            <!-- Inline add/edit form (hidden by default) -->
+            <div id="pSnsFormPanel" class="border-bottom bg-light px-3 py-2" style="display:none">
+                <div class="d-flex flex-wrap gap-2 align-items-end">
+                    <div>
+                        <label class="form-label form-label-sm fw-semibold mb-1">Code <span class="text-danger">*</span></label>
+                        <input class="form-control form-control-sm" id="pSnsCode" style="width:120px" placeholder="e.g. 00-00-00">
+                        <div class="text-danger small mt-1" id="pSnsCodeError" style="display:none">Code is required</div>
+                    </div>
+                    <div style="flex:1; min-width:180px">
+                        <label class="form-label form-label-sm fw-semibold mb-1">Description</label>
+                        <input class="form-control form-control-sm" id="pSnsDescription" placeholder="Optional description">
+                    </div>
+                    <div class="d-flex gap-1 pb-1">
+                        <button class="btn btn-sm btn-primary" id="btnSavePSns">
+                            <i class="fas fa-save me-1"></i>Save
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" id="btnCancelPSns">Cancel</button>
                     </div>
                 </div>
+                <div class="text-muted small mt-1" id="pSnsFormHint"></div>
+                <input type="hidden" id="pSnsId">
+                <input type="hidden" id="pSnsParentId">
             </div>
+
+            <!-- Tree body -->
+            <div class="modal-body p-3" style="overflow-y:auto">
+                <ul id="projectSnsTree" style="padding:0; margin:0; list-style:none"></ul>
+                <div id="projectSnsEmpty" class="text-muted text-center py-4" style="display:none">
+                    No SNS nodes yet. Use <strong>Add Root Node</strong> below to get started.
+                </div>
+            </div>
+
+            <div class="modal-footer py-2">
+                <button class="btn btn-sm btn-outline-primary me-auto" id="btnAddRootPSns">
+                    <i class="fas fa-plus me-1"></i>Add Root Node
+                </button>
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+
         </div>
     </div>
 </div>
@@ -1214,6 +1250,29 @@
             });
         }
 
+        function loadProjectSnsTree(projectId) {
+            $.ajax({
+                type: "POST",
+                url: "Manage/GetProjectSns",
+                data: { projectId: projectId },
+                dataType: "json",
+                success: function (result) {
+                    if (!result || result.length === 0) {
+                        $("#projectSnsTree").empty();
+                        $("#projectSnsEmpty").show();
+                    } else {
+                        $("#projectSnsEmpty").hide();
+                        var sp = new TreeSortable("#projectSnsTree");
+                        var cp = result.map(sp.createBranch);
+                        $("#projectSnsTree").html(cp);
+                        sp.run();
+                        refreshToggleButtons("#projectSnsTree");
+                        $("#projectSnsTree .create-dmc").hide();
+                    }
+                }
+            });
+        }
+
         var sortable = new TreeSortable("#tree");
         var content = data.map(sortable.createBranch);
         $("#tree").html(content);
@@ -1318,32 +1377,52 @@
             });
 
             $(document).on("click", ".add-child", function (e) {
-
                 var selectedParent = $(this).getSelectedBranch();
-                const parent = selectedParent.innerText.split(" : ");
+                var isProjectSns = $(this).closest('#projectSnsModel').length > 0;
 
-                $("#SnsParentDropDown").val(selectedParent.dataset.id);
-
-                $('#hdnSnsId').val('0');
-                $('#txtSnsCode').val('');
-                $('#txtSnsDescription').val('');
-                $("#saveSns").html("Save");
-                $(".modelSnsTitle").html("Create Standard Number System");
-                $("#snsModel").modal('show');
+                if (isProjectSns) {
+                    $('#pSnsId').val('0');
+                    $('#pSnsCode').val('');
+                    $('#pSnsDescription').val('');
+                    $('#pSnsParentId').val(selectedParent.dataset.id);
+                    var parentTitle = $(selectedParent).find('.branch-title').first().text().trim();
+                    $('#pSnsFormHint').text('Adding child under: ' + parentTitle);
+                    $('#pSnsCodeError').hide().text('Code is required');
+                    $('#pSnsFormPanel').slideDown(150, function () { $('#pSnsCode').focus(); });
+                } else {
+                    $("#SnsParentDropDown").val(selectedParent.dataset.id);
+                    $('#hdnSnsId').val('0');
+                    $('#txtSnsCode').val('');
+                    $('#txtSnsDescription').val('');
+                    $("#saveSns").html("Save");
+                    $(".modelSnsTitle").html("Create Standard Number System");
+                    $("#snsModel").modal('show');
+                }
             });
 
             $(document).on("click", ".edit-item", function (e) {
-
                 var selectedParent = $(this).getSelectedBranch();
-                var parent = selectedParent.innerText.split(" : ");
-                $('#txtSnsCode').val(parent[0]);
-                $('#txtSnsDescription').val(parent[1]);
-                $('#hdnSnsId').val(selectedParent.attributes['data-id'].value);
-                $("#SnsParentDropDown").val(selectedParent.attributes['data-parent'].value);
+                var isProjectSns = $(this).closest('#projectSnsModel').length > 0;
+                var parts = $(selectedParent).find('.branch-title').first().text().trim().split(' : ');
 
-                $("#saveSns").html("Update");
-                $(".modelSnsTitle").html("Edit Standard Number System");
-                $("#snsModel").modal('show');
+                if (isProjectSns) {
+                    $('#pSnsId').val(selectedParent.dataset.id);
+                    $('#pSnsCode').val(parts[0] ? parts[0].trim() : '');
+                    $('#pSnsDescription').val(parts[1] ? parts[1].trim() : '');
+                    $('#pSnsParentId').val(selectedParent.dataset.parent || '');
+                    $('#pSnsFormHint').text('Editing node');
+                    $('#pSnsCodeError').hide().text('Code is required');
+                    $('#pSnsFormPanel').slideDown(150, function () { $('#pSnsCode').focus(); });
+                } else {
+                    var rawTitle = $(selectedParent).find('.branch-title').first().text().trim().split(' : ');
+                    $('#txtSnsCode').val(rawTitle[0] ? rawTitle[0].trim() : '');
+                    $('#txtSnsDescription').val(rawTitle[1] ? rawTitle[1].trim() : '');
+                    $('#hdnSnsId').val(selectedParent.attributes['data-id'].value);
+                    $("#SnsParentDropDown").val(selectedParent.attributes['data-parent'].value);
+                    $("#saveSns").html("Update");
+                    $(".modelSnsTitle").html("Edit Standard Number System");
+                    $("#snsModel").modal('show');
+                }
             });
 
             $(document).on("click", ".create-dmc", function (e) {
@@ -1375,7 +1454,7 @@
             $(document).on("click", ".remove-branch", function (e) {
                 e.preventDefault();
 
-                if (!window.confirm("Are you sure you want to delete this branch?")) return;
+                if (!window.confirm("Delete this node and all its children?")) return;
 
                 var $btn = $(this);
                 var selectedParent = $btn.getSelectedBranch();
@@ -1388,7 +1467,7 @@
                         url: "Manage/DeleteProjectSns",
                         data: { snsId: id, projectId: selectedProject },
                         dataType: "json",
-                        success: function () { location.reload(); }
+                        success: function () { loadProjectSnsTree(selectedProject); }
                     });
                 } else {
                     $.ajax({
@@ -2023,35 +2102,13 @@
             });
 
             $('#tableProject').on('click', '.project_sns_button', function () {
-
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
-
-                $.ajax({
-                    type: "POST",
-                    url: "Manage/GetProjectSns",
-                    data: { projectId: selectedProject },
-                    dataType: "json",
-                    success: function (result) {
-
-                        var sortableproj = new TreeSortable("#projectSnsTree");
-                        var contentproj = result.map(sortableproj.createBranch);
-                        $("#projectSnsTree").html(contentproj);
-                        sortableproj.run();
-                        refreshToggleButtons("#projectSnsTree");
-
-                        $("#SnsParentDropDown option").remove();
-
-                        var slelectObj = $('#SnsParentDropDown');
-                        slelectObj.append('<option selected>Please Select Parent Node</option>');
-
-                        $.each(result, function (idx, obj) {
-                            slelectObj.append('<option value="' + obj.id + '">' + obj.title + '</option>');
-                        });
-
-                        $("#projectSnsModel").modal('show');
-                    }
-                });
+                var projectName = rowobj.find("td:eq(9)").text().trim();
+                $('#projectSnsProjectName').text(projectName);
+                $('#pSnsFormPanel').hide();
+                loadProjectSnsTree(selectedProject);
+                $("#projectSnsModel").modal('show');
             });
 
             $('#tableBrexRules').on('click', '.editBrexRule', function (e) {
@@ -2452,6 +2509,54 @@
                 $("#btnProjectSave").html("Update");
                 $(".modelProjectTitle").html("Edit Project");
                 $("#projectModel").modal('show');
+            });
+
+            // ── Project SNS inline form handlers ─────────────────────────────────
+            $('#btnAddRootPSns').click(function () {
+                $('#pSnsId').val('0');
+                $('#pSnsCode').val('');
+                $('#pSnsDescription').val('');
+                $('#pSnsParentId').val('');
+                $('#pSnsFormHint').text('Adding root-level node');
+                $('#pSnsCodeError').hide().text('Code is required');
+                $('#pSnsFormPanel').slideDown(150, function () { $('#pSnsCode').focus(); });
+            });
+
+            $('#btnCancelPSns').click(function () {
+                $('#pSnsFormPanel').slideUp(150);
+            });
+
+            $('#btnSavePSns').click(function () {
+                var code = $('#pSnsCode').val().trim();
+                if (!code) {
+                    $('#pSnsCodeError').text('Code is required').show();
+                    $('#pSnsCode').focus();
+                    return;
+                }
+                $('#pSnsCodeError').hide();
+
+                var projectSns = {
+                    ProjectId: selectedProject,
+                    Snsid: $('#pSnsId').val() || '0',
+                    Code: code,
+                    Description: $('#pSnsDescription').val().trim(),
+                    ParentId: $('#pSnsParentId').val() || ''
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "Manage/CreateProjectSns",
+                    data: { projectSns: projectSns },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data == 'Duplicate') {
+                            $('#pSnsCodeError').text('Duplicate code').show();
+                        } else {
+                            $('#pSnsFormPanel').slideUp(150);
+                            loadProjectSnsTree(selectedProject);
+                        }
+                    }
+                });
             });
 
             var snsTable = $('#snsTable').length ? $('#snsTable').DataTable() : null;

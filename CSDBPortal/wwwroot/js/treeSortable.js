@@ -448,10 +448,9 @@ function TreeSortable(name) {
 
                 getSelectedBranch() {
                     const {
-                        options: { treeSelector, branchSelector },
-                        updateBranchZIndex,
+                        options: { branchSelector },
                     } = treeSortable;
-                    const $branch = $(this).closest(`${treeSelector} ${branchSelector}`);
+                    const $branch = $(this).closest(branchSelector);
                     return $branch[0];
                 },
             });
