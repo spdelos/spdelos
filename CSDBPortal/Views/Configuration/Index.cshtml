@@ -609,7 +609,16 @@
                         <label class="form-label">XSD Schema Files</label>
                         <input type="file" class="form-control" id="xsdFilesInput" multiple accept=".xsd">
                         <div id="xsdMessages" class="mt-1"></div>
-                        <div id="xsdFileList" class="mt-2"></div>
+                        <!-- Chips -->
+                        <div id="xsdFileList" class="d-flex flex-wrap gap-1 mt-2"></div>
+                        <!-- Shared content viewer (shown when a chip is clicked) -->
+                        <div id="xsdContentViewer" class="mt-2 border rounded p-2 bg-light" style="display:none">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="fw-semibold text-muted" id="xsdViewerLabel"></small>
+                                <button type="button" class="btn-close" id="btnCloseXsdViewer" aria-label="Close" style="font-size:.65rem"></button>
+                            </div>
+                            <pre id="xsdViewerPre" class="mb-0 small" style="max-height:180px;overflow:auto;white-space:pre-wrap;background:transparent"></pre>
+                        </div>
                     </div>
                     <div class="modal-footer px-0">
                         <button id="btnSaveIssueNo" type="button" class="btn btn-primary">Save</button>
@@ -843,22 +852,27 @@
 
     function renderXsdItem(fileName, isPending) {
         var safeFileName = $('<span>').text(fileName).html();
-        var badge = isPending ? '<span class="badge bg-success me-1">New</span>' : '';
-        return '<div class="d-flex flex-wrap align-items-center gap-2 mb-1 xsd-file-item" ' +
-            'data-filename="' + safeFileName + '" data-pending="' + isPending + '">' +
-            badge +
-            '<span class="flex-grow-1 text-truncate small">' + safeFileName + '</span>' +
-            '<button type="button" class="btn btn-sm btn-outline-secondary py-0 btn-view-xsd">View</button>' +
-            '<button type="button" class="btn btn-sm btn-outline-danger py-0 btn-remove-xsd"><i class="fas fa-times"></i></button>' +
-            '<div class="xsd-content-panel w-100 mt-1" style="display:none">' +
-              '<pre class="border rounded p-2 small mb-0" style="max-height:200px;overflow:auto;background:#f8f9fa;white-space:pre-wrap"></pre>' +
-            '</div>' +
-            '</div>';
+        var newBadge = isPending
+            ? '<span class="badge bg-success ms-1" style="font-size:.6rem;vertical-align:middle">New</span>'
+            : '';
+        return '<span class="xsd-chip badge rounded-pill border d-inline-flex align-items-center gap-1 py-1 px-2" ' +
+            'data-filename="' + safeFileName + '" data-pending="' + isPending + '" ' +
+            'style="background:#f0f4ff;color:#1a3a6b;cursor:pointer;font-size:.75rem;font-weight:500;max-width:200px" ' +
+            'title="Click to view content">' +
+            '<i class="fas fa-file-code" style="font-size:.7rem;opacity:.7"></i>' +
+            '<span class="text-truncate" style="max-width:140px">' + safeFileName + '</span>' +
+            newBadge +
+            '<button type="button" class="xsd-chip-remove ms-1" aria-label="Remove" ' +
+            'style="background:none;border:none;padding:0;line-height:1;color:#6c757d;font-size:.8rem">' +
+            '<i class="fas fa-times"></i></button>' +
+            '</span>';
     }
 
     function renderXsdFileList() {
         var $list = $('#xsdFileList');
         $list.empty();
+        // Close viewer when list is re-rendered
+        $('#xsdContentViewer').hide();
         existingXsdFiles.forEach(function (xsd) { $list.append(renderXsdItem(xsd.fileName, false)); });
         $.each(pendingXsdFiles, function (fileName) { $list.append(renderXsdItem(fileName, true)); });
         if ($list.children().length === 0) {
@@ -901,37 +915,55 @@
             $(this).val('');
         });
 
-        // ── View XSD content (toggle) ─────────────────────────────────────────
-        $(document).on('click', '.btn-view-xsd', function () {
-            var $item   = $(this).closest('.xsd-file-item');
-            var fileName = $item.data('filename');
-            var isPending = $item.data('pending') === true;
-            var $panel  = $item.find('.xsd-content-panel');
-            var $pre    = $panel.find('pre');
+        // ── Chip click → show content in shared viewer ───────────────────────
+        $(document).on('click', '.xsd-chip', function (e) {
+            // Remove button is handled separately — ignore here
+            if ($(e.target).closest('.xsd-chip-remove').length) return;
 
-            if ($panel.is(':visible')) { $panel.hide(); return; }
+            var $chip     = $(this);
+            var fileName  = $chip.data('filename');
+            var isPending = $chip.data('pending') === true;
+            var $viewer   = $('#xsdContentViewer');
+            var $pre      = $('#xsdViewerPre');
+            var $label    = $('#xsdViewerLabel');
+
+            // Toggle off if same chip is clicked again
+            if ($viewer.is(':visible') && $label.text() === fileName) {
+                $viewer.hide();
+                return;
+            }
+
+            $label.text(fileName);
+            $pre.text('Loading…');
+            $viewer.show();
 
             if (isPending) {
                 var file = pendingXsdFiles[fileName];
                 if (file) {
                     var reader = new FileReader();
-                    reader.onload = function (e) { $pre.text(e.target.result); $panel.show(); };
+                    reader.onload = function (e) { $pre.text(e.target.result); };
                     reader.readAsText(file);
                 }
             } else {
                 $.ajax({
                     url: '/Configuration/GetSchemaFileContent',
                     data: { issueNoId: $('#hdnId').val(), fileName: fileName },
-                    success: function (content) { $pre.text(content); $panel.show(); }
+                    success: function (content) { $pre.text(content || '(empty)'); }
                 });
             }
         });
 
-        // ── Remove XSD item ───────────────────────────────────────────────────
-        $(document).on('click', '.btn-remove-xsd', function () {
-            var $item    = $(this).closest('.xsd-file-item');
-            var fileName = $item.data('filename');
-            if ($item.data('pending') === true) {
+        // ── Close shared viewer ───────────────────────────────────────────────
+        $('#btnCloseXsdViewer').click(function () { $('#xsdContentViewer').hide(); });
+
+        // ── Chip remove button ────────────────────────────────────────────────
+        $(document).on('click', '.xsd-chip-remove', function (e) {
+            e.stopPropagation();
+            var $chip    = $(this).closest('.xsd-chip');
+            var fileName = $chip.data('filename');
+            // Close viewer if it was showing this file
+            if ($('#xsdViewerLabel').text() === fileName) $('#xsdContentViewer').hide();
+            if ($chip.data('pending') === true) {
                 delete pendingXsdFiles[fileName];
             } else {
                 existingXsdFiles = existingXsdFiles.filter(function (x) { return x.fileName !== fileName; });
