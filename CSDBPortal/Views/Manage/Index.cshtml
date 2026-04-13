@@ -177,14 +177,23 @@
                                             <td>@p.Title</td>
                                             <td>@p.InformationCodeProp - @p.Variant</td>
                                             <td>@p.ICNFormatDescription</td>
-                                            <td width="30%">
-                                                <a href="#" class="btn btn-sm edit_button edit_project">Edit</a>
-                                                <a href="#" class="btn btn-sm btn-secondary project_sns_button">SNS</a>
-                                                <a href="#" class="btn btn-sm btn-info project_dmrl_button">DMRL</a>
-                                                <a href="#" class="btn btn-sm btn-primary project_dmc_button">DMC</a>
-                                                <a href="#" class="btn btn-sm btn-primary project_dmc_generate_button">Brex</a>
-                                                <a href="#" class="btn btn-sm btn-primary project_brex_rules_button">Brex Rules</a>
-                                                <a href="#" class="btn btn-sm btn-primary project_navigation_generate_button">Navigation</a>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="fas fa-fw fa-ellipsis-h"></i> Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li><a href="#" class="dropdown-item edit_button edit_project"><i class="fas fa-fw fa-pen me-1"></i>Edit</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a href="#" class="dropdown-item project_sns_button"><i class="fas fa-fw fa-sitemap me-1"></i>SNS</a></li>
+                                                        <li><a href="#" class="dropdown-item project_dmrl_button"><i class="fas fa-fw fa-list me-1"></i>DMRL</a></li>
+                                                        <li><a href="#" class="dropdown-item project_dmc_button"><i class="fas fa-fw fa-file-code me-1"></i>DMC</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a href="#" class="dropdown-item project_dmc_generate_button"><i class="fas fa-fw fa-file-alt me-1"></i>Brex</a></li>
+                                                        <li><a href="#" class="dropdown-item project_brex_rules_button"><i class="fas fa-fw fa-sliders-h me-1"></i>Brex Rules</a></li>
+                                                        <li><a href="#" class="dropdown-item project_navigation_generate_button"><i class="fas fa-fw fa-compass me-1"></i>Navigation</a></li>
+                                                    </ul>
+                                                </div>
                                             </td>
                                         </tr>
                                     }
@@ -2065,7 +2074,7 @@
                 });
             });
 
-            $(".project_dmc_generate_button").click(function () {
+            $('#tableProject').on('click', '.project_dmc_generate_button', function () {
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
 
@@ -2081,7 +2090,7 @@
             });
 
 
-            $(".project_dmc_button").click(function () {
+            $('#tableProject').on('click', '.project_dmc_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
@@ -2104,7 +2113,7 @@
                 $("#DMCModel").modal('show');
             });
 
-            $(".project_dmrl_button").click(function () {
+            $('#tableProject').on('click', '.project_dmrl_button', function () {
                 var rowobj = $(this).closest("tr");
                 var projectId = rowobj.find("td:eq(0)").text();
 
@@ -2214,7 +2223,7 @@
                 });
             });
 
-            $(".project_brex_rules_button").click(function () {
+            $('#tableProject').on('click', '.project_brex_rules_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
@@ -2267,7 +2276,7 @@
             });
 
 
-            $(".project_navigation_generate_button").click(function () {
+            $('#tableProject').on('click', '.project_navigation_generate_button', function () {
 
                 var rowobj = $(this).closest("tr");
                 selectedProject = rowobj.find("td:eq(0)").text();
@@ -2488,7 +2497,7 @@
 
 
 
-            $(".edit_project").click(function () {
+            $('#tableProject').on('click', '.edit_project', function () {
                 var rowobj = $(this).closest("tr");
 
                 var id = rowobj.find("td:eq(0)").text();
