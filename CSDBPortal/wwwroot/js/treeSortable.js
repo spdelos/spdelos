@@ -99,25 +99,25 @@ function TreeSortable(name) {
                 <div class="branch-wrapper">
                     <div class="left-sidebar">
                         <button type="button" class="button toggle-branch" title="Collapse / Expand">
-                            <ion-icon name="chevron-down-outline"></ion-icon>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
                         </button>
                         <div class="${cleanSelector(dragHandlerSelector)}">
-                            <ion-icon name="move-outline"></ion-icon>
+                            <i class="fas fa-grip-vertical icon"></i>
                         </div>
                         <span class="branch-title">${title}</span>
                     </div>
                     <div class="right-sidebar">
                         <button type="button" class="button add-child" title="Add a new child">
-                            <ion-icon name="add-outline" title="Add a new child"></ion-icon>
+                            <i class="fas fa-plus"></i>
                         </button>
                         <button type="button" class="button edit-item" title="Edit">
-                            <ion-icon name="create-outline" title="Edit"></ion-icon>
+                            <i class="fas fa-pen"></i>
                         </button>
                         <button type="button" class="button remove-branch" title="Remove Branch">
-                            <ion-icon name="trash-outline" title="Remove Branch"></ion-icon>
+                            <i class="fas fa-trash"></i>
                         </button>
                         <button type="button" class="button create-dmc" title="DMC">
-                            <ion-icon name="logo-codepen" title="DMC"></ion-icon>
+                            <i class="fas fa-code"></i>
                         </button>
                     </div>
                 </div>

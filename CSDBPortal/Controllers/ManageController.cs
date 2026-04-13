@@ -252,6 +252,31 @@ namespace CSDBPortal.Controllers
             return Json(await _baseManager.DeleteRecordAsync(sns, ""));
         }
 
+        /// <summary>
+        /// Updates the parent of a project SNS node after a drag-and-drop reorder.
+        /// snsId and newParentSnsId are both Snsid values (not primary keys).
+        /// </summary>
+        public async Task<JsonResult> MoveProjectSns(int snsId, int newParentSnsId, int projectId)
+        {
+            var node = await _db.ProjectStandardNumberingSystems
+                .FirstOrDefaultAsync(p => p.Snsid == snsId && p.ProjectId == projectId);
+            if (node == null) return Json(false);
+
+            int newParentId = 0;
+            if (newParentSnsId > 0)
+            {
+                var parent = await _db.ProjectStandardNumberingSystems
+                    .FirstOrDefaultAsync(p => p.Snsid == newParentSnsId && p.ProjectId == projectId);
+                if (parent != null) newParentId = parent.Id;
+            }
+
+            node.ParentId  = newParentId;
+            node.UpdatedBy = User.Identity.Name;
+            node.UpdatedOn = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Json(true);
+        }
+
         public async Task<JsonResult> CreateDMC(DataModuleCode dataModuleCode)
         {
             string mode;

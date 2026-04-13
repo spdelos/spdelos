@@ -1264,10 +1264,25 @@
                         $("#projectSnsEmpty").hide();
                         var sp = new TreeSortable("#projectSnsTree");
                         var cp = result.map(sp.createBranch);
-                        $("#projectSnsTree").html(cp);
+                        $("#projectSnsTree").html(cp.join(''));
                         sp.run();
                         refreshToggleButtons("#projectSnsTree");
                         $("#projectSnsTree .create-dmc").hide();
+
+                        // Auto-save parent when a node is dragged to a new position
+                        $(document).off("sortCompleted.projectSns");
+                        $(document).on("sortCompleted.projectSns", function (event, ui) {
+                            if ($(ui.item).closest('#projectSnsTree').length === 0) return;
+                            var nodeId        = parseInt($(ui.item).data('id'));
+                            var newParentSnsId = parseInt($(ui.item).data('parent')) || 0;
+                            $.ajax({
+                                type: "POST",
+                                url: "Manage/MoveProjectSns",
+                                data: { snsId: nodeId, newParentSnsId: newParentSnsId, projectId: selectedProject },
+                                dataType: "json",
+                                error: function () { alert('Failed to save the new node position.'); }
+                            });
+                        });
                     }
                 }
             });
@@ -1275,7 +1290,7 @@
 
         var sortable = new TreeSortable("#tree");
         var content = data.map(sortable.createBranch);
-        $("#tree").html(content);
+        $("#tree").html(content.join(''));
         sortable.run();
         refreshToggleButtons("#tree");
 
@@ -1485,16 +1500,16 @@
                 e.preventDefault();
                 e.stopPropagation();
                 var $branch = $(this).closest(".tree-branch");
-                var $icon   = $(this).find('ion-icon');
+                var $icon   = $(this).find('.toggle-icon');
 
                 if ($branch.hasClass("sns-collapsed")) {
                     $branch.removeClass("sns-collapsed");
-                    $icon.attr('name', 'chevron-down-outline');
+                    $icon.removeClass('fa-chevron-right').addClass('fa-chevron-down');
                     showBranchChildren($branch);
                 } else {
                     $branch.getDescendants().hide();
                     $branch.addClass("sns-collapsed");
-                    $icon.attr('name', 'chevron-forward-outline');
+                    $icon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
                 }
             });
 
@@ -1602,7 +1617,7 @@
 
                 sortable = new TreeSortable("#tree");
                 content = data.map(sortable.createBranch);
-                $("#tree").html(content);
+                $("#tree").html(content.join(''));
                 sortable.run();
                 refreshToggleButtons("#tree");
                 $(".create-dmc").hide();
